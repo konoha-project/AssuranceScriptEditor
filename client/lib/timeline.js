@@ -5322,8 +5322,8 @@ if(typeof VMM != 'undefined' && typeof VMM.Slider == 'undefined') {
 				mediasize.media.video = 		VMM.Util.ratio.fit(mediasize.media.width, mediasize.media.height, 16, 9);
 				
 				VMM.Lib.css(".slider-item .layout-text-media .text", "width", "100%" );
-				//VMM.Lib.css(".slider-item .layout-text-media .text", "display", "block" );
-				//VMM.Lib.css(".slider-item .layout-text-media .text .container", "display", "block" );
+				VMM.Lib.css(".slider-item .layout-text-media .text", "display", "block" );
+				VMM.Lib.css(".slider-item .layout-text-media .text .container", "display", "block" );
 				VMM.Lib.css(".slider-item .layout-text-media .text .container", "width", mediasize.media.width );
 				VMM.Lib.css(".slider-item .layout-text-media .text .container .start", "width", "auto" );
 				
