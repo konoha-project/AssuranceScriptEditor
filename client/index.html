@@ -41,6 +41,7 @@ body {
 <script type="text/javascript" src="js/api.js"></script>
 <script type="text/javascript" src="js/sidemenu.js"></script>
 <script type="text/javascript" src="js/animation.js"></script>
+<script type="text/javascript" src="js/timeline.js"></script>
 <script type="text/javascript">
 
 function getNodeFromServer(id) {
@@ -95,25 +96,8 @@ window.addEventListener("load",function() {
 </svg>
 
 <div id="viewer"></div>
-<div id="timeline"></div>
-
-<!-- BEGIN Timeline Embed -->
-<script type="text/javascript">
-$(document).ready(function() {
-	var timeline_config = {
-		width: '40%',
-		height: '50%',
-		source: 'ase_json.json',
-		embed_id: 'timeline-embed',
-		js: 'lib/timeline.js',
-		css: 'lib/timeline.css'
-	}
-	createStoryJS(timeline_config);
-});
-</script>
 <div id="timeline-embed"></div>
-<script type="text/javascript" src="lib/storyjs-embed.js"></script>
-<!-- END Timeline Embed-->
+
 
 <div id="toolbar" style="display: none;">
 	<a href="#" class="tool-new"><i class="icon-plus"></i></a>
