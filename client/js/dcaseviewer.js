@@ -373,5 +373,5 @@ function ViewerInit(body, DCase_Viewer) {
         bottom: '0px',
         margin: '0px'
     });
-    DCase_Viewer.createTimeline('timeline');
+    //DCase_Viewer.createTimeline('timeline');
 }

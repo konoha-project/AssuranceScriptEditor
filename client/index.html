@@ -4,6 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>D-CASE VIEWER</title>
+<link rel="shortcut icon" href="img/favicon.ico">
 <link rel="stylesheet" type="text/css" href="lib/codemirror.css"/>
 <link rel="stylesheet" type="text/css" href="lib/bootstrap.icons.css"/>
 <link rel="stylesheet" type="text/css" href="lib/colorPicker.css"/>
@@ -12,6 +13,7 @@
 <link rel="stylesheet" type="text/css" href="css/sidemenu.css"/>
 <link rel="stylesheet" type="text/css" href="css/edit.css"/>
 <link rel="stylesheet" type="text/css" href="lib/jquery.ui.autocomplete.css"/>
+<link rel="stylesheet" type="text/css" href="css/timeline.css"/>
 <style>
 body {
 	min-height: 480px;
@@ -41,12 +43,16 @@ body {
 <script type="text/javascript" src="js/api.js"></script>
 <script type="text/javascript" src="js/sidemenu.js"></script>
 <script type="text/javascript" src="js/animation.js"></script>
+<script type="text/javascript" src="js/timeline.js"></script>
 <script type="text/javascript">
 
-function getNodeFromServer(id) {
+function getNodeFromServer(aid, pid) {
 	var res1 = DCaseAPI.call("getArgumentList");
-	console.log("get id=" + id);
-	var res2 = DCaseAPI.call("getNodeTree", {BelongedArgumentId: id});
+	console.log("get id=" + aid);
+	var res2 = DCaseAPI.call("getNodeTreeFromSnapshotId", {
+		BelongedArgumentId: aid,
+		SnapshotId: pid,
+	});
 	console.log(res2);
 	var node = createNodeFromJson(res2);
 	return node;
@@ -60,6 +66,7 @@ function getURLParameter(name) {
 
 // sorry matz.
 var DCase_Viewer;
+var DCase_Timeline;
 
 window.addEventListener("load",function() {
 	var id = parseInt(getURLParameter('id'));
@@ -73,6 +80,7 @@ window.addEventListener("load",function() {
 	}
 	DCase_Viewer = new DCaseViewer(document.getElementById('viewer'), node, opts);
 	ViewerInit(document.body, DCase_Viewer);
+	DCase_Timeline = new Timeline('timeline-embed');
 	// hide url bar for ipod touch
 	setTimeout(function(){
 		window.scrollTo(0, 0);
@@ -94,8 +102,9 @@ window.addEventListener("load",function() {
 </defs>
 </svg>
 
+<img id="ase_logo" src="img/assuranceDS.png" alt="AssuranseDS">
 <div id="viewer"></div>
-<div id="timeline"></div>
+<div id="timeline-embed"></div>
 
 <div id="toolbar" style="display: none;">
 	<a href="#" class="tool-new"><i class="icon-plus"></i></a>

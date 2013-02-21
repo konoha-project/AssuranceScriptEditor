@@ -143,19 +143,18 @@ function createBinNode(n) {
 
 var id_count = 1; // ?
 
-function initViewer(id) {
-    $('#timeline').empty();
-    $(DCase_Viewer.root)
-        .empty()
-        .append(DCase_Viewer.svgroot)
-        .append('<div id="timeline"></div>');
-    var node = getNodeFromServer(id);
+function initViewer(aid, pid) {
+    if (pid == undefined) {
+        var r = DCaseAPI.call('getNodeTree', {
+            BelongedArgumentId: aid
+        });
+        pid = r.Tree.SnapshotId;
+    }
+    var node = getNodeFromServer(aid, pid);
     var opts = {
-        argument_id: id
+        argument_id: aid
     };
-    console.log(node);
     DCase_Viewer.opts = opts;
     DCase_Viewer.setModel(node);
-    DCase_Viewer.createTimeline('timeline');
-    console.log(DCase_Viewer.rootview);
+    DCase_Timeline.showTimeline(aid, pid);
 }

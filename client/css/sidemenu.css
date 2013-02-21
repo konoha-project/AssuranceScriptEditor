@@ -1,7 +1,12 @@
+#ase_logo {
+	top: 0px;
+	padding-left: 14px;
+}
+
 .menu-i {
 	position: absolute;
 	left: 24px;
-	top : 0px;
+	top : 55px;
 	width : 40px;
 	height: 40px;
 	background: #CCC;
@@ -22,9 +27,9 @@
 	position: absolute;
 	display: none;
 	left: 0px;
-	top: 40px;
+	top: 95px;
 	width: 232px;
-	bottom: 0px;
+	bottom: 20%;
 	background: #EEE;
 	padding: 4px;
 	overflow: auto;
