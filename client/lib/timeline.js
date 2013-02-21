@@ -5322,8 +5322,8 @@ if(typeof VMM != 'undefined' && typeof VMM.Slider == 'undefined') {
 				mediasize.media.video = 		VMM.Util.ratio.fit(mediasize.media.width, mediasize.media.height, 16, 9);
 				
 				VMM.Lib.css(".slider-item .layout-text-media .text", "width", "100%" );
-				VMM.Lib.css(".slider-item .layout-text-media .text", "display", "block" );
-				VMM.Lib.css(".slider-item .layout-text-media .text .container", "display", "block" );
+				//VMM.Lib.css(".slider-item .layout-text-media .text", "display", "block" );
+				//VMM.Lib.css(".slider-item .layout-text-media .text .container", "display", "block" );
 				VMM.Lib.css(".slider-item .layout-text-media .text .container", "width", mediasize.media.width );
 				VMM.Lib.css(".slider-item .layout-text-media .text .container .start", "width", "auto" );
 				
@@ -5429,11 +5429,12 @@ if(typeof VMM != 'undefined' && typeof VMM.Slider == 'undefined') {
 				
 				slides[i].layout(is_skinny);
 				
-				if (slides[i].content_height() > config.slider.height + 20) {
-					slides[i].css("display", "block");
-				} else {
-					slides[i].css("display", "table");
-				}
+				slides[i].css("display", "none");
+				//if (slides[i].content_height() > config.slider.height + 20) {
+				//	slides[i].css("display", "block");
+				//} else {
+				//	slides[i].css("display", "table");
+				//}
 			}
 			
 		}
@@ -6559,7 +6560,8 @@ Utf8.decode = function(strUtf) {
 
         $tip
           .remove()
-          .css({ top: 0, left: 0, display: 'block' })
+          .css({ top: 0, left: 0, display: 'none' })
+          //.css({ top: 0, left: 0, display: 'block' })
           .appendTo(inside ? this.$element : document.body)
 
         pos = this.getPosition(inside)
@@ -7793,9 +7795,12 @@ if(typeof VMM.Timeline != 'undefined' && typeof VMM.Timeline.TimeNav == 'undefin
 		/* MARKER EVENTS
 		================================================== */
 		function onMarkerClick(e) {
+            console.log('hello');
 			$dragslide.cancelSlide();
 			goToMarker(e.data.number);
 			upDate();
+            $('.nav-next').css('display', 'none');
+            $('.nav-previous').css('display', 'none');
 		};
 		
 		function onMarkerHover(e) {
