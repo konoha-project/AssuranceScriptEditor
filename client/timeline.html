@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="css/timeline.css"/>
+<script type="text/javascript" src="lib/jquery.min.js"></script>
+<script type="text/javascript" src="lib/storyjs-embed.js"></script>
+<script type="text/javascript" src="js/config.js"></script>
+<script type="text/javascript" src="js/api.js"></script>
+<script type="text/javascript" src="js/timeline.js"></script>
+<script type="text/javascript">
+var DCase_Timeline;
+
+window.addEventListener("load",function() {
+	DCase_Timeline = new Timeline('timeline-embed');
+	DCase_Timeline.showTimeline(1, 1);
+});
+</script>
+</head>
+<body>
+<div id="timeline-embed"></div>
+</body>
+</html>

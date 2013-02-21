@@ -12,6 +12,7 @@
 <link rel="stylesheet" type="text/css" href="css/sidemenu.css"/>
 <link rel="stylesheet" type="text/css" href="css/edit.css"/>
 <link rel="stylesheet" type="text/css" href="lib/jquery.ui.autocomplete.css"/>
+<link rel="stylesheet" type="text/css" href="css/timeline.css"/>
 <style>
 body {
 	min-height: 480px;
@@ -61,6 +62,7 @@ function getURLParameter(name) {
 
 // sorry matz.
 var DCase_Viewer;
+//var DCase_Timeline;
 
 window.addEventListener("load",function() {
 	var id = parseInt(getURLParameter('id'));
@@ -74,6 +76,8 @@ window.addEventListener("load",function() {
 	}
 	DCase_Viewer = new DCaseViewer(document.getElementById('viewer'), node, opts);
 	ViewerInit(document.body, DCase_Viewer);
+	//DCase_Timeline = new Timeline('timeline-embed');
+	//DCase_Timeline.showTimeline(1, 1);
 	// hide url bar for ipod touch
 	setTimeout(function(){
 		window.scrollTo(0, 0);
@@ -96,8 +100,11 @@ window.addEventListener("load",function() {
 </svg>
 
 <div id="viewer"></div>
-<div id="timeline-embed"></div>
-
+<div id="timeline">
+	<iframe id="timeline-iframe" src="timeline.html" width="100%" height="80%" scrolling="no" frameborder="0">
+	your browser is not covered. please change browser firefox or something using webkit.
+	</iframe>
+</div>
 
 <div id="toolbar" style="display: none;">
 	<a href="#" class="tool-new"><i class="icon-plus"></i></a>
@@ -109,6 +116,7 @@ window.addEventListener("load",function() {
 	<a href="#" class="tool-remove"><i class="icon-remove"></i></a>
 </div>
 
+<img id="ase_logo" src="img/assuranceDS.png" alt="AssuranseDS">
 <div id="menu">
 	<div id="menu-search-i" class="menu-i" style="left: 0px;">
 		<i class="icon-search"></i>
