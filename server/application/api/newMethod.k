@@ -4,10 +4,11 @@ Import("Syntax.StringInterpolation");
 Import("Syntax.GlobalVariable");
 Import("Syntax.JavaStyleClass");
 Import("Syntax.CStyleWhile");
+Import("MiniKonoha.NameSpace");
 Import("Type.File");
 Import("Type.Json");
 Import("MiniKonoha.Map");
-Load("dcase.k");
+Import("Deos.DCaseCloud");
 
 DCaseModel model = new DCaseModel("dcasedb", "dcasedb");
 
@@ -53,7 +54,7 @@ void Commit (Json request) {
 void getArgumentList (Json request) {
 	int[] commitId = global.model.getArgumentList();
 	Json res = new Json();
-	res.set("commitId", ConvertFromIntList(argumentIdList));
+	res.set("commitId", ConvertFromIntList(commitId));
 	Json response = createMessage(res);
 	stdout.print(response);
 }
@@ -92,7 +93,7 @@ class JsonRPCServer {
 		this.functions.set("CreateTopGoal"        ,CreateTopGoal);
 //		this.functions.set("FindNodeByDescription",FindNodeByDescription);
 //		this.functions.set("FindContextByAttribute",FindContextByAttribute);
-		this.functions.set("Commit"               ,Commit);
+		this.functions.set("commit"               ,Commit);
 //		this.functions.set("getNode"              ,getNode);
 		this.functions.set("getArgumentList"      ,getArgumentList);
 		this.functions.set("getNodeTree"          ,getNodeTree);

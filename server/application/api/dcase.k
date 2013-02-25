@@ -73,7 +73,7 @@ class DataBase {
 
 	DataBase(String userName, String password) {
 		this.con = new Connection("mysql://${userName}:${password}@localhost:3306");
-		this.con.query("USE dcasecloud;");
+		this.con.query("USE dcase;");
 	}
 
 	PreparedStatement newPreparedStatement(String q) {
@@ -94,8 +94,7 @@ class DCaseModel {
 		p.setInt("@a",prevId);
 		p.execute();
 	}
-//	{"params" : {"tree": dump, "prev_id": 2}}
-//	{"result" : { "commit_id" : 3} }
+
 	@Public int Commit(Json tree, int prev_id) {
 		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`) VALUES(?,?,?,TRUE)");
 		p.setString("@a",tree.toString());
@@ -115,18 +114,16 @@ class DCaseModel {
 		return p.getInsertId();
 	}
 
-//	{"params" : {"commit_id": 3}}
-//	{"result" : {"mmit_id": 3}}
 	@Public Json GetNodeTree(int commit_id) {
 		PreparedStatement p = this.db.newPreparedStatement("SELECT Data,DateTime,prev_commit_id FROM Commit WHERE idCommit=?");
 		p.setInt("@a",commit_id);
 		ResultSet r = p.execute();
 		r.next();
-		Json json = new Json();
-		json.setString("Data", r.getString("Data"));
-		json.setInt("DateTime", r.getInt("DateTime"));
-		json.setInt("PrevCommitId", r.getInt("prev_commit_id"));
-		return json;
+		//Json json = new Json();
+		//json.setString("tree", r.getString("Data"));
+		//json.setInt("DateTime", r.getInt("DateTime"));
+		//json.setInt("PrevCommitId", r.getInt("prev_commit_id"));
+		return Json.parse(r.getString("Data"));
 	}
 
 	@Public int[] getArgumentList() {
