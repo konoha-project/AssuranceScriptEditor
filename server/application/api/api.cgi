@@ -8,6 +8,7 @@ Import("Syntax.Null");
 Import("Java.Class");
 Import("JavaScript.Array");
 Import("JavaScript.String");
+Import("JavaScript.Regexp");
 Import("posix.process");
 
 Load("newMethod.k");
@@ -23,7 +24,7 @@ String getMsg() {
 	while ((ln = f.readLine()) != null) {
 		query = query + ln;
 	}
-	return query;
+	return query.replace(/\\n/g,"\n");
 }
 
 void main() {

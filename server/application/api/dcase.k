@@ -102,6 +102,7 @@ class DCaseModel {
 	}
 
 	@Public int Commit(Json tree, int prev_id) {
+		System.p(tree);
 		int argument_id = this.getArgumentId(prev_id);
 		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`) VALUES(?,?,?,TRUE,?)");
 		p.setString("@a",tree.toString());
@@ -151,6 +152,7 @@ class DCaseModel {
 		//json.setString("tree", r.getString("Data"));
 		//json.setInt("DateTime", r.getInt("DateTime"));
 		//json.setInt("PrevCommitId", r.getInt("prev_commit_id"));
+		//return Json.parse(r.getString("Data"));
 		return Json.parse(EscapeCR(r.getString("Data")));
 	}
 

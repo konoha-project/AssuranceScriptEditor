@@ -1,4 +1,7 @@
 USE dcase;
 
-DELETE FROM Argument;
 DELETE FROM Commit;
+DELETE FROM Argument;
+
+ALTER TABLE Argument AUTO_INCREMENT = 1;
+ALTER TABLE Commit   AUTO_INCREMENT = 1;
