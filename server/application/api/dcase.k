@@ -9,6 +9,8 @@ Import("MiniKonoha.Map");
 Import("MiniKonoha.Sql");
 Import("JavaStyle.Object");
 Import("JavaScript.Array");
+Import("JavaScript.String");
+Import("JavaScript.Regexp");
 Import("JavaScript.Date");
 
 class PreparedStatement {
@@ -82,6 +84,10 @@ class DataBase {
 
 }
 
+@Public String EscapeCR(String str) {
+	return str.replace(/\n/, "\\n");
+}
+
 class DCaseModel {
 	DataBase db;
 
@@ -123,7 +129,7 @@ class DCaseModel {
 		//json.setString("tree", r.getString("Data"));
 		//json.setInt("DateTime", r.getInt("DateTime"));
 		//json.setInt("PrevCommitId", r.getInt("prev_commit_id"));
-		return Json.parse(r.getString("Data"));
+		return Json.parse(EscapeCR(r.getString("Data")));
 	}
 
 	@Public int[] getArgumentList() {
@@ -135,4 +141,33 @@ class DCaseModel {
 		}
 		return ret;
 	}
+
+	@Public int[] getCommitList(int commitId) {
+		int[] ret = [];
+		int id = commitId;
+		while(id != 0) {
+			PreparedStatement p = this.db.newPreparedStatement("SELECT prev_commit_id FROM Commit WHERE idCommit=?");
+			p.setInt("@a",id);
+			ResultSet r = p.execute();
+			r.next();
+			id = r.getInt("prev_commit_id");
+			if(id==0) {
+				break;
+			}
+			ret.add(id);
+		}
+		return ret;
+	}
+
+	@Public int[] search(int commitId) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE Data LIKE ?");
+		p.setString("@a","%"+SearchText+"%");
+		ResultSet r = p.execute();
+		int[] ret = [];
+		while(r.next()) {
+			r.add(r.getInt("idCommit"));
+		}
+		return ret;
+	}
+
 }

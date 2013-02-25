@@ -1,1 +1,1 @@
-DROP DATABASE dcasecloud;
+DROP DATABASE dcase;

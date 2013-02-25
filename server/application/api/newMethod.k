@@ -41,7 +41,7 @@ Json createMessage(Json result) {
 	return json;
 }
 
-void Commit (Json request) {
+void commit (Json request) {
 	Json tree = request.get("tree");
 	int prev_id = request.getInt("commitId");
 	int commitId = global.model.Commit(tree,prev_id);
@@ -52,9 +52,9 @@ void Commit (Json request) {
 }
 
 void getArgumentList (Json request) {
-	int[] commitId = global.model.getArgumentList();
+	int[] commitIdList = global.model.getArgumentList();
 	Json res = new Json();
-	res.set("commitId", ConvertFromIntList(commitId));
+	res.set("commitIdList", ConvertFromIntList(commitIdList));
 	Json response = createMessage(res);
 	stdout.print(response);
 }
@@ -68,11 +68,29 @@ void getNodeTree (Json request) {
 	stdout.print(response);
 }
 
-void CreateTopGoal (Json request) {
+void createTopGoal (Json request) {
 	Json tree = request.get("tree");
 	int commitId = global.model.CreateTopGoal(tree);
 	Json res = new Json();
 	res.setInt("commitId",commitId);
+	Json response = createMessage(res);
+	stdout.print(response);
+}
+
+void getCommitList (Json request) {
+	int commitId = request.getInt("commitId");
+	int[] commitIdList = global.model.GetCommitList(commitId);
+	Json res = new Json();
+	res.set("commitIdList", ConvertFromIntList(commitIdList));
+	Json response = createMessage(res);
+	stdout.print(response);
+}
+
+void search(Json request) {
+	String text = request.getString("text");
+	int[] commitIdList = global.model.Search(text);
+	Json res = new Json();
+	res.set("commitIdList", ConvertFromIntList(commitIdList));
 	Json response = createMessage(res);
 	stdout.print(response);
 }
@@ -90,10 +108,10 @@ class JsonRPCServer {
 	}
 
 	void registerFunctions() {
-		this.functions.set("CreateTopGoal"        ,CreateTopGoal);
-//		this.functions.set("FindNodeByDescription",FindNodeByDescription);
+		this.functions.set("createTopGoal"        ,createTopGoal);
+		this.functions.set("search"               ,search);
 //		this.functions.set("FindContextByAttribute",FindContextByAttribute);
-		this.functions.set("commit"               ,Commit);
+		this.functions.set("commit"               ,commit);
 //		this.functions.set("getNode"              ,getNode);
 		this.functions.set("getArgumentList"      ,getArgumentList);
 		this.functions.set("getNodeTree"          ,getNodeTree);
@@ -102,9 +120,9 @@ class JsonRPCServer {
 //		this.functions.set("OpenProcessContext"   ,OpenProcessContext);
 		//this.functions.set("CloseProcessContext",CloseProcessContext);
 //		this.functions.set("getProcessContextIds" ,getProcessContextIds);
-//		this.functions.set("getSnapshotList"      ,getSnapshotList);
+		this.functions.set("getCommitList"        ,getCommitList);
 //		this.functions.set("getSnapshotIds"       ,getSnapshotIds);
-		//this.functions.set("getContext"           ,getContext);
+		//this.functions.set("getContext"         ,getContext);
 //		this.functions.set("Support"              ,Support);
 //		this.functions.set("Rebuttal"             ,Rebuttal);
 	}
