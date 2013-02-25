@@ -85,7 +85,7 @@ class DataBase {
 }
 
 @Public String EscapeCR(String str) {
-	return str.replace(/\n/, "\\n");
+	return str.replace(/\n/g, "\\n");
 }
 
 class DCaseModel {
@@ -102,7 +102,6 @@ class DCaseModel {
 	}
 
 	@Public int Commit(Json tree, int prev_id) {
-		System.p(tree);
 		int argument_id = this.getArgumentId(prev_id);
 		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`) VALUES(?,?,?,TRUE,?)");
 		p.setString("@a",tree.toString());
