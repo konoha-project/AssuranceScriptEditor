@@ -10,7 +10,7 @@ Import("JavaScript.Array");
 Import("JavaScript.String");
 Import("posix.process");
 
-Load("methods.k");
+Load("newMethod.k");
 
 String getMsg() {
 	String mtd_type = System.getenv("REQUEST_METHOD");
