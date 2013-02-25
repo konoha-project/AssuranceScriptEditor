@@ -102,22 +102,44 @@ class DCaseModel {
 	}
 
 	@Public int Commit(Json tree, int prev_id) {
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`) VALUES(?,?,?,TRUE)");
+		int argument_id = this.getArgumentId(prev_id);
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`) VALUES(?,?,?,TRUE,?)");
 		p.setString("@a",tree.toString());
 		p.setInt("@b",new Date().getTime());
 		p.setInt("@c",prev_id);
+		p.setInt("@d",argument_id);
 		p.execute();
 		this.updatePrev(prev_id);
 		return p.getInsertId();
 	}
 
-	@Public int CreateTopGoal(Json tree) {
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`) VALUES(?,?,?,TRUE)");
+	int CreateArgument() {
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Argument`() VALUES()");
+		p.execute();
+		return p.getInsertId();
+	}
+
+	int getArgumentId(int commit_id) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT argument_id FROM Commit WHERE idCommit=?");
+		p.setInt("@a",commit_id);
+		ResultSet r = p.execute();
+		r.next();
+		return r.getInt("argument_id");
+	}
+
+	@Public Json CreateTopGoal(Json tree) {
+		int argument_id = this.CreateArgument();
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`) VALUES(?,?,?,TRUE,?)");
 		p.setString("@a",tree.toString());
 		p.setInt("@b",new Date().getTime());
 		p.setInt("@c",0);
+		p.setInt("@d",argument_id);
 		p.execute();
-		return p.getInsertId();
+		int commit_id = p.getInsertId();
+		Json ret = new Json();
+		ret.setInt("argumentId",argument_id);
+		ret.setInt("commitId",commit_id);
+		return ret;
 	}
 
 	@Public Json GetNodeTree(int commit_id) {
@@ -132,8 +154,9 @@ class DCaseModel {
 		return Json.parse(EscapeCR(r.getString("Data")));
 	}
 
-	@Public int[] getArgumentList() {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE latest_flag=TRUE");
+	@Public int[] getBranchList(int argument_id) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE argument_id=? AND latest_flag=TRUE");
+		p.setInt("@a",argument_id);
 		ResultSet r = p.execute();
 		int[] ret =[];
 		while(r.next()) {
@@ -142,9 +165,20 @@ class DCaseModel {
 		return ret;
 	}
 
+	@Public int[] getArgumentList() {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT argument_id FROM Argument");
+		ResultSet r = p.execute();
+		int[] ret =[];
+		while(r.next()) {
+			ret.add(r.getInt("argument_id"));
+		}
+		return ret;
+	}
+
 	@Public int[] getCommitList(int commitId) {
 		int[] ret = [];
 		int id = commitId;
+		ret.add(id);
 		while(id != 0) {
 			PreparedStatement p = this.db.newPreparedStatement("SELECT prev_commit_id FROM Commit WHERE idCommit=?");
 			p.setInt("@a",id);
@@ -156,11 +190,17 @@ class DCaseModel {
 			}
 			ret.add(id);
 		}
-		return ret;
+		int[] reverse = [];
+		int i = ret.getSize()-1;
+		while(i>=0) {
+			reverse.add(ret[i]);
+			i = i - 1;
+		}
+		return reverse;
 	}
 
 	@Public int[] search(int commitId) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE Data LIKE ?");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE latest_flag=TRUE AND Data LIKE ?");
 		p.setString("@a","%"+SearchText+"%");
 		ResultSet r = p.execute();
 		int[] ret = [];

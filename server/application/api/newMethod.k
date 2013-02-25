@@ -52,7 +52,16 @@ void commit (Json request) {
 }
 
 void getArgumentList (Json request) {
-	int[] commitIdList = global.model.getArgumentList();
+	int[] argumentIdList = global.model.getArgumentList();
+	Json res = new Json();
+	res.set("argumentIdList", ConvertFromIntList(argumentIdList));
+	Json response = createMessage(res);
+	stdout.print(response);
+}
+
+void getBranchList (Json request) {
+	int argumentId = request.getInt("argumentId");
+	int[] commitIdList = global.model.getBranchList(argumentId);
 	Json res = new Json();
 	res.set("commitIdList", ConvertFromIntList(commitIdList));
 	Json response = createMessage(res);
@@ -70,9 +79,7 @@ void getNodeTree (Json request) {
 
 void createTopGoal (Json request) {
 	Json tree = request.get("tree");
-	int commitId = global.model.CreateTopGoal(tree);
-	Json res = new Json();
-	res.setInt("commitId",commitId);
+	Json res = global.model.CreateTopGoal(tree);
 	Json response = createMessage(res);
 	stdout.print(response);
 }
@@ -114,6 +121,7 @@ class JsonRPCServer {
 		this.functions.set("commit"               ,commit);
 //		this.functions.set("getNode"              ,getNode);
 		this.functions.set("getArgumentList"      ,getArgumentList);
+		this.functions.set("getBranchList"        ,getBranchList);
 		this.functions.set("getNodeTree"          ,getNodeTree);
 //		this.functions.set("getNodeTreeFromSnapshotId",getNodeTreeFromSnapshotId);
 //		this.functions.set("getNodeTreeBetween"   ,getNodeTreeBetween);
