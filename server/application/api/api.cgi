@@ -8,9 +8,10 @@ Import("Syntax.Null");
 Import("Java.Class");
 Import("JavaScript.Array");
 Import("JavaScript.String");
+Import("JavaScript.Regexp");
 Import("posix.process");
 
-Load("methods.k");
+Load("newMethod.k");
 
 String getMsg() {
 	String mtd_type = System.getenv("REQUEST_METHOD");
@@ -23,16 +24,13 @@ String getMsg() {
 	while ((ln = f.readLine()) != null) {
 		query = query + ln;
 	}
-	return query;//.slice(5);
+	return query.replace(/\\n/g,"\n");
 }
 
 void main() {
 	Json j = Json.parse(getMsg());
 	JsonRPCServer api = new JsonRPCServer();
 	api.registerFunctions();
-	//if (!method.paramCheck(j.get("params"))) {
-		// error handling
-	//}
 	stdout.print("Content-Type: application/json; charset=utf-8\n\n");
 	api.dispatch(j.getString("method"),j.get("params"));
 }
