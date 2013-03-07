@@ -2,6 +2,9 @@ var SideMenu = function(root, viewer) {
 	var self = this;
 	var timeline = new TimeLine(root, viewer);
 
+	//FIXME
+	var userId = 1234;
+
 	//--------------------------------------------------------
 
 	this.actInsertToSelectedNode = function() {
@@ -210,7 +213,7 @@ var SideMenu = function(root, viewer) {
 	$("#menu-proc-commit").click(function() {
 		var msg = prompt("コミットメッセージを入力して下さい");
 		if(msg != null) {
-			if(viewer.getArgument().commit(msg)) {
+			if(viewer.getArgument().commit(msg, userId)) {
 				timeline.repaint();
 				alert("コミットしました");
 			}
@@ -232,7 +235,7 @@ var SideMenu = function(root, viewer) {
 	$("#menu-proc-newarg").click(function() {
 		DNodeEditWindow.open(null, ["Goal"], function(newNode) {
 			if(checkCommited()) {
-				viewer.setArgument(DCaseAPI.createArgument(newNode));
+				viewer.setArgument(DCaseAPI.createArgument(newNode, userId));
 				timeline.repaint();
 				updateArgumentList();
 			}

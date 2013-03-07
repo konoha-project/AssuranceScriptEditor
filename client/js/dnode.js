@@ -171,7 +171,7 @@ Argument.prototype.applyOperation = function(op) {
 	op.redo();
 };
 
-Argument.prototype.commit = function(msg) {
+Argument.prototype.commit = function(msg, userId) {
 	var tl = [];
 	var id = 1;
 	var node = this.node;
@@ -194,7 +194,7 @@ Argument.prototype.commit = function(msg) {
 		NodeList: tl,
 		TopGoalId: node.id
 	};
-	var r = DCaseAPI.commit(tree, this.commitId, msg, 0/*TODO userId*/);
+	var r = DCaseAPI.commit(tree, this.commitId, msg, userId);
 	this.commitId = r.commitId;
 	this.undoCount = 0;
 	this.opQueue = [];

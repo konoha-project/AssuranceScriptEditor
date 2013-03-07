@@ -44,7 +44,7 @@ DCaseAPI.getArgument = function(argId, commitId) {
 	return new Argument(this.createNode(r.tree), argId, commitId);
 };
 
-DCaseAPI.createArgument = function(newNode) {
+DCaseAPI.createArgument = function(newNode, userId) {
 	var r = this.call("createTopGoal", {
 		tree: {
 			NodeList: [{
@@ -54,12 +54,13 @@ DCaseAPI.createArgument = function(newNode) {
 				Children: [],
 			}],
 			TopGoalId: newNode.id,
-		}
+		},
+		userId: userId
 	});
 	return new Argument(newNode, r.argmentId, r.commitId);
 };
 
-function contextParams(params) {
+DCaseAPI.contextParams = function(params) {
 	var s = "";
 	for(key in params) {
 		s += "@" + key + " : " + params[key] + "\n";
