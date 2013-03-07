@@ -82,7 +82,7 @@ void getNodeTree (Json request) {
 
 void createTopGoal (Json request) {
 	Json tree   = request.get("tree");
-	int  userId = request.get("userId");
+	int  userId = request.getInt("userId");
 	Json res = global.model.CreateTopGoal(tree, userId);
 	Json response = createMessage(res);
 	stdout.print(response);
