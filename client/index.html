@@ -10,13 +10,14 @@
 <link rel="stylesheet" type="text/css" href="lib/bootstrap.min.css"/>
 <link rel="stylesheet" type="text/css" href="lib/codemirror.css"/>
 <link rel="stylesheet" type="text/css" href="lib/bootstrap.icons.css"/>
+<link rel="stylesheet" type="text/css" href="css/bootstrap.css"/>
 <link rel="stylesheet" type="text/css" href="css/dcase-node.css"/>
 <link rel="stylesheet" type="text/css" href="css/viewer.css"/>
-<link rel="stylesheet" type="text/css" href="css/sidemenu.css"/>
 <link rel="stylesheet" type="text/css" href="css/edit.css"/>
 <link rel="stylesheet" type="text/css" href="css/timeline.css"/>
 <style>
 body {
+	padding-top: 60px;
 	min-height: 480px;
 	margin: 0px;
 }
@@ -29,7 +30,7 @@ body {
 #ase-logo {
 	position: absolute;
 	right: 0px;
-	top: 0px;
+	top: 60px;
 }
 </style>
 <script type="text/javascript" src="lib/jquery.min.js"></script>
@@ -42,6 +43,7 @@ body {
 <script type="text/javascript" src="lib/bootstrap.min.js"></script>
 <script type="text/javascript" src="lib/spin.min.js"></script>
 <script type="text/javascript" src="lib/codemirror.js"></script>
+<script type="text/javascript" src="js/bootstrap.js"></script>
 <script type="text/javascript" src="js/dcaseviewer.js"></script>
 <script type="text/javascript" src="js/dnode.js"></script>
 <script type="text/javascript" src="js/dscript.js"></script>
@@ -59,6 +61,8 @@ $(function() {
 	var viewer = new DCaseViewer(document.getElementById("viewer"));
 	var menu = new SideMenu(document.body, viewer);
 
+	$(".dropdown-toggle").dropdown();
+	
 	$(".tool-new").click(function() {
 		menu.actInsertToSelectedNode();
 	});
@@ -86,6 +90,7 @@ $(function() {
 			return "未コミットの変更があります";
 		}
 	});
+
 });
 </script>
 </head>
@@ -103,67 +108,112 @@ $(function() {
 </defs>
 </svg>
 
-<div id="viewer"></div>
-<img id="ase-logo" src="img/assuranceDS.png">
+<div class="navbar navbar-inverse navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container">
+			<form class="navbar-search pull-left">
+				<div class="input-append">
+					<input type="text" class="search-query" placeholder="Search">
+					<!--<button class="btn search-btn"><i class="icon-search"></i></button>-->
+				</div>
+			</form>
+			<ul class="nav">
+				<li class="dropdown">
+					<a class="dropdown-toggle" date-toggle="dropdown" href="#">新規<b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="#">新規Argumentを作成</a></li>
+					</ul>
+				</li>
+				<li class="dropdown">
+					<a class="dropdown-toggle" date-toggle="dropdown" href="#">編集<b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="#">元に戻す</a></li>
+						<li><a href="#">やり直し</a></li>
+					</ul>
+				</li>
+				<li class="dropdown">
+					<a class="dropdown-toggle" date-toggle="dropdown" href="#">エクスポート<b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="#">JSON</a></li>
+						<li><a href="#">PNG</a></li>
+						<li><a href="#">PDF</a></li>
+					</ul>
+				</li>
+				<li><a href="#">コミット</a></li>
+				<li class="dropdown">
+					<a class="dropdown-toggle" date-toggle="dropdown" href="#">設定<b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="#">色の設定</a></li>
+					</ul>
+				</li>
 
-<div id="toolbar" style="display: none;">
-	<a href="#" class="tool-new"><i class="icon-plus"></i></a>
-	<a href="#" class="tool-remove"><i class="icon-remove"></i></a>
-	<a href="#" class="tool-play"><i class="icon-play"></i></a>
-</div>
-
-<div id="menu">
-	<div id="menu-search-i" class="menu-i" style="left: 0px;">
-		<i class="icon-search"></i>
-	</div>
-	<div id="menu-search" class="menu-box">
-		<input type="text"></input>
-		<ul style="list-style-type: none; overflow: auto;"></ul>
-	</div>
-
-	<div id="menu-export-i" class="menu-i" style="left: 40px;">
-		<i class="icon-download"></i>
-	</div>
-	<div id="menu-export" class="menu-box">
-		<input id="menu-export-json" type="button" value="export json"></input>
-		<input id="menu-export-png"  type="button" value="export png"></input>
-		<input id="menu-export-script"  type="button" value="export script"></input>
-	</div>
-
-	<div id="menu-info-i" class="menu-i" style="left: 80px;">
-		<i class="icon-info-sign"></i>
-	</div>
-	<div id="menu-info" class="menu-box">
-		<table id="menu-info-table"></table>
-	</div>
-
-	<div id="menu-tool-i" class="menu-i" style="left: 120px;">
-		<i class="icon-print"></i>
-	</div>
-	<div id="menu-tool" class="menu-box">
-	</div>
-
-	<div id="menu-proc-i" class="menu-i" style="left: 160px;">
-		<i class="icon-wrench"></i>
-	</div>
-	<div id="menu-proc" class="menu-box">
-		<input id="menu-proc-commit" type="button" value="commit"></input>
-		<input id="menu-proc-undo" type="button" value="undo"></input>
-		<input id="menu-proc-redo" type="button" value="redo"></input>
-		<input id="menu-proc-newarg" type="button" value="Argumentの新規作成"></input>
-		Arguments:<br>
-		<ul style="list-style-type: none; overflow: auto;"></ul>
+			</ul>
+		</div>
 	</div>
 </div>
 
-<div id="edit">
-	<h1>Type</h1>
-	<select></select>
-	<h1>Description</h1>
-	<textarea rows=4 cols=40></textarea><br>
-	<input id="edit-ok" type="button" value="OK"></input>
-	<input id="edit-cancel"type="button" value="Cancel"></input>
+<div class="container">
+	<div id="viewer"></div>
+	<img id="ase-logo" src="img/assuranceDS.png">
+	
+	<div id="toolbar" style="display: none;">
+		<a href="#" class="tool-new"><i class="icon-plus"></i></a>
+		<a href="#" class="tool-remove"><i class="icon-remove"></i></a>
+		<a href="#" class="tool-play"><i class="icon-play"></i></a>
+	</div>
+	<!--
+	<div id="menu">
+		<div id="menu-search-i" class="menu-i" style="left: 0px;">
+			<i class="icon-search"></i>
+		</div>
+		<div id="menu-search" class="menu-box">
+			<input type="text"></input>
+			<ul style="list-style-type: none; overflow: auto;"></ul>
+		</div>
+	
+		<div id="menu-export-i" class="menu-i" style="left: 40px;">
+			<i class="icon-download"></i>
+		</div>
+		<div id="menu-export" class="menu-box">
+			<input id="menu-export-json" type="button" value="export json"></input>
+			<input id="menu-export-png"  type="button" value="export png"></input>
+			<input id="menu-export-script"  type="button" value="export script"></input>
+		</div>
+	
+		<div id="menu-info-i" class="menu-i" style="left: 80px;">
+			<i class="icon-info-sign"></i>
+		</div>
+		<div id="menu-info" class="menu-box">
+			<table id="menu-info-table"></table>
+		</div>
+	
+		<div id="menu-tool-i" class="menu-i" style="left: 120px;">
+			<i class="icon-print"></i>
+		</div>
+		<div id="menu-tool" class="menu-box">
+		</div>
+	
+		<div id="menu-proc-i" class="menu-i" style="left: 160px;">
+			<i class="icon-wrench"></i>
+		</div>
+		<div id="menu-proc" class="menu-box">
+			<input id="menu-proc-commit" type="button" value="commit"></input>
+			<input id="menu-proc-undo" type="button" value="undo"></input>
+			<input id="menu-proc-redo" type="button" value="redo"></input>
+			<input id="menu-proc-newarg" type="button" value="Argumentの新規作成"></input>
+			Arguments:<br>
+			<ul style="list-style-type: none; overflow: auto;"></ul>
+		</div>
+	</div>
+	-->
+	<div id="edit">
+		<h1>Type</h1>
+		<select></select>
+		<h1>Description</h1>
+		<textarea rows=4 cols=40></textarea><br>
+		<input id="edit-ok" type="button" value="OK"></input>
+		<input id="edit-cancel"type="button" value="Cancel"></input>
+	</div>
 </div>
-
 </body>
 </html>
