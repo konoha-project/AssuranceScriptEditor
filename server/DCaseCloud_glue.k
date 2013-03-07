@@ -101,14 +101,15 @@ class DCaseModel {
 		p.execute();
 	}
 
-	@Public int Commit(Json tree, int prev_id, int user_id) {
+	@Public int Commit(Json tree, int prev_id, int user_id, String message) {
 		int argument_id = this.getArgumentId(prev_id);
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`, `user_id`) VALUES(?,?,?,TRUE,?,?)");
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`, `user_id`, `message`) VALUES(?,?,?,TRUE,?,?,?)");
 		p.setString("@a",tree.toString());
-		p.setInt("@b",new Date().getTime());
-		p.setInt("@c",prev_id);
-		p.setInt("@d",argument_id);
-		p.setInt("@e",user_id);
+		p.setInt("@b"   , new Date().getTime());
+		p.setInt("@c"   , prev_id);
+		p.setInt("@d"   , argument_id);
+		p.setInt("@e"   , user_id);
+		p.setString("@f", message);
 		p.execute();
 		this.updatePrev(prev_id);
 		return p.getInsertId();
@@ -179,7 +180,16 @@ class DCaseModel {
 		return ret;
 	}
 
-	@Public int[] getCommitList(int commitId) {
+	int getLatestCommit(int argument_id) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE argument_id=? AND latest_flag=TRUE");
+		p.setInt("@a",argument_id);
+		ResultSet r = p.execute();
+		r.next()
+		return r.getInt("idCommit");
+	}
+
+	@Public int[] getCommitList(int argumentId) {
+		int commitId = this.getLatestCommit(argumentId);
 		int[] ret = [];
 		int id = commitId;
 		ret.add(id);

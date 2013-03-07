@@ -43,6 +43,7 @@ CREATE  TABLE IF NOT EXISTS `dcase`.`Commit` (
   `DateTime` BIGINT NULL DEFAULT NULL ,
   `prev_commit_id` INT NULL DEFAULT NULL ,
   `latest_flag` TINYINT(1) NULL DEFAULT TRUE ,
+  `message` TEXT NULL ,
   `argument_id` INT NOT NULL ,
   `user_id` INT NOT NULL ,
   PRIMARY KEY (`idCommit`) ,

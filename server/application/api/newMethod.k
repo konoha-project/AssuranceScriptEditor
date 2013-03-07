@@ -89,8 +89,8 @@ void createTopGoal (Json request) {
 }
 
 void getCommitList (Json request) {
-	int commitId = request.getInt("commitId");
-	int[] commitIdList = global.model.GetCommitList(commitId);
+	int argumentId = request.getInt("argumentId");
+	int[] commitIdList = global.model.GetCommitList(argumentId);
 	Json res = new Json();
 	res.set("commitIdList", ConvertFromIntList(commitIdList));
 	Json response = createMessage(res);
