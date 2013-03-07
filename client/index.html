@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D-CASE VIEWER</title>
+<link rel="stylesheet" type="text/css" href="lib/codemirror.css"/>
+<link rel="stylesheet" type="text/css" href="lib/jquery.svg.css"/>
+<link rel="stylesheet" type="text/css" href="lib/bootstrap.icons.css"/>
+<link rel="stylesheet" type="text/css" href="css/dcase-node.css"/>
+<link rel="stylesheet" type="text/css" href="css/viewer.css"/>
+<link rel="stylesheet" type="text/css" href="css/sidemenu.css"/>
+<link rel="stylesheet" type="text/css" href="css/edit.css"/>
+<link rel="stylesheet" type="text/css" href="css/timeline.css"/>
+<style>
+body {
+	min-height: 480px;
+	margin: 0px;
+}
+#viewer {
+	left: 0px;
+	top : 0px;
+	width : 100%;
+	height: 100%;
+}
+#ase-logo {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+}
+</style>
+<script type="text/javascript" src="lib/jquery.min.js"></script>
+<script type="text/javascript" src="lib/jquery.mousewheel.min.js"></script>
+<script type="text/javascript" src="lib/jquery.svg.min.js"></script>
+<script type="text/javascript" src="lib/jquery.svganim.min.js"></script>
+<script type="text/javascript" src="lib/codemirror.js"></script>
+<script type="text/javascript" src="js/dcaseviewer.js"></script>
+<script type="text/javascript" src="js/dnode.js"></script>
+<script type="text/javascript" src="js/dscript.js"></script>
+<script type="text/javascript" src="js/gsnshape.js"></script>
+<script type="text/javascript" src="js/handler.js"></script>
+<script type="text/javascript" src="js/edit.js"></script>
+<script type="text/javascript" src="js/timeline.js"></script>
+<script type="text/javascript" src="js/sidemenu.js"></script>
+<script type="text/javascript" src="js/api.js"></script>
+<script type="text/javascript" src="js/animation.js"></script>
+<script type="text/javascript" src="js/operation.js"></script>
+<script type="text/javascript">
+
+$(function() {
+	var viewer = new DCaseViewer(document.getElementById("viewer"));
+	var menu = new SideMenu(document.body, viewer);
+
+	$(".tool-new").click(function() {
+		menu.actInsertToSelectedNode();
+	});
+	$(".tool-edit").click(function() {
+		menu.actEditSelectedNode();
+	});
+	$(".tool-remove").click(function() {
+		menu.actRemoveSelectedNode();
+	});
+
+	$(".tool-play").click(function() {
+		var v = viewer.getSelectedNode();
+		viewer.showDScriptExecuteWindow(v.node.getDScriptNameInEvidence());
+	});
+
+	// hide url bar for ipod touch
+	setTimeout(function(){
+		window.scrollTo(0, 0);
+	}, 0);
+
+	// move page
+	$(window).bind("beforeunload", function(e) {
+		var a = viewer.getArgument();
+		if(a != null && a.isChanged()) {
+			return "未コミットの変更があります";
+		}
+	});
+});
+</script>
+</head>
+<body>
+<svg width="0" height="0">
+<defs>
+	<marker id="Triangle-black" viewBox="0 0 10 10" refX="10" refY="5"
+		markerUnits="strokeWidth" markerWidth="15" markerHeight="9" orient="auto">
+		<path d="M 0 0 L 10 5 L 0 10 z" fill="gray" stroke="gray"/>
+	</marker>
+	<marker id="Triangle-white" viewBox="0 0 10 10" refX="10" refY="5"
+		markerUnits="strokeWidth" markerWidth="15" markerHeight="9" orient="auto">
+		<path d="M 0 0 L 10 5 L 0 10 z" fill="white" stroke="gray"/>
+	</marker>
+</defs>
+</svg>
+
+<div id="viewer"></div>
+<img id="ase-logo" src="img/assuranceDS.png">
+
+<div id="toolbar" style="display: none;">
+	<a href="#" class="tool-new"><i class="icon-plus"></i></a>
+	<a href="#" class="tool-remove"><i class="icon-remove"></i></a>
+	<a href="#" class="tool-play"><i class="icon-play"></i></a>
+</div>
+
+<div id="menu">
+	<div id="menu-search-i" class="menu-i" style="left: 0px;">
+		<i class="icon-search"></i>
+	</div>
+	<div id="menu-search" class="menu-box">
+		<input type="text"></input>
+		<ul style="list-style-type: none; overflow: auto;"></ul>
+	</div>
+
+	<div id="menu-export-i" class="menu-i" style="left: 40px;">
+		<i class="icon-download"></i>
+	</div>
+	<div id="menu-export" class="menu-box">
+		<input id="menu-export-json" type="button" value="export json"></input>
+		<input id="menu-export-png"  type="button" value="export png"></input>
+		<input id="menu-export-script"  type="button" value="export script"></input>
+	</div>
+
+	<div id="menu-info-i" class="menu-i" style="left: 80px;">
+		<i class="icon-info-sign"></i>
+	</div>
+	<div id="menu-info" class="menu-box">
+		<table id="menu-info-table"></table>
+	</div>
+
+	<div id="menu-tool-i" class="menu-i" style="left: 120px;">
+		<i class="icon-print"></i>
+	</div>
+	<div id="menu-tool" class="menu-box">
+	</div>
+
+	<div id="menu-proc-i" class="menu-i" style="left: 160px;">
+		<i class="icon-wrench"></i>
+	</div>
+	<div id="menu-proc" class="menu-box">
+		<input id="menu-proc-commit" type="button" value="commit"></input>
+		<input id="menu-proc-undo" type="button" value="undo"></input>
+		<input id="menu-proc-redo" type="button" value="redo"></input>
+		<input id="menu-proc-newarg" type="button" value="Argumentの新規作成"></input>
+		Arguments:<br>
+		<ul style="list-style-type: none; overflow: auto;"></ul>
+	</div>
+</div>
+
+<div id="edit">
+	<h1>Type</h1>
+	<select></select>
+	<h1>Description</h1>
+	<textarea rows=4 cols=40></textarea><br>
+	<input id="edit-ok" type="button" value="OK"></input>
+	<input id="edit-cancel"type="button" value="Cancel"></input>
+</div>
+
+</body>
+</html>

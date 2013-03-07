@@ -1,14 +1,7 @@
-#ase_logo {
-	position: absolute;
-	padding-top: 5px;
-	left: 250px;
-	z-index: 300;
-}
-
 .menu-i {
 	position: absolute;
 	left: 24px;
-	top : 15px;
+	top : 0px;
 	width : 40px;
 	height: 40px;
 	background: #CCC;
@@ -17,48 +10,8 @@
 	text-align: center;
 }
 
-.menu-i-undeveloped {
-	position: absolute;
-	left: 24px;
-	top : 15px;
-	width : 40px;
-	height: 40px;
-	background: #EFEFEF;
-	opacity: 0.8;
-	border-radius: 4px;
-	text-align: center;
-}
-
-.menu-i i{
-	position: relative;
-	top : 4px;
-}
-
-.menu-i-undeveloped i{
-	position: relative;
-	top : 4px;
-	opacity: 0.5
-}
-
-#menu-search .input-append{
-	padding-left: 5px;
-}
-
-#menu-search .input-append i{
-	position: absolute;
-	top: 30px;
-	left: 20px;
-	z-index: 100;
-}
-#menu-search .input-append input.span {
-	height: 18px;
-	width: 110px;
-	border-radius: 14px 0 0 14px;
-	padding-left: 30px;
-}
-
-#menu-search .input-append .btn {
-	border-radius: 0 14px 14px 0;
+#menu-search input {
+	width: 90%;
 }
 
 .menu-i:hover {
@@ -69,8 +22,8 @@
 	position: absolute;
 	display: none;
 	left: 0px;
-	top: 55px;
-	width: 232px;
+	top: 40px;
+	width: 192px;
 	bottom: 0px;
 	background: #EEE;
 	padding: 4px;
@@ -82,8 +35,8 @@
 }
 
 .sidemenu-result {
-	list-style-type: decimal;
-	margin-left: 1.5em;
+	list-style-type: none;
+	height: 0.8cm;
 	position: relative;
 }
 
@@ -94,31 +47,4 @@
 ul.sidemenu-result li ul {
 	margin: 0 0 0 0.3em;
 	padding 0;
-}
-
-p.legend {
-	margin-bottom: 1em;
-}
-
-p.legend em {
-	color: #C00;
-	font-style: normal;
-}
-
-div#menu-color div.controlset {
-	display: block;
-	float: left;
-	width: 100%;
-	padding: 0.25em 0;
-}
-
-div#menu-color div.controlset label,
-div#menu-color div.controlset input,
-div#menu-color div.controlset div {
-	display: inline;
-	float: left;
-}
-
-div#menu-color div.controlset label {
-	width: 100px;
 }

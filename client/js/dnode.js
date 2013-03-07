@@ -1,167 +1,283 @@
-/* class DNode */
-var DNode = (function() {
-    function DNode(id, name, type, text) {
-        this.id = id;
-        this.name = name;
-        this.text = text;
-        this.type = type;
-        this.children = [];
-        this.context = null;
-        this.parents = [];
-        this.prevVersion = null;
-        this.nextVersion = null;
-    }
-    DNode.prototype.addChild = function(node) {
-        if (node.type != 'Context' && node.type != 'Subject') {
-            this.children.push(node);
-        } else {
-            this.context = node;
-        }
-        node.parents.push(this);
-    };
+//-----------------------------------------------------------------------------
 
-    DNode.prototype.removeChild = function(node) {
-        if (this.context == node) {
-            this.context = null;
-        } else {
-            var n = this.children.indexOf(node);
-            this.children.splice(n, 1);
-        }
-    };
+var DNode = function(id, name, type, desc) {
+	this.id = id;
+	this.name = name;
+	this.desc = desc;
+	this.type = type;
+	this.children = [];
+	this.context = null;
+	this.parents = [];
+	this.prevVersion = null;
+	this.nextVersion = null;
 
-    DNode.prototype.isArgument = function() {
-        return this.context != null && (this.type == 'Goal' || this.type == 'TopGoal');
-    };
+	this.updateFlags();
+	if(type == "Solution") {
+		this.isDScript = true;
+	}
+	if(type == "Context" || type == "Subject" || type == "Rebuttal") {
+		this.isContext = true;
+	}
+};
 
-    DNode.prototype.isUndevelop = function() {
-        return this.children.length == 0 && (this.type == 'Goal' || this.type == 'TopGoal');
-    };
+DNode.prototype.isContext = false;
+DNode.prototype.isArgument = false;
+DNode.prototype.isUndeveloped = false;
+DNode.prototype.isDScript = false;
 
-    DNode.NODE_TYPES = [
-        'Goal',
-        'TopGoal', /* TopGoal <: Goal */
-        'Strategy',
-        'Context',
-        'Evidence',
-        'Subject',
-        'Solution',
-        'Rebuttal',
-    ];
+//-----------------------------------------------------------------------------
 
-    function NodeTemplate(name) {
-        this.name = name;
-        this.children = [];
-    }
-    for (var i = 0; i < DNode.NODE_TYPES.length; i++) {
-        var type = DNode.NODE_TYPES[i];
-        DNode[type] = new NodeTemplate(type);
-    };
-    DNode.TopGoal.children = [
-        DNode.Subject,
-        DNode.Strategy,
-        DNode.Context,
-        DNode.Evidence,
-        DNode.Solution
-    ];
-    DNode.Goal.children = [
-        DNode.Strategy,
-        DNode.Context,
-        DNode.Goal,
-        DNode.Evidence,
-        DNode.Solution
-    ];
-    DNode.Strategy.children = [
-        DNode.Context,
-        DNode.Goal
-    ];
-    DNode.Evidence.children = [
-        DNode.Rebuttal
-    ];
-    DNode.Solution.children = [
-        DNode.Rebuttal
-    ];
-    //-------------------------------------
-    DNode.prototype.isDScript = function() {
-        return this.type == 'Solution';
-    };
-    return DNode;
-})();
+DNode.prototype.getNodeCount = function() {
+	return this.children.length + (this.context != null ? 1 : 0);
+};
 
-//-------------------------------------
-function createNodeFromURL(url) {
-    var a = $.ajax({
-        url: url,
-        type: 'GET',
-        async: false,
-        dataType: 'json'
-    });
-    return createNodeFromJson(JSON.parse(a.responseText));
-}
+DNode.prototype.eachNode = function(f) {
+	$.each(this.children, function(i, node) {
+		f(node);
+	});
+	if(this.context != null) {
+		f(this.context);
+	}
+};
 
-function contextParams(params) {
-    var s = '';
-    for (key in params) {
-        s += '@' + key + ' : ' + params[key] + '\n';
-    }
-    return s;
-}
+DNode.prototype.traverse = function(f, parent, index) {
+	f(this, parent, index);
+	var self = this;
+	$.each(this.children, function(i, node) {
+		node.traverse(f, self, i);
+	});
+	if(this.context != null) {
+		f(this.context);
+	}
+};
 
-function createNodeFromJson(json) {
-    var nodes = {};
-    for (var i = 0; i < json.Tree.NodeList.length; i++) {
-        var c = json.Tree.NodeList[i];
-        nodes[c.ThisNodeId] = c;
-    }
-    function createChildren(node, l) {
-        var childs = l.Children;
-        for (var i = 0; i < childs.length; i++) {
-            var ThisId = childs[i];
-            var n = nodes[ThisId];
-            n.Name = n.NodeType.charAt(0) + n.ThisNodeId;
-            var desc = n.Description ? n.Description : contextParams(n.Properties);
-            var newNode = new DNode(n.ThisNodeId, n.Name, n.NodeType, desc);
-            node.addChild(newNode);
-            createChildren(newNode, n);
-        }
-    }
-    var n = nodes[json.Tree.TopGoalId];
-    if (n == undefined) {
-        throw "error: no top goal";
-    }
-    var topNode = new DNode(json.Tree.TopGoalId, 'TopGoal', n.NodeType, n.Description);
-    createChildren(topNode, n);
-    return topNode;
- }
+//-----------------------------------------------------------------------------
 
-function createBinNode(n) {
-    if (n > 0) {
-        var node = new DNode(0, 'Goal', 'Goal', 'description');
-        node.addChild(createBinNode(n - 1));
-        node.addChild(createBinNode(n - 1));
-        return node;
-    } else {
-        return new DNode(0, 'Goal', 'Goal', 'description');
-    }
-}
+DNode.prototype.addChild = function(node, index) {
+	// TODO index
+	if(!node.isContext) {
+		this.children.push(node);
+	} else {
+		this.context = node;
+	}
+	node.parents.push(this);
+	this.updateFlags();
+};
 
-var id_count = 1; // ?
+DNode.prototype.removeChild = function(node) {
+	if(this.context == node) {
+		this.context = null;
+	} else {
+		var n = this.children.indexOf(node);
+		if(n != -1) {
+			this.children.splice(n, 1);
+		}
+	}
+	this.updateFlags();
+};
 
-function initViewer(id) {
-    $('#timeline').empty();
-    $(DCase_Viewer.root)
-        .empty()
-        .append(DCase_Viewer.svgroot)
-        .append('<div id="timeline"></div>');
-    var node = getNodeFromServer(id);
-    var opts = {
-        argument_id: id
-    };
-    console.log(node);
-    DCase_Viewer.opts = opts;
-    DCase_Viewer.setModel(node);
-    $('#timeline').css('visibility', 'hidden');
-    $('#timeline-control').css('visibility', 'hidden');
-    DCase_Viewer.createTimeline('timeline');
-    $('#timeline-control').trigger('click');
-    console.log(DCase_Viewer.rootview);
-}
+DNode.prototype.updateFlags = function() {
+	if(this.type == "Goal") {
+		this.isArgument = this.context != null;
+		this.isUndeveloped = this.children.length == 0;
+	}
+};
+
+DNode.prototype.getHtmlDescription = function() {
+	if(this.desc == "") {
+		return "<font color=\"gray\">(no description)</font>";
+	} else {
+		return this.desc
+			.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+			.replace(/\n/g, "<br>");
+	}
+};
+
+DNode.prototype.toJson = function() {
+	var children = [];
+	this.eachNode(function(node) {
+		children.push(node.toJson());
+	});
+	return {
+		id: this.id,
+		name: this.name,
+		type: this.type,
+		description: this.desc,
+		children: children
+	};
+};
+
+//-----------------------------------------------------------------------------
+
+DNode.TYPES = [
+	"Goal", "Context", "Subject",
+	"Strategy", "Evidence", "Solution", "Rebuttal"
+];
+
+DNode.SELECTABLE_TYPES = {
+	"Goal": [ "Goal", "Context", "Subject", "Strategy", "Evidence", "Solution" ],
+	"Context": [],
+	"Subject": [],
+	"Strategy": [ "Context", "Goal" ],
+	"Evidence": [ "Rebuttal" ],
+	"Solution": [ "Context", "Rebuttal" ],
+	"Rebuttal": [],
+};
+
+//-----------------------------------------------------------------------------
+
+var Argument = function(topGoal, argId, commitId) {
+	this.node = topGoal;
+	this.commitId = commitId;
+	this.argId = argId;
+	this.opQueue = [];
+	this.undoCount = 0;
+};
+
+Argument.prototype.isChanged = function() {
+	return this.opQueue.length - this.undoCount > 0;
+};
+
+Argument.prototype.getCommitList = function() {
+	var list = DCaseAPI.call("getCommitList", { commitId: this.commitId });
+	return list.commitIdList;
+};
+
+Argument.prototype.undo = function() {
+	var n = this.opQueue.length;
+	if(n > this.undoCount) {
+		this.undoCount++;
+		var op = this.opQueue[n - this.undoCount];
+		op.undo();
+		return true;
+	} else {
+		return false;
+	}
+};
+
+Argument.prototype.redo = function() {
+	if(this.undoCount > 0) {
+		var op = this.opQueue[this.opQueue.length - this.undoCount];
+		this.undoCount--;
+		op.redo();
+		return true;
+	} else {
+		return false;
+	}
+};
+
+Argument.prototype.applyOperation = function(op) {
+	this.opQueue.push(op);
+	this.undoCount = 0;
+	op.redo();
+};
+
+Argument.prototype.commit = function(msg) {
+	var tl = [];
+	var id = 1;
+	var node = this.node;
+	node.traverse(function(node) {//FIXME
+		node.id = id++;
+	});
+	node.traverse(function(node) {
+		var c = [];
+		node.eachNode(function(node) {
+			c.push(node.id);
+		});
+		tl.push({
+			ThisNodeId: node.id,
+			NodeType: node.type,
+			Description: node.desc,
+			Children: c,
+		});
+	});
+	var r = DCaseAPI.call("commit", {
+		tree: {
+			NodeList: tl,
+			TopGoalId: node.id,
+		},
+		message: msg,
+		commitId: this.commitId,
+	});
+	this.commitId = r.commitId;
+	this.undoCount = 0;
+	this.opQueue = [];
+	return true;
+};
+
+Argument.prototype.getTopGoal = function() {
+	return this.node;
+};
+
+///var id_count = 1;
+//function createNodeFromJson2(json) {
+//	var id = json.id != null ? parseInt(json.id) : id_count++;
+//	var desc = json.desc ? json.desc : contextParams(json.prop);
+//	var node = new DNode(0, json.name, json.type, desc);
+//	if(json.prev != null) {
+//		node.prevVersion = createNodeFromJson2(json.prev);
+//		node.prevVersion.nextVersion = node;
+//	}
+//	if(json.children != null) {
+//		for(var i=0; i<json.children.length; i++) {
+//			var child = createNodeFromJson2(json.children[i]);
+//			node.addChild(child);
+//		}
+//	}
+//	return node;
+//}
+//
+//function createSampleNode() {
+//	var strategy_children = [
+//		{
+//			name: "SubGoal 1", type: "Goal", desc: "description",
+//			children: [ 
+//				{ name: "C", type: "Subject", prop: { "D-Script.Name": "test" } },
+//				{ name: "test", type: "Goal", desc: "goal1" },
+//				{ name: "test", type: "Goal", desc: "goal2" }
+//			]
+//		},
+//		{
+//			name: "SubGoal 2", type: "Goal", desc: "description",
+//			children: [
+//				{ name: "Context 2", type: "Context", desc: "" }
+//			],
+//			prev: { name: "SubGoal 2 old", type: "Goal", desc: "old version" }
+//		},
+//		{
+//			name: "SubGoal 3", type: "Goal", desc: "description",
+//			children: [
+//				{ name: "Context 3.1", type: "Context", desc: "description" },
+//				{ name: "SubGoal 3.1", type: "Goal", desc: "description" },
+//				{ name: "SubGoal 3.2", type: "Goal", desc: "description", 
+//					children: [ {
+//						name: "D-Script", type: "DScript", desc: "shutdown -r now",
+//						children: [ { name: "R", type: "Rebuttal", desc: "error" } ],
+//					} ] },
+//				{ name: "SubGoal 3.3", type: "Goal", desc: "description" },
+//				{ name: "SubGoal 3.3", type: "Goal", desc: "description" },
+//			]
+//		},
+//		{ name: "SubGoal 4", type: "Goal", desc: "description" }
+//	];
+//	return createNodeFromJson2({
+//		name: "TopGoal", type: "Goal",
+//		desc: "ウェブショッピングデモ\n" +
+//					"システムはDEOSプロセスにより運用され，OSDを満たしている",
+//		children: [
+//			{
+//				name: "Context",
+//				type: "Context",
+//				desc: "サービス用件:\n" +
+//							"・アクセス数の定格は2500件/分\n" +
+//							"・応答時間は1件あたり3秒以内\n" +
+//							"・一回の障害あたりの復旧時間は5分以内\n"
+//			},
+//			{
+//				name: "Strategy", type: "Strategy", desc: "DEOSプロセスによって議論する",
+//				children: strategy_children
+//			}
+//		]
+//	});
+//}
+

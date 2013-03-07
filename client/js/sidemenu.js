@@ -1,278 +1,243 @@
-var SideMenu = (function(root, viewer) {
-    var width = 200;
-    var animeTime = 250;
-    var self = this;
+var SideMenu = function(root, viewer) {
+	var self = this;
+	var timeline = new TimeLine(root, viewer);
 
-    //--------------------------------------------------------
+	//--------------------------------------------------------
 
-    this.actChangeLock = function() {
-        var flag = !viewer.getDragLock();
-        viewer.setDragLock(flag);
-        this.value = flag ? 'lock' : 'unlock';
-        viewer.setTextSelectable(!flag);
-    };
+	this.actInsertToSelectedNode = function() {
+		var view = viewer.getSelectedNode();
+		if(view != null) {
+			var sel = DNode.SELECTABLE_TYPES[view.node.type];
+			DNodeEditWindow.open(null, sel, function(newNode) {
+				var op = new InsertOperation(view.node, newNode);
+				viewer.getArgument().applyOperation(op);
+				viewer.structureUpdated();
+			});
+		}
+	}
 
-    this.actEditSelectedNode = function() {
-        var view = viewer.getSelectedNode();
-        if (view != null) {
-            DNodeEditWindow.open(view.node, view.node, function(node) {
-                viewer.setModel(viewer.model);
-                var r = DCaseAPI.update({
-                    argument_id: viewer.opts.argument_id,
-                    node_id: node.id,
-                    description: node.text
-                });
-            });
-        }
-    };
+	this.actRemoveSelectedNode = function() {
+		var view = viewer.getSelectedNode();
+		if(view != null) {
+			var parents = view.node.parents;
+			if(parents.length > 0) {
+				if(confirm("ノードを削除しますか？")) {
+					var op = new RemoveOperation(parents[0], view.node);
+					viewer.getArgument().applyOperation(op);
+					viewer.structureUpdated();
+				}
+			}
+		}
+	}
 
-    this.actInsertToSelectedNode = function() {
-        console.log(viewer.tmp_id);
-        var view = viewer.getSelectedNode();
-        if (view != null) {
-            DNodeEditWindow.open(null, view.node, function(newNode) {
-                view.node.addChild(newNode);
-                viewer.setModel(viewer.model);
-                DCaseAPI.insert({
-                        NodeType: newNode.type,
-                        ThisNodeId: viewer.tmp_id,
-                        Description: newNode.text,
-                        BelongedArgumentId: viewer.opts.argument_id,
-                        ParentNodeId: view.node.id,
-                        Children: []
-                });
-            });
-            viewer.tmp_id -= 1;
-        }
-    };
+	this.show = function(m) {
+		var ids = [
+			"#menu-search",
+			"#menu-export",
+			"#menu-info",
+			"#menu-tool",
+			"#menu-proc"
+		];
+		$.each(ids, function(i, id) {
+			if(m == id) $(id).toggle();
+			else $(id).hide();
+		});
+	}
 
-    this.actRemoveSelectedNode = function() {
-        var view = viewer.getSelectedNode();
-        if (view != null) {
-            if (confirm('ノードを削除しますか？')) {
-                var parent = view.node.parents;
-                if (parent.length > 0) {
-                    parent[0].removeChild(view.node);
-                    viewer.setModel(viewer.model);
-                    DCaseAPI.del({
-                        BelongedArgumentId: viewer.opts.argument_id,
-                        NodeId: view.node.id
-                    });
-                }
-            }
-        }
-    };
+	//--------------------------------------------------------
+	var $search = $("#menu-search-i")
+			.click(function(e) {
+				self.show("#menu-search");
+				$("#menu-search input").focus();
+			})
+			.appendTo(root);
 
-    function ExportTree(DumpType, NodeId) {
-        var url = CONFIG.view_cgi + '?' + NodeId + '.' + DumpType;
-        window.open(url, '_blank');
-    }
+	$("#menu-search input").blur(function(e) {
+		clearInterval(this.interval_id);
+		delete this.interval_id;
+	}).keydown(function (e) {
+		if (e.keyCode == 13) { // Enter key
+			var i = this;
+			var r = DCaseAPI.search(i.value);
+			self.search_inc(i.value);
+		}
+	});
 
-    function GetArgumentId(viewer) {
-        /*FIXME(ide) get subtree's argument id*/
-        return viewer.opts.argument_id;
-    }
+	this.search = function(text) {
+		var $res = $("#menu-search ul");
+		$res.empty();
+		text = text.toLowerCase();
+		function getPreviewText(target, text) { // [TODO] add color
+			var index = target.toLowerCase().indexOf(text);
+			var ret = target.substr(0, index) +
+				"<b>" + target.substr(index, text.length) +
+				"</b>" + target.substr(index + text.length)
+			return ret;
+		};
+		function showResult($res, v, name, desc) {
+			$("<ul>")
+					.addClass("sidemenu-result")
+					.html("<li>" + name + "</li>")
+					//.html("<li>" + name + "<ul>" + desc + "</ul></li>")
+					.click(function() {
+						viewer.centerize(v, 500);
+					})
+					.appendTo($res);
+		};
+		function cmp(v) {
+			var name = v.node.name;
+			var desc = v.node.text;
+			var d_index = desc.toLowerCase().indexOf(text);
+			var n_index = name.toLowerCase().indexOf(text);
+			if(d_index != -1 || n_index != -1) {
+				var ptext = getPreviewText(desc, text);
+				showResult($res, v, name, ptext);
+			}
+			v.forEachNode(cmp);
+		}
+		cmp(viewer.rootview);
+	}
 
-    this.actExportJson = function() {
-        ExportTree('json', GetArgumentId(viewer));
-    };
+	var prev_isesarch = "";
+	this.search_inc = function(text) {
+		if(text !== prev_isesarch) {
+			this.search(text);
+		}
+		prev_isesarch = text;
+	}
 
-    this.actExportPng = function() {
-        ExportTree(/*FIXME(ide)*/'dot', GetArgumentId(viewer));
-    };
+	// init search list
+	//this.search("");
 
-    this.actExportDScript = function() {
-        ExportTree('dscript', GetArgumentId(viewer));
-    };
+	//--------------------------------------------------------
+	var $export = $("#menu-export-i")
+			.click(function(e) {
+				self.show("#menu-export");
+			})
+			.appendTo(root);
 
-    this.actCommit = function() {
-        var msg = prompt('コミットメッセージを入力して下さい');
-        if (msg != null) {
-            console.log(viewer.model);
-            DCaseAPI.commit(msg, viewer.opts.argument_id);
-        }
-    };
+	var URL_EXPORT = "cgi/view.cgi";
 
-    this.show = function(m) {
-        var ids = [
-            '#menu-search',
-            '#menu-export',
-            '#menu-create',
-            '#menu-tool',
-            '#menu-color'
-        ];
-        $.each(ids, function(i, id) {
-            if (m == id) $(id).toggle();
-            else $(id).hide();
-        });
-    };
+	this.exportTree = function(type) {
+		var commitId = viewer.getArgument().commitId;
+		var url = URL_EXPORT + "?" + commitId + "." + type;
+		window.open(url, "_black");
+	};
 
-    //--------------------------------------------------------
-    var $search = $('#menu-search-i')
-            .click(function(e) {
-                self.show('#menu-search');
-                $('#menu-search input').focus();
-            })
-            .appendTo(root);
+	$("#menu-export-json").click(function() {
+		self.exportTree("json");
+	});
 
-    $('#menu-search input').keydown(function(e) {
-        if (e.keyCode == 13) { // Enter key
-            if (this.value == "") return;
-            var r = DCaseAPI.search({
-                SearchText: this.value
-            });
-            self.showSearchResult(r);
-        }
-    });
-    $('#search-button').click(function(e) {
-       var value = $('#menu-search input').val();
-       if (value == "") return;
-       var r = DCaseAPI.search({
-           SearchText: value
-       });
-       self.showSearchResult(r);
-    });
+	$("#menu-export-png").click(function() {
+		self.exportTree("png");
+	});
 
-    this.showSearchResult = function(result) {
-        var $field = $('#menu-search ul');
-        var $icon = $('#menu-search .input-append i');
-        $icon.hide();
-        $('#menu-search .input-append i').hide();
-        var spin = new DCaseSpinner($('#menu-search .input-append'));
-        spin.start({top: -14, left: 15});
-        $field.addClass('unstyled');
-        $field.empty();
-        for (var i = 0; i < result.NodeIdList.length; i++) {
-            var r = DCaseAPI.call('getNode', {NodeId: result.NodeIdList[i]});
-            // vvv FIXME it is adhock
-            var res1 = DCaseAPI.call("getNodeTree", {
-                BelongedArgumentId: r.Node.BelongedArgumentId
-            });
-            try {
-                var node = createNodeFromJson(res1);
-                showResult($field, r);
-            } catch(e) {
-                console.log(e + ': ' + r.Node.Description);
-            }
-            finally {
-            }
-            // ^^^ FIXME it is adhock
+	$("#menu-export-script").click(function() {
+		self.exportTree("dscript");
+	});
 
-        }
-        function showResult($field, result) {
-            $('<li>' + result.Node.Description + '</li>')
-                .addClass('sidemenu-result')
-                .click(function() {
-                    initViewer(result.Node.BelongedArgumentId);
-                    //viewer.centerize(v, 500);
-                })
-                .appendTo($field);
-        };
-        spin.stop();
-        $icon.show();
-        if ($field.children().length <= 0) {
-            $('<li>一致するノードが見つかりませんでした</li>').appendTo($field);
-        }
-    };
-    //--------------------------------------------------------
-    var $export = $('#menu-export-i')
-            .click(function(e) {
-                self.show('#menu-export');
-            })
-            .appendTo(root);
+	//--------------------------------------------------------
+	var $info = $("#menu-info-i")
+			.click(function(e) {
+				self.show("#menu-info");
+			})
+			.appendTo(root);
+	
+	//(function() {
+	//	var types = DNode.TYPES;
+	//	var count = {};
+	//	for(var i=0; i<types.length; i++) {
+	//		count[types[i]] = 0;
+	//	}
+	//	viewer.traverseAll(function(node) {
+	//		count[node.type] += 1;
+	//	});
+	//	var $table = $("#menu-info-table");
+	//	for(var i=0; i<types.length; i++) {
+	//		var name = types[i];
+	//		$("<tr></tr>")
+	//			.append($("<td></td>").html(name))
+	//			.append($("<td></td>").html(count[name]))
+	//			.appendTo($table);
+	//	}
+	//})();
 
-    $('#menu-export-json').click(function() {
-        self.actExportJson();
-    });
+	//--------------------------------------------------------
+	var $proc = $("#menu-proc-i")
+			.click(function(e) {
+				self.show("#menu-proc");
+			})
+			.appendTo(root);
 
-    $('#menu-export-png').click(function() {
-        self.actExportPng();
-    });
+	//--------------------------------------------------------
+	var $tool = $("#menu-tool-i")
+			.click(function(e) {
+				self.show("#menu-tool");
+			})
+			.appendTo(root);
 
-    $('#menu-export-dscript').click(function() {
-        self.actExportDScript();
-    });
+	function checkCommited() {
+		var arg = viewer.getArgument();
+		if(arg != null && arg.isChanged()) {
+			if(!confirm("未コミットの変更がありますが，破棄しますか?")) {
+				return false;
+			}
+		}
+		return true;
+	}
 
+	function updateArgumentList() {
+		var $res = $("#menu-proc ul");
+		$res.empty();
+		$.each(DCaseAPI.getArgumentList(), function(i, arg) {
+			$.each(DCaseAPI.getBranchList(arg), function(i, br) {
+				$("<li>")
+					.addClass("sidemenu-result")
+					.html(br)
+					.click(function() {
+						if(checkCommited()) {
+							viewer.setArgument(DCaseAPI.getArgument(arg, br));
+							timeline.repaint();
+						}
+					})
+					.appendTo($res);
+			});
+			$("<hr>").appendTo($res);
+		});
+	}
+	updateArgumentList();
 
-    //--------------------------------------------------------
-    var $create = $('#menu-create-i')
-            .click(function(e) {
-                self.show('#menu-create');
-            })
-            .appendTo(root);
-    $('#menu-create-argument').click(function(e) {
-        // create new Argument
-        var cmtr = $('#argument_committer').val();
-        var desc = $('#argument_description').val();
-        var r = DCaseAPI.call('CreateTopGoal',
-            {
-                'Committer': cmtr,
-                'ProcessType': 1,
-                'Description': desc,
-                'Justification': 'first commit'
-            });
-        initViewer(r.BelongedArgumentId);
-    });
+	$("#menu-proc-commit").click(function() {
+		var msg = prompt("コミットメッセージを入力して下さい");
+		if(msg != null) {
+			if(viewer.getArgument().commit(msg)) {
+				timeline.repaint();
+				alert("コミットしました");
+			}
+		}
+	});
 
-    //--------------------------------------------------------
-    var $tool = $('#menu-tool-i')
-            .click(function(e) {
-                self.show('#menu-tool');
-            })
-            .appendTo(root);
+	$("#menu-proc-undo").click(function() {
+		if(viewer.getArgument().undo()) {
+			viewer.structureUpdated();
+		}
+	});
 
-    $('#menu-tool-commit').click(function() {
-        self.actCommit();
-    });
+	$("#menu-proc-redo").click(function() {
+		if(viewer.getArgument().redo()) {
+			viewer.structureUpdated();
+		}
+	});
 
-    //--------------------------------------------------------
-    var $color = $('#menu-color-i').click(function() {
-        self.show('#menu-color');
-    }).appendTo(root);
-    $('input.colorpicker').colorPicker().change(function() {
-        viewer.updateNodeColor($(this).attr('name'), $(this).val());
-    });
-    $('#theme-option').change(function() {
-        var arr = $(this).find('option:selected').val().split(',');
-        $('#colorset input').each(function(i) {
-            $(this).val('#' + arr[i]);
-            $(this).change();
-        });
-    });
-});
+	$("#menu-proc-newarg").click(function() {
+		DNodeEditWindow.open(null, ["Goal"], function(newNode) {
+			if(checkCommited()) {
+				viewer.setArgument(DCaseAPI.createArgument(newNode));
+				timeline.repaint();
+				updateArgumentList();
+			}
+		});
+	});
 
-var DCaseSpinner = (function($target) {
-    this.$target = $target;
-    this.spinner;
-    this.start = function(opts) {
-        var _opts = {
-            lines: 13, // The number of lines to draw
-            length: 4, // The length of each line
-            width: 2, // The line thickness
-            radius: 4, // The radius of the inner circle
-            rotate: 0, // The rotation offset
-            color: '#000', // #rgb or #rrggbb
-            speed: 0.9, // Rounds per second
-            trail: 69, // Afterglow percentage
-            shadow: false, // Whether to render a shadow
-            hwaccel: false, // Whether to use hardware acceleration
-            className: 'spinner', // The CSS class to assign to the spinner
-            zIndex: 2e9, // The z-index (defaults to 2000000000)
-            top: 'auto', // Top position relative to parent in px
-            left: 'auto' // Left position relative to parent in px
-        };
-        if (this.$target.children('.spinner').length == 0) {
-            this.spinner = new Spinner(_opts).spin();
-            this.$target.append(this.spinner.el);
-            if (opts != undefined) {
-                for (i in opts) {
-                    this.$target.children('.spinner').css(opts);
-                }
-            }
-        }
-    }
-    this.stop = function() {
-        this.spinner.stop();
-    }
-});
+};
 
