@@ -340,7 +340,7 @@ DNodeView.prototype.showInplace = function() {
 			var node = self.node;
 			if(node.desc != newDesc) {
 				var op = new EditOperation(node, node.desc, newDesc);
-				viewer.getArgument().applyOperation(op);
+				self.viewer.getArgument().applyOperation(op);
 				setTimeout(function() {
 					var b = self.svg.outer(200, self.divText.height() + 60);
 					self.bounds.h = b.h;
