@@ -2,6 +2,7 @@
 	position: absolute;
 	font-size: 12px;
 	word-wrap: break-word;
+	line-height: normal;
 }
 .node-name {
 	font-weight: bold;
