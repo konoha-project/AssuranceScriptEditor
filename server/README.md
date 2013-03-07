@@ -19,7 +19,7 @@
 
 API(仮なので、今後変更する予定です)
 ================
-* {commitId,argumentId} createTopGoal(Tree tree);
+* {commitId,argumentId} createTopGoal(Tree tree, userId user\_id);
 * Tree getNodeTree(commitId n);
 * commitId commit(Tree tree, commitId old, userId user\_id);
 * Array[commitId] search(String text); //FIXME
