@@ -150,17 +150,17 @@ var TimeLine = function(root, viewer) {
 			mm[l[i]] = x;
 		}
 
-		$.each(DCaseAPI.getBranchList(arg.argId), function(i, br) {
-			if(br != arg.commitId) {
-				var l = DCaseAPI.call("getCommitList", { commitId: br }).commitIdList;
-				for(var i=0; i<l.length-1; i++) {
-					var x = mm[l[i]];
-					if(x == null) x = [];
-					if(x.indexOf(l[i+1]) == -1) x.push(l[i + 1]);
-					mm[l[i]] = x;
-				}
-			}
-		});
+		//$.each(DCaseAPI.getBranchList(arg.argId), function(i, br) {
+		//	if(br != arg.commitId) {
+		//		var l = DCaseAPI.call("getCommitList", { commitId: br }).commitIdList;
+		//		for(var i=0; i<l.length-1; i++) {
+		//			var x = mm[l[i]];
+		//			if(x == null) x = [];
+		//			if(x.indexOf(l[i+1]) == -1) x.push(l[i + 1]);
+		//			mm[l[i]] = x;
+		//		}
+		//	}
+		//});
 		selected = null;
 
 		var b = calcSize(mm, 0, 0, l[0]);

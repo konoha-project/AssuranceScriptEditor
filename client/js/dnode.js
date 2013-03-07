@@ -139,8 +139,7 @@ Argument.prototype.isChanged = function() {
 };
 
 Argument.prototype.getCommitList = function() {
-	var list = DCaseAPI.call("getCommitList", { commitId: this.commitId });
-	return list.commitIdList;
+	return DCaseAPI.getCommitList(this.argId);
 };
 
 Argument.prototype.undo = function() {
@@ -191,14 +190,11 @@ Argument.prototype.commit = function(msg) {
 			Children: c,
 		});
 	});
-	var r = DCaseAPI.call("commit", {
-		tree: {
-			NodeList: tl,
-			TopGoalId: node.id,
-		},
-		message: msg,
-		commitId: this.commitId,
-	});
+	var tree = {
+		NodeList: tl,
+		TopGoalId: node.id
+	};
+	var r = DCaseAPI.commit(tree, this.commitId, msg, 0/*TODO userId*/);
 	this.commitId = r.commitId;
 	this.undoCount = 0;
 	this.opQueue = [];

@@ -190,19 +190,19 @@ var SideMenu = function(root, viewer) {
 		var $res = $("#menu-proc ul");
 		$res.empty();
 		$.each(DCaseAPI.getArgumentList(), function(i, arg) {
-			$.each(DCaseAPI.getBranchList(arg), function(i, br) {
-				$("<li>")
-					.addClass("sidemenu-result")
-					.html(br)
-					.click(function() {
-						if(checkCommited()) {
-							viewer.setArgument(DCaseAPI.getArgument(arg, br));
-							timeline.repaint();
-						}
-					})
-					.appendTo($res);
-			});
-			$("<hr>").appendTo($res);
+			var cl = DCaseAPI.getCommitList(arg);
+			var br = cl[cl.length-1]
+			$("<li>")
+				.addClass("sidemenu-result")
+				.html(br)
+				.click(function() {
+					if(checkCommited()) {
+						viewer.setArgument(DCaseAPI.getArgument(arg, br));
+						timeline.repaint();
+					}
+				})
+				.appendTo($res);
+			//$("<hr>").appendTo($res);
 		});
 	}
 	updateArgumentList();

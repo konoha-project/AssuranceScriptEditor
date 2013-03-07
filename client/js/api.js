@@ -35,8 +35,8 @@ DCaseAPI.getArgumentList = function() {
 	return this.call("getArgumentList", {}).argumentIdList;
 };
 
-DCaseAPI.getBranchList = function(arg) {
-	return this.call("getBranchList", { argumentId: arg }).commitIdList;
+DCaseAPI.getCommitList = function(arg) {
+	return this.call("getCommitList", { argumentId: arg }).commitIdList;
 };
 
 DCaseAPI.getArgument = function(argId, commitId) {
@@ -95,5 +95,14 @@ DCaseAPI.createNode = function(tree) {
 
 DCaseAPI.search = function(text) {
 	return this.call("search", {text: text});
+}
+
+DCaseAPI.commit = function(tree, commitId, msg, userId) {
+	return this.call("commit", {
+		tree: tree,
+		commitId: commitId, 
+		message: msg,
+		userId: userId
+	});
 }
 
