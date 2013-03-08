@@ -1,3 +1,11 @@
+<?php
+require_once("config.php");
+require_once("utils.php");
+session_start();
+if(isset($_COOKIE["userId"])) {
+	session_regenerate_id(TRUE);
+}
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -140,16 +148,24 @@ $(function() {
 						</ul>
 					</li>
 				</ul>
-				<form id="sign-in-form" class="navbar-form pull-right">
-					<input class="span2" type="text" placeholder="username">
-					<input class="span2" type="password" placeholder="password">
-					<button class="btn" onclick="$('#userinfo').toggle(); $('#sign-in-form').toggle();">Sign in</button>
+<?php
+if(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0) {
+echo <<<EOT
+				<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/login.php">
+					<input class="span2" type="text" placeholder="username" name="username">
+					<input class="span2" type="password" placeholder="password" name="password">
+					<input class="btn" type="submit">Sign in</button>
 				</form>
-
-				<ul id="userinfo" class="nav pull-right" style="display:none;">
-					<li><a href="#">nikuuchi</a></li>
-					<li><button class="btn" onclick="$('#userinfo').toggle(); $('#sign-in-form').toggle();">Sign out</button></li>
+EOT;
+}else{
+echo <<<EOT
+				<ul id="userinfo" class="nav pull-right" >
+					<li><a href="#">{$_COOKIE["userName"]}</a></li>
+					<li><button class="btn" onclick="location.href='logout.php'">Sign out</button></li>
 				</ul>
+EOT;
+}
+?>
 			</div>
 		</div>
 	</div>
