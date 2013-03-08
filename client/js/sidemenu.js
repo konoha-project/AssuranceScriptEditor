@@ -2,8 +2,8 @@ var SideMenu = function(root, viewer) {
 	var self = this;
 	var timeline = new TimeLine(root, viewer);
 
-	//FIXME
-	var userId = 1234;
+	var userId = document.cookie.match(/userName=(\w+);?/)[1];
+	console.log("userId: " + userId);
 
 	var copiedNode = null;
 
