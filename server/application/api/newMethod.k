@@ -45,7 +45,8 @@ void commit (Json request) {
 	Json tree = request.get("tree");
 	int prev_id = request.getInt("commitId");
 	int userId = request.getInt("userId");
-	int commitId = global.model.Commit(tree,prev_id,userId);
+	String message = request.getInt("message");
+	int commitId = global.model.Commit(tree,prev_id,userId,message);
 	Json res = new Json();
 	res.setInt("commitId",commitId);
 	Json response = createMessage(res);
@@ -106,6 +107,26 @@ void search(Json request) {
 	stdout.print(response);
 }
 
+void register(Json request) {
+	String user = request.getString("userName");
+	String pass = request.getString("password");
+	int userId = global.model.register(user,pass);
+	Json res = new Json();
+	res.setInt("userId", userId);
+	Json response = createMessage(res);
+	stdout.print(response);
+}
+
+void login(Json request) {
+	String user = request.getString("userName");
+	String pass = request.getString("password");
+	int userId = global.model.login(user,pass);
+	Json res = new Json();
+	res.setInt("userId", userId);
+	Json response = createMessage(res);
+	stdout.print(response);
+}
+
 class JsonRPCServer {
 	Map[Func[void, Json]] functions;
 
@@ -133,6 +154,8 @@ class JsonRPCServer {
 		//this.functions.set("CloseProcessContext",CloseProcessContext);
 //		this.functions.set("getProcessContextIds" ,getProcessContextIds);
 		this.functions.set("getCommitList"        ,getCommitList);
+		this.functions.set("login"                ,login);
+		this.functions.set("register"             ,register);
 //		this.functions.set("getSnapshotIds"       ,getSnapshotIds);
 		//this.functions.set("getContext"         ,getContext);
 //		this.functions.set("Support"              ,Support);
