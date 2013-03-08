@@ -120,8 +120,9 @@ class DCaseModel {
 		return p.getInsertId();
 	}
 
-	int CreateArgument() {
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Argument`() VALUES()");
+	int CreateArgument(int user_id) {
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Argument`(`user_id`) VALUES(?)");
+		p.setInt("@a",user_id);
 		p.execute();
 		return p.getInsertId();
 	}
@@ -135,7 +136,7 @@ class DCaseModel {
 	}
 
 	@Public Json CreateTopGoal(Json tree, int user_id) {
-		int argument_id = this.CreateArgument();
+		int argument_id = this.CreateArgument(user_id);
 		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`, `user_id`) VALUES(?,?,0,TRUE,?,?)");
 		p.setString("@a",tree.toString());
 		p.setInt("@b", new Date().getTime());

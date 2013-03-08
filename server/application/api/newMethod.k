@@ -45,7 +45,7 @@ void commit (Json request) {
 	Json tree = request.get("tree");
 	int prev_id = request.getInt("commitId");
 	int userId = request.getInt("userId");
-	String message = request.getInt("message");
+	String message = request.getString("message");
 	int commitId = global.model.Commit(tree,prev_id,userId,message);
 	Json res = new Json();
 	res.setInt("commitId",commitId);
