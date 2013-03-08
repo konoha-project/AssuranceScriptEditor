@@ -39,6 +39,11 @@ class PreparedStatement {
 		this.con.query("PREPARE stmt1 FROM '${sql}'");
 	}
 
+	void setSHA2(String param, String value) {
+		this.con.query("SET ${param} = SHA2('${value}',256)"); //FIXME
+		this.queue.add(param);
+	}
+
 	void setString(String param, String value) {
 		this.con.query("SET ${param} = '${value}'"); //FIXME
 		this.queue.add(param);
@@ -184,7 +189,7 @@ class DCaseModel {
 		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE argument_id=? AND latest_flag=TRUE");
 		p.setInt("@a",argument_id);
 		ResultSet r = p.execute();
-		r.next()
+		r.next();
 		return r.getInt("idCommit");
 	}
 
@@ -225,4 +230,26 @@ class DCaseModel {
 		return ret;
 	}
 
+	String salt(String pass) {
+		return pass + "G0y7cf3$:ydLVkx4I/50"; //FIXME
+	}
+
+	@Public int register(String user, String pass) {
+		String ps_h = this.salt(pass);
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `user`(`user_name`,`password_hash`,`created_at`) VALUES(?,?,NOW())");
+		p.setString("@a",user);
+		p.setSHA2("@b",ps_h);
+		p.execute();
+		return p.getInsertId();
+	}
+
+	@Public int login(String user, String pass) {
+		String ps_h = this.salt(pass);
+		PreparedStatement p = this.db.newPreparedStatement("SELECT id FROM user WHERE user_name=? AND password_hash=?");
+		p.setString("@a",user);
+		p.setSHA2("@b",ps_h);
+		ResultSet r = p.execute();
+		r.next();
+		return r.getInt("id");
+	}
 }
