@@ -5,6 +5,8 @@ var SideMenu = function(root, viewer) {
 	//FIXME
 	var userId = 1234;
 
+	var copiedNode = null;
+
 	//--------------------------------------------------------
 
 	this.insertToSelectedNode = function() {
@@ -49,6 +51,26 @@ var SideMenu = function(root, viewer) {
 			if(viewer.getArgument().commit(msg, userId)) {
 				timeline.repaint();
 				alert("コミットしました");
+			}
+		}
+	};
+
+	this.copySelectedNode = function() {
+		var view = viewer.getSelectedNode();
+		if(view != null) {
+			copiedNode = view.node.deepCopy();
+		}
+	};
+
+	this.pasteToSelectedNode = function() {
+		var view = viewer.getSelectedNode();
+		if(view != null) {
+			if(view.node.isAppendableType(copiedNode.type)) {
+				var op = new InsertOperation(view.node, copiedNode.deepCopy());
+				viewer.getArgument().applyOperation(op);
+				viewer.structureUpdated();
+			} else {
+				alert("そのタイプは貼付けられません");
 			}
 		}
 	};
@@ -192,5 +214,12 @@ var SideMenu = function(root, viewer) {
 		}
 	});
 
+	$("#menu-copy").click(function() {
+		self.copySelectedNode();
+	});
+
+	$("#menu-paste").click(function() {
+		self.pasteToSelectedNode();
+	});
 };
 

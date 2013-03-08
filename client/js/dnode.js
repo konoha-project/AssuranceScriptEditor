@@ -8,8 +8,6 @@ var DNode = function(id, name, type, desc) {
 	this.children = [];
 	this.context = null;
 	this.parents = [];
-	this.prevVersion = null;
-	this.nextVersion = null;
 
 	this.updateFlags();
 	if(type == "Solution") {
@@ -49,6 +47,14 @@ DNode.prototype.traverse = function(f, parent, index) {
 	if(this.context != null) {
 		f(this.context);
 	}
+};
+
+DNode.prototype.deepCopy = function() {
+	var node = new DNode(this.id, this.name, this.type, this.desc);
+	this.eachNode(function(child) {
+		node.addChild(child.deepCopy());
+	});
+	return node;
 };
 
 //-----------------------------------------------------------------------------
@@ -91,6 +97,11 @@ DNode.prototype.getHtmlDescription = function() {
 			.replace(/</g, "&lt;").replace(/>/g, "&gt;")
 			.replace(/\n/g, "<br>");
 	}
+};
+
+DNode.prototype.isAppendableType = function(type) {
+	var types = DNode.SELECTABLE_TYPES[this.type];
+	return types.indexOf(type) != -1;
 };
 
 DNode.prototype.toJson = function() {
