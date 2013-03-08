@@ -41,7 +41,7 @@ var SideMenu = function(root, viewer) {
 				updateArgumentList();
 			}
 		});
-	});
+	};
 
 	this.commit = function() {
 		var msg = prompt("コミットメッセージを入力して下さい");
