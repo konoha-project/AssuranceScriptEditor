@@ -151,11 +151,24 @@ $(function() {
 <?php
 if(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0) {
 echo <<<EOT
-				<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/login.php">
-					<input class="span2" type="text" placeholder="username" name="username">
-					<input class="span2" type="password" placeholder="password" name="password">
-					<input class="btn" type="submit">Sign in</button>
-				</form>
+				<ul class="nav pull-right">
+					<li><a href="#">Sign Up</a></li>
+					<li class="divider-vertical"></li>
+					<li class="dropdown">
+						<a class="dropdown-toggle" href="#" data-toggle="dropdown">Sign In <strong class="caret"></strong></a>
+						<div class="dropdown-menu" style="padding: 15px; padding-bottom: 0px;">
+							<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/login.php">
+								<input class="span2" type="text" placeholder="username" name="username" style="margin-bottom: 15px;">
+								<input class="span2" type="password" placeholder="password" name="password" style="margin-bottom: 15px;">
+								<input id="user_remember_me" style="float: left; margin-right: 10px;" type="checkbox" name="user[remember_me]" value="1" />
+								<label class="string optional" for="user_remember_me"> Remember me</label>
+   
+								<input type="submit" class="btn btn-primary" style="margin-bottom: 15px; clear: left; width: 100%; height: 32px; font-size: 13px;" value="Sign in">
+							</form>
+						</div>
+					</li>
+				</ul>
+
 EOT;
 }else{
 echo <<<EOT
