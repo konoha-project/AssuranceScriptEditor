@@ -7,7 +7,7 @@ var SideMenu = function(root, viewer) {
 
 	//--------------------------------------------------------
 
-	this.actInsertToSelectedNode = function() {
+	this.insertToSelectedNode = function() {
 		var view = viewer.getSelectedNode();
 		if(view != null) {
 			var sel = DNode.SELECTABLE_TYPES[view.node.type];
@@ -19,7 +19,7 @@ var SideMenu = function(root, viewer) {
 		}
 	}
 
-	this.actRemoveSelectedNode = function() {
+	this.removeSelectedNode = function() {
 		var view = viewer.getSelectedNode();
 		if(view != null) {
 			var parents = view.node.parents;
@@ -33,27 +33,27 @@ var SideMenu = function(root, viewer) {
 		}
 	}
 
-	this.show = function(m) {
-		var ids = [
-			"#menu-search",
-			"#menu-export",
-			"#menu-info",
-			"#menu-tool",
-			"#menu-proc"
-		];
-		$.each(ids, function(i, id) {
-			if(m == id) $(id).toggle();
-			else $(id).hide();
+	this.createNewArgument = function() {
+		DNodeEditWindow.open(null, ["Goal"], function(newNode) {
+			if(checkCommited()) {
+				viewer.setArgument(DCaseAPI.createArgument(newNode, userId));
+				timeline.repaint();
+				updateArgumentList();
+			}
 		});
-	}
+	});
+
+	this.commit = function() {
+		var msg = prompt("コミットメッセージを入力して下さい");
+		if(msg != null) {
+			if(viewer.getArgument().commit(msg, userId)) {
+				timeline.repaint();
+				alert("コミットしました");
+			}
+		}
+	};
 
 	//--------------------------------------------------------
-	var $search = $("#menu-search-i")
-			.click(function(e) {
-				self.show("#menu-search");
-				$("#menu-search input").focus();
-			})
-			.appendTo(root);
 
 	$("#menu-search input").blur(function(e) {
 		clearInterval(this.interval_id);
@@ -113,11 +113,6 @@ var SideMenu = function(root, viewer) {
 	//this.search("");
 
 	//--------------------------------------------------------
-	var $export = $("#menu-export-i")
-			.click(function(e) {
-				self.show("#menu-export");
-			})
-			.appendTo(root);
 
 	var URL_EXPORT = "cgi/view.cgi";
 
@@ -140,44 +135,6 @@ var SideMenu = function(root, viewer) {
 	});
 
 	//--------------------------------------------------------
-	var $info = $("#menu-info-i")
-			.click(function(e) {
-				self.show("#menu-info");
-			})
-			.appendTo(root);
-	
-	//(function() {
-	//	var types = DNode.TYPES;
-	//	var count = {};
-	//	for(var i=0; i<types.length; i++) {
-	//		count[types[i]] = 0;
-	//	}
-	//	viewer.traverseAll(function(node) {
-	//		count[node.type] += 1;
-	//	});
-	//	var $table = $("#menu-info-table");
-	//	for(var i=0; i<types.length; i++) {
-	//		var name = types[i];
-	//		$("<tr></tr>")
-	//			.append($("<td></td>").html(name))
-	//			.append($("<td></td>").html(count[name]))
-	//			.appendTo($table);
-	//	}
-	//})();
-
-	//--------------------------------------------------------
-	var $proc = $("#menu-proc-i")
-			.click(function(e) {
-				self.show("#menu-proc");
-			})
-			.appendTo(root);
-
-	//--------------------------------------------------------
-	var $tool = $("#menu-tool-i")
-			.click(function(e) {
-				self.show("#menu-tool");
-			})
-			.appendTo(root);
 
 	function checkCommited() {
 		var arg = viewer.getArgument();
@@ -190,56 +147,49 @@ var SideMenu = function(root, viewer) {
 	}
 
 	function updateArgumentList() {
-		var $res = $("#menu-proc ul");
-		$res.empty();
+		var $m = $("#menu-argument");
+		$m.empty();
+
+		$("<li></li>")
+			.html("<a href=\"#\">新規</a>")
+			.click(function() {
+				self.createNewArgument();
+			})
+			.appendTo($m);
+		$("<li></li>")
+			.addClass("divider")
+			.appendTo($m);
+
 		$.each(DCaseAPI.getArgumentList(), function(i, arg) {
 			var cl = DCaseAPI.getCommitList(arg);
 			var br = cl[cl.length-1]
-			$("<li>")
-				.addClass("sidemenu-result")
-				.html(br)
+			$("<li></li>")
+				.html("<a href=\"#\">" + br + "</a>")
 				.click(function() {
 					if(checkCommited()) {
 						viewer.setArgument(DCaseAPI.getArgument(arg, br));
 						timeline.repaint();
 					}
 				})
-				.appendTo($res);
-			//$("<hr>").appendTo($res);
+				.appendTo($m);
 		});
 	}
 	updateArgumentList();
 
-	$("#menu-proc-commit").click(function() {
-		var msg = prompt("コミットメッセージを入力して下さい");
-		if(msg != null) {
-			if(viewer.getArgument().commit(msg, userId)) {
-				timeline.repaint();
-				alert("コミットしました");
-			}
-		}
+	$("#menu-commit").click(function() {
+		self.commit();
 	});
 
-	$("#menu-proc-undo").click(function() {
+	$("#menu-undo").click(function() {
 		if(viewer.getArgument().undo()) {
 			viewer.structureUpdated();
 		}
 	});
 
-	$("#menu-proc-redo").click(function() {
+	$("#menu-redo").click(function() {
 		if(viewer.getArgument().redo()) {
 			viewer.structureUpdated();
 		}
-	});
-
-	$("#menu-proc-newarg").click(function() {
-		DNodeEditWindow.open(null, ["Goal"], function(newNode) {
-			if(checkCommited()) {
-				viewer.setArgument(DCaseAPI.createArgument(newNode, userId));
-				timeline.repaint();
-				updateArgumentList();
-			}
-		});
 	});
 
 };

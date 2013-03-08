@@ -63,15 +63,14 @@ $(function() {
 	$(".dropdown-toggle").dropdown();
 	
 	$(".tool-new").click(function() {
-		menu.actInsertToSelectedNode();
+		menu.insertToSelectedNode();
 	});
 	$(".tool-edit").click(function() {
-		menu.actEditSelectedNode();
+		menu.editSelectedNode();
 	});
 	$(".tool-remove").click(function() {
-		menu.actRemoveSelectedNode();
+		menu.removeSelectedNode();
 	});
-
 	$(".tool-play").click(function() {
 		var v = viewer.getSelectedNode();
 		viewer.showDScriptExecuteWindow(v.node.getDScriptNameInEvidence());
@@ -118,27 +117,28 @@ $(function() {
 			</form>
 			<ul class="nav">
 				<li class="dropdown">
-					<a class="dropdown-toggle" date-toggle="dropdown" href="#">新規<b class="caret"></b></a>
-					<ul class="dropdown-menu">
-						<li><a href="#">新規Argumentを作成</a></li>
+					<a class="dropdown-toggle" date-toggle="dropdown" href="#">Argumentの選択<b class="caret"></b></a>
+					<ul class="dropdown-menu" id="menu-argument">
+						<!--li><a id="menu-new-arg" href="#">新規Argumentを作成</a></li-->
 					</ul>
 				</li>
 				<li class="dropdown">
 					<a class="dropdown-toggle" date-toggle="dropdown" href="#">編集<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li><a href="#">元に戻す</a></li>
-						<li><a href="#">やり直し</a></li>
+						<li><a id="menu-undo" href="#">元に戻す</a></li>
+						<li><a id="menu-redo" href="#">やり直し</a></li>
 					</ul>
 				</li>
 				<li class="dropdown">
 					<a class="dropdown-toggle" date-toggle="dropdown" href="#">エクスポート<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li><a href="#">JSON</a></li>
-						<li><a href="#">PNG</a></li>
-						<li><a href="#">PDF</a></li>
+						<li><a id="menu-export-json" href="#">JSON</a></li>
+						<li><a id="menu-export-png" href="#">PNG</a></li>
+						<li><a id="menu-export-pdf" href="#">PDF</a></li>
+						<li><a id="menu-export-dscript" href="#">D-Script</a></li>
 					</ul>
 				</li>
-				<li><a href="#">コミット</a></li>
+				<li><a id="menu-commit" href="#">コミット</a></li>
 				<li class="dropdown">
 					<a class="dropdown-toggle" date-toggle="dropdown" href="#">設定<b class="caret"></b></a>
 					<ul class="dropdown-menu">
