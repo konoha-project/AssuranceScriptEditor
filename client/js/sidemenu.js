@@ -162,9 +162,9 @@ var SideMenu = function(root, viewer) {
 
 		$.each(DCaseAPI.getArgumentList(), function(i, arg) {
 			var cl = DCaseAPI.getCommitList(arg);
-			var br = cl[cl.length-1]
+			var br = cl[cl.length-1];
 			$("<li></li>")
-				.html("<a href=\"#\">" + br + "</a>")
+				.html("<a href=\"#\">" + br.commitId + "</a>")
 				.click(function() {
 					if(checkCommited()) {
 						viewer.setArgument(DCaseAPI.getArgument(arg, br));

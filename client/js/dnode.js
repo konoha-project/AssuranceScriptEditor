@@ -138,8 +138,12 @@ Argument.prototype.isChanged = function() {
 	return this.opQueue.length - this.undoCount > 0;
 };
 
-Argument.prototype.getCommitList = function() {
-	return DCaseAPI.getCommitList(this.argId);
+Argument.prototype.getArgumentId = function() {
+	return this.argId;
+};
+
+Argument.prototype.getCommitId = function() {
+	return this.commitId;
 };
 
 Argument.prototype.undo = function() {

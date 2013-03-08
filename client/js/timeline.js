@@ -69,12 +69,27 @@ var TimeLine = function(root, viewer) {
 		$canvas.css("left", scroll + dragX);
 	};
 
-	function addCommitMark(x, y, commitId) {
-		var d = $("<div></div>").css({
+	function addCommitMark(x, y, list, commitId) {
+		var $d = $("<div></div>").css({
 			left: x, top: y, width: MX, height: MY,
-		}).addClass("timeline-commit").click(function() {
+		}).addClass("timeline-commit")
+			.appendTo($container)
+
+		var info = list[commitId];
+		var time = new Date(info.time * 1000);
+		var timefmt = time.getFullYear() + "/" + time.getMonth() + "/" + time.getDay() +
+			" " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+
+		$d.popover({
+			placement: "top",
+			title: timefmt + " " + info.userName,
+			content: info.commitMessage,
+			trigger: "hover",
+		});
+		
+		$d.click(function() {
 			console.log("arguemnt " + commitId);
-			if(selected != d) {
+			if(selected != $d) {
 				if(viewer.getArgument().isChanged()) {
 					if(!confirm("未コミットの変更がありますが，破棄しますか?")) {
 						return;
@@ -85,14 +100,15 @@ var TimeLine = function(root, viewer) {
 				viewer.setArgument(arg);
 				if(selected != null) {
 					selected.css("border-color", "");
-					selected = d;
-					d.css("border-color", "orange");
+					selected = $d;
+					$d.css("border-color", "orange");
 				}
 			}
-		}).appendTo($container)
+		});
+
 		if(commitId == self.argument.commitId) {
-			d.css("border-color", "orange");
-			selected = d;
+			$d.css("border-color", "orange");
+			selected = $d;
 		}
 	}
 
@@ -112,17 +128,17 @@ var TimeLine = function(root, viewer) {
 		return b;
 	}
 
-	function put(ctx, mm, x, y, id) {
-		addCommitMark(x, y, id);
+	function put(ctx, mm, l, x, y, id) {
+		addCommitMark(x, y, l, id);
 		var c = mm[id];
 		if(c != null) {
 			var y0 = y;
-			y = put(ctx, mm, x+NX, y, c[0]);
+			y = put(ctx, mm, l, x+NX, y, c[0]);
 			ctx.moveTo(x+MX/2   , y0+MY/2);
 			ctx.lineTo(x+MX/2+NX, y0+MY/2);
 			for(var i=1; i<c.length; i++) {
 				var y1 = y;
-				y = put(ctx, mm, x+NX, y+NY, c[i]);
+				y = put(ctx, mm, l, x+NX, y+NY, c[i]);
 				ctx.moveTo(x+MX/2   , y0+MY/2);
 				ctx.lineTo(x+MX/2   , y1+NY+MY/2);
 				ctx.lineTo(x+MX/2+NX, y1+NY+MY/2);
@@ -142,14 +158,18 @@ var TimeLine = function(root, viewer) {
 		}
 
 		var mm = {};
-		var l = arg.getCommitList();
+		var l = DCaseAPI.getCommitList(arg.getArgumentId());
 		for(var i=0; i<l.length-1; i++) {
-			var x = mm[l[i]];
+			var x = mm[l[i].commitId];
 			if(x == null) x = [];
-			if(x.indexOf(l[i+1]) == -1) x.push(l[i + 1]);
-			mm[l[i]] = x;
+			if(x.indexOf(l[i+1].commitId) == -1) x.push(l[i + 1].commitId);
+			mm[l[i].commitId] = x;
 		}
 
+		var ci = {};
+		for(var i=0; i<l.length; i++) {
+			ci[l[i].commitId] = l[i];
+		}
 		//$.each(DCaseAPI.getBranchList(arg.argId), function(i, br) {
 		//	if(br != arg.commitId) {
 		//		var l = DCaseAPI.call("getCommitList", { commitId: br }).commitIdList;
@@ -163,10 +183,11 @@ var TimeLine = function(root, viewer) {
 		//});
 		selected = null;
 
-		var b = calcSize(mm, 0, 0, l[0]);
+		var b = calcSize(mm, 0, 0, l[0].commitId);
 		b.w += MX * 2;
 		b.h += MY * 2;
 		$timeline.height(b.h);
+		b.h -= MX / 2;
 		$canvas.css("width" , b.w);
 		$canvas.attr("width", b.w);
 		$canvas.css("height" , b.h);
@@ -179,7 +200,7 @@ var TimeLine = function(root, viewer) {
 		var ctx = $canvas[0].getContext("2d");
 		ctx.clearRect(0, 0, $canvas.width(), $canvas.height());
 		ctx.beginPath();
-		var y = put(ctx, mm, 0, 0, l[0]);
+		var y = put(ctx, mm, ci, 0, 0, l[0].commitId);
 		ctx.stroke();
 
 		scroll = ($timeline.width() - b.w) / 2;
