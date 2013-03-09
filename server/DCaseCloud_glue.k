@@ -163,19 +163,6 @@ class DCaseModel {
 		return Json.parse(EscapeCR(r.getString("Data")));
 	}
 
-	/*
-	@Public int[] getBranchList(int argument_id) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE argument_id=? AND latest_flag=TRUE");
-		p.setInt("@a",argument_id);
-		ResultSet r = p.execute();
-		int[] ret =[];
-		while(r.next()) {
-			ret.add(r.getInt("idCommit"));
-		}
-		return ret;
-	}
-	*/
-
 	@Public int[] getArgumentList() {
 		PreparedStatement p = this.db.newPreparedStatement("SELECT argument_id FROM Argument");
 		ResultSet r = p.execute();
@@ -186,21 +173,30 @@ class DCaseModel {
 		return ret;
 	}
 
-	int getLatestCommit(int argument_id) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE argument_id=? AND latest_flag=TRUE");
+	Json getCommitJson(ResultSet r) {
+		Json json = new Json();
+		json.setInt("commitId",r.getInt("idCommit"));
+		json.setInt("time",r.getInt("DateTime"));
+		json.setString("commitMessage",r.getString("message"));
+		json.setInt("userId",r.getInt("user_id")); //FIXME
+		return json;
+	}
+
+	Json getLatestCommit(int argument_id) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit,DateTime,message,user_id FROM Commit WHERE argument_id=? AND latest_flag=TRUE");
 		p.setInt("@a",argument_id);
 		ResultSet r = p.execute();
 		r.next();
-		return r.getInt("idCommit");
+		return this.getCommitJson(r);
 	}
 
-	@Public int[] getCommitList(int argumentId) {
-		int commitId = this.getLatestCommit(argumentId);
-		int[] ret = [];
-		int id = commitId;
+	@Public Json getCommitList(int argumentId) {
+		Json commit = this.getLatestCommit(argumentId);
+		Json ret = new Json([]);
+		int id = commit.getInt("commitId");
 		ret.add(id);
 		while(id != 0) {
-			PreparedStatement p = this.db.newPreparedStatement("SELECT prev_commit_id FROM Commit WHERE idCommit=?");
+			PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit,DateTime,message,user_id,prev_commit_id FROM Commit WHERE idCommit=?");
 			p.setInt("@a",id);
 			ResultSet r = p.execute();
 			r.next();
@@ -208,9 +204,9 @@ class DCaseModel {
 			if(id==0) {
 				break;
 			}
-			ret.add(id);
+			ret.add(this.getCommitJson(r));
 		}
-		int[] reverse = [];
+		Json reverse = new Json([]);
 		int i = ret.getSize()-1;
 		while(i>=0) {
 			reverse.add(ret[i]);
