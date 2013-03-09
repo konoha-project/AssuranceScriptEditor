@@ -228,7 +228,7 @@ var InplaceEditor = function($root, top, defaultText, onClose) {
 		.mouseup(function(e) { e.stopPropagation(); })
 		.mousemove(function(e) { e.stopPropagation(); })
 		.dblclick(function(e) {
-			if(cc == 2) e.stopPropagation();
+			if(cc >= 2) e.stopPropagation();
 			cc = 0;
 		})
 		.click(function(e) { cc++; e.stopPropagation(); })

@@ -1,10 +1,10 @@
-var TimeLine = function(root, viewer) {
+var TimeLine = function($root) {
 	var self = this;
 
 	var $timeline = $("<div></div>")
 		.addClass("timeline")
 		.css("display", "none")
-		.appendTo(root);
+		.appendTo($root);
 	var $canvas = $("<canvas></canvas>")
 		.css("position", "absolute")
 		.appendTo($timeline);
@@ -15,14 +15,14 @@ var TimeLine = function(root, viewer) {
 	var $control = $("<div></div>")
 		.addClass("timeline-control")
 		.html("▼")
-		.appendTo(root);
+		.appendTo($root);
 
 	$("<div></div>")
 		.addClass("timeline-title")
 		.html("Commit History")
 		.appendTo($timeline);
 
-	this.argument = viewer.getArgument();
+	this.onArgumentSelected = function(argId) {}
 
 	//--------------------------------------------------------
 
@@ -63,6 +63,8 @@ var TimeLine = function(root, viewer) {
 	var NX = 50;
 	var NY = 30;
 
+	this.argument = null;
+
 	this.drag = function() {
 		$container.css("left", scroll + dragX);
 		$canvas.attr("left", scroll + dragX);
@@ -90,17 +92,12 @@ var TimeLine = function(root, viewer) {
 		$d.click(function() {
 			console.log("arguemnt " + commitId);
 			if(selected != $d) {
-				if(viewer.getArgument().isChanged()) {
-					if(!confirm("未コミットの変更がありますが，破棄しますか?")) {
-						return;
-					}
-				}
 				var argId = self.argument.argId;
-				var arg = DCaseAPI.getArgument(argId, commitId);
-				viewer.setArgument(arg);
-				if(selected != null) {
-					selected.css("border-color", "");
-					selected = $d;
+				if(self.onArgumentSelected(argId, commitId)) {
+					if(selected != null) {
+						selected.css("border-color", "");
+						selected = $d;
+					}
 					$d.css("border-color", "orange");
 				}
 			}
@@ -147,8 +144,7 @@ var TimeLine = function(root, viewer) {
 		return y;
 	}
 
-	this.repaint = function() {
-		var arg = viewer.getArgument();
+	this.repaint = function(arg) {
 		self.argument = arg;
 		$container.empty();
 

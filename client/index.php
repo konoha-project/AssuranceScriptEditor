@@ -57,45 +57,21 @@ body {
 <script type="text/javascript" src="js/handler.js"></script>
 <script type="text/javascript" src="js/edit.js"></script>
 <script type="text/javascript" src="js/timeline.js"></script>
-<script type="text/javascript" src="js/sidemenu.js"></script>
+<script type="text/javascript" src="js/ase.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
 <script type="text/javascript" src="js/animation.js"></script>
 <script type="text/javascript" src="js/operation.js"></script>
 <script type="text/javascript">
 
 $(function() {
-	var viewer = new DCaseViewer(document.getElementById("viewer"));
-	var menu = new SideMenu(document.body, viewer);
+	var ase = new ASE(document.getElementById("ase"));
 
 	$(".dropdown-toggle").dropdown();
 	
-	$(".tool-new").click(function() {
-		menu.insertToSelectedNode();
-	});
-	$(".tool-edit").click(function() {
-		menu.editSelectedNode();
-	});
-	$(".tool-remove").click(function() {
-		menu.removeSelectedNode();
-	});
-	$(".tool-play").click(function() {
-		var v = viewer.getSelectedNode();
-		viewer.showDScriptExecuteWindow(v.node.getDScriptNameInEvidence());
-	});
-
 	// hide url bar for ipod touch
 	setTimeout(function(){
 		window.scrollTo(0, 0);
 	}, 0);
-
-	// move page
-	$(window).bind("beforeunload", function(e) {
-		var a = viewer.getArgument();
-		if(a != null && a.isChanged()) {
-			return "未コミットの変更があります";
-		}
-	});
-
 });
 </script>
 </head>
@@ -184,7 +160,7 @@ EOT;
 	</div>
 </div>
 
-<div class="container">
+<div id="ase" class="container">
 	<div id="viewer"></div>
 	<img id="ase-logo" src="img/assuranceDS.png">
 	
@@ -193,7 +169,7 @@ EOT;
 		<a href="#" class="tool-remove"><i class="icon-remove"></i></a>
 		<a href="#" class="tool-play"><i class="icon-play"></i></a>
 	</div>
-	<div id="edit">
+	<div id="edit" style="display: none;">
 		<h1>Type</h1>
 		<select></select>
 		<h1>Description</h1>
@@ -202,6 +178,7 @@ EOT;
 		<input id="edit-cancel"type="button" value="Cancel"></input>
 	</div>
 </div>
+
 <svg width="0" height="0">
 <defs>
 	<marker id="Triangle-black" viewBox="0 0 10 10" refX="10" refY="5"
