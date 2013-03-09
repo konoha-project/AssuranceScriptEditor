@@ -12,6 +12,6 @@ $res = json_decode(send_post(json_encode($data),BASEPATH . 'cgi/api.cgi'));
 var_dump($res);
 setcookie("userId", $res->result->userId,0,'/');
 setcookie("userName", $_POST['username'],0,'/');
-header('Location: '.BASEPATH.'index.php');
+header('Location: '.BASEPATH);
 exit();
 ?>
