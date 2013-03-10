@@ -260,7 +260,7 @@ DCase.prototype.insertNode = function(parent, type, desc, index) {
 		},
 		undo: function() {
 			parent.removeChild(node);
-			self.nodeRemoved(parent, node);
+			self.nodeRemoved(parent, node, index);
 		},
 	});
 };
@@ -271,7 +271,7 @@ DCase.prototype.removeNode = function(parent, node) {
 	this.applyOperation({
 		redo: function() {
 			parent.removeChild(node);
-			self.nodeRemoved(parent, node);
+			self.nodeRemoved(parent, node, index);
 		},
 		undo: function() {
 			parent.insertChild(node, index);
@@ -349,9 +349,9 @@ DCase.prototype.nodeInserted = function(parent, node, index) {
 	});
 };
 
-DCase.prototype.nodeRemoved = function(parent, node){
+DCase.prototype.nodeRemoved = function(parent, node, index){
 	$.each(this.view, function(i, view) {
-		view.nodeRemoved(parent, node);
+		view.nodeRemoved(parent, node, index);
 	});
 };
 
