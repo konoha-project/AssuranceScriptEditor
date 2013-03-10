@@ -217,13 +217,15 @@ class DCaseModel {
 	}
 
 	//FIXME
-	@Public int[] search(int commitId) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT id FROM commit WHERE latest_flag=TRUE AND Data LIKE ?");
-		p.setString("@a","%"+SearchText+"%");
+	@Public Json search(String text) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id FROM commit WHERE latest_flag=TRUE AND Data LIKE ?");
+		p.setString("@a","%"+text+"%");
 		ResultSet r = p.execute();
-		int[] ret = [];
+		Json ret = new Json([]);
 		while(r.next()) {
-			r.add(r.getInt("id"));
+			Json json = new Json();
+			json.setInt("dcaseId",r.getInt("dcase_id"));
+			ret.add(json);
 		}
 		return ret;
 	}
