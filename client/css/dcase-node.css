@@ -13,6 +13,10 @@
 	font-size: 100%;
 	text-align: left;
 }
+.node-text:hover {
+	background: #EEEEAA;
+}
+
 .node-closednodes {
 	background: #A0F0A0;
 	position: absolute;

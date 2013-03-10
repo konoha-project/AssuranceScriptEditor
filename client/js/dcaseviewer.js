@@ -9,6 +9,29 @@ var FONT_SIZE = 13;
 var MIN_DISP_SCALE = 4 / FONT_SIZE;
 var DEF_WIDTH = 200;
 
+var defaultColorTheme = {
+	stroke: {
+		"Goal"    : "none",
+		"Context" : "none",
+		"Subject" : "none",
+		"Strategy": "none",
+		"Evidence": "none",
+		"Solution": "none",
+		"Rebuttal": "none",
+	},
+	fill: {
+		"Goal"    : "#A0A0A0",
+		"Context" : "#E0E0E0",
+		"Subject" : "#E0E0E0",
+		"Strategy": "#C0C0C0",
+		"Evidence": "#D0D0D0",
+		"Solution": "#D0D0D0",
+		"Rebuttal": "#EEAAAA",
+	},
+	selected: "#F08080",
+	hovered : "#8080F0",
+};
+
 //-----------------------------------------------------------------------------
 
 var DCaseViewer = function(root, dcase) {
@@ -38,6 +61,7 @@ var DCaseViewer = function(root, dcase) {
 	this.drag_flag = true;
 	this.selectedNode = null;
 	this.rootview = null;
+	this.colorTheme = defaultColorTheme;
 
 	//------------------------------------
 
@@ -106,10 +130,17 @@ DCaseViewer.prototype.getNodeView = function(node) {
 	return this.nodeViewMap[node.id];
 };
 
-DCaseViewer.prototype.setSelectedNode = function(node) {
-	this.selectedNode = node;
-	this.repaintAll();
-	this.showToolbox(node);
+DCaseViewer.prototype.setSelectedNode = function(view) {
+	if(view != null) {
+		view.selected = true;
+		view.updateColor();
+	}
+	if(this.selectedNode != null) {
+		this.selectedNode.selected = false;
+		this.selectedNode.updateColor();
+	}
+	this.selectedNode = view;
+	this.showToolbox(view);
 };
 
 DCaseViewer.prototype.getSelectedNode = function() {
@@ -124,6 +155,10 @@ DCaseViewer.prototype.createSvg = function(name) {
 	var obj = document.createElementNS(SVG_NS, name);
 	this.$svg.append(obj);
 	return obj;
+};
+
+DCaseViewer.prototype.setColorTheme = function(theme) {
+	this.colorTheme = theme != null ? theme : defaultColorTheme;
 };
 
 //-----------------------------------------------------------------------------
@@ -339,6 +374,9 @@ var DNodeView = function(viewer, node, parentView) {
 	this.divNodesText = null;
 	this.edit = null;
 
+	this.selected = false;
+	this.hovered = false;
+
 	if(parentView != null) {
 		if(node.isContext) {
 			this.line = viewer.createSvg("line");
@@ -363,7 +401,7 @@ var DNodeView = function(viewer, node, parentView) {
 
 	var touchinfo = {};
 	this.$div.mouseup(function(e) {
-		if(self == viewer.getSelectedNode()) {
+		if(self.selected) {
 			self.showInplace();
 		}
 		viewer.dragEnd(self);
@@ -389,11 +427,15 @@ var DNodeView = function(viewer, node, parentView) {
 			touchinfo.time = null;
 		}
 	});
-	//this.$div.hover(function() {
-	//	viewer.showToolbox(self);
-	//}, function() {
-	//	viewer.showToolbox(null);
-	//});
+	this.$div.hover(function() {
+		//viewer.showToolbox(self);
+		self.hovered = true;
+		self.updateColor();
+	}, function() {
+		//viewer.showToolbox(null);
+		self.hovered = false;
+		self.updateColor();
+	});
 
 	this.nodeChanged();
 	if(parentView != null) {
@@ -443,6 +485,24 @@ DNodeView.prototype.nodeChanged = function() {
 	}
 };
 
+DNodeView.prototype.updateColor = function() {
+	var stroke;
+	if(this.selected) {
+		stroke = this.viewer.colorTheme.selected;
+	} else if(this.hovered) {
+		stroke = this.viewer.colorTheme.hovered;
+	} else {
+		stroke = this.viewer.colorTheme.stroke[this.node.type];
+	}
+	//function getColorByState(node) {
+	//	if(node.type == "Rebuttal") return "#FF8080";
+	//	return node.isEvidence ? "#80FF80" : "#E0E0E0";
+	//}
+	var fill = this.viewer.colorTheme.fill[this.node.type];
+	this.svg.elems[0].setAttribute("stroke", stroke);
+	this.svg.elems[0].setAttribute("fill", fill);
+};
+
 DNodeView.prototype.showInplace = function() {
 	if(this.edit == null) {
 		var self = this;
@@ -480,11 +540,6 @@ DNodeView.prototype.remove = function(parentView) {
 		parentView.children.splice(parentView.children.indexOf(this), 1);
 	}
 };
-
-function getColorByState(node) {
-	if(node.type == "Rebuttal") return "#FF8080";
-	return node.isEvidence ? "#80FF80" : "#E0E0E0";
-}
 
 DNodeView.prototype.forEachNode = function(f) {
 	if(this.context != null) {
@@ -607,6 +662,7 @@ DNodeView.prototype.animeStart = function(a, parent) {
 	a.show(this.svg.elems[0], this.visible);
 	a.show(this.$div, this.visible);
 	a.show(this.$divNodes, !this.childVisible);
+	this.updateColor();
 
 	var offset = this.svg.animate(a, b.x * scale, b.y * scale,
 			b.w * scale, b.h * scale, scale);
@@ -618,12 +674,6 @@ DNodeView.prototype.animeStart = function(a, parent) {
 	});
 	this.$div.css("fontSize", Math.floor(FONT_SIZE * scale));
 
-	this.svg.elems[0].setAttribute("fill", getColorByState(this.node));
-	if(this.viewer.selectedNode == this) {
-		this.svg.elems[0].setAttribute("stroke", "orange");
-	} else {
-		this.svg.elems[0].setAttribute("stroke", "none");
-	}
 	if(scale < MIN_DISP_SCALE) {
 		a.show(this.$divText, false);
 		a.show(this.$divName, false);
@@ -674,8 +724,8 @@ DNodeView.prototype.animeStart = function(a, parent) {
 		var sx = (b.x + b.w/2) * scale;
 		var sy = (b.y + b.h) * scale;
 		var n = 20 * scale;
-		a.show(this.svgUndevel.context, this.visible);
-		a.movePolygon(this.svgUndevel.context, [
+		a.show(this.svgUndevel[0], this.visible);
+		a.movePolygon(this.svgUndevel[0], [
 			{ x: sx, y: sy },
 			{ x: sx-n, y: sy+n },
 			{ x: sx, y: sy+n*2 },
