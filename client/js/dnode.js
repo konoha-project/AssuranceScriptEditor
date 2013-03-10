@@ -342,21 +342,21 @@ DCase.prototype.removeListener = function(view) {
 	this.view.splice(this.view.indexOf(view), 1);
 };
 
-DCase.prototype.nodeInserted = function() {
+DCase.prototype.nodeInserted = function(parent, node, index) {
 	$.each(this.view, function(i, view) {
-		view.updated();//FIXME
+		view.nodeInserted(parent, node, index);
 	});
 };
 
-DCase.prototype.nodeRemoved = function(){
+DCase.prototype.nodeRemoved = function(parent, node){
 	$.each(this.view, function(i, view) {
-		view.updated();//FIXME
+		view.nodeRemoved(parent, node);
 	});
 };
 
-DCase.prototype.nodeChanged = function(){
+DCase.prototype.nodeChanged = function(node){
 	$.each(this.view, function(i, view) {
-		view.updated();//FIXME
+		view.nodeChanged(node);
 	});
 };
 

@@ -99,7 +99,9 @@ DCaseViewer.prototype.structureUpdated = function(ms) {
 	this.setArgument(this.argument);//TODO animation
 };
 
-DCaseViewer.prototype.updated = DCaseViewer.prototype.structureUpdated;
+DCaseViewer.prototype.nodeInserted = DCaseViewer.prototype.structureUpdated;
+DCaseViewer.prototype.nodeRemoved = DCaseViewer.prototype.structureUpdated;
+DCaseViewer.prototype.nodeChanged = DCaseViewer.prototype.structureUpdated;
 
 DCaseViewer.prototype.centerize = function(view, ms) {
 	if(this.rootview == null) return;
