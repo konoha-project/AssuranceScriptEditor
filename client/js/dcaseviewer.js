@@ -142,7 +142,7 @@ DCaseViewer.prototype.nodeInserted = function(parent, node, index) {
 
 	setTimeout(function() {
 		self.rootview.updateLocation(0, 0);
-		self.repaintAll(ANIME_MSEC);
+		self.repaintAll();
 	}, 100);
 };
 
@@ -150,14 +150,14 @@ DCaseViewer.prototype.nodeRemoved = function(parent, node, index) {
 	var self = this;
 	var parentView = this.getNodeView(parent);
 	var view = this.getNodeView(node);
-	parentView.removeView(view);
+	view.remove(parentView);
 	delete self.nodeViewMap[node.id];
 
 	parentView.nodeChanged();
 
 	setTimeout(function() {
 		self.rootview.updateLocation(0, 0);
-		self.repaintAll(ANIME_MSEC);
+		self.repaintAll();
 	}, 100);
 };
 
@@ -434,9 +434,13 @@ DNodeView.prototype.nodeChanged = function() {
 	// node name and description
 	this.divName.html(node.name);
 	this.divText.html(node.getHtmlDescription());
-	//this.divNodes.html("");
 	var count = node.getNodeCount();
-	this.divNodesText = count != 0 ? (count + " nodes...") : null;
+	if(count != 0) {
+		this.divNodesText = count + " nodes...";
+	} else {
+		this.divNodesText = null;
+		this.divNodes.html("");
+	}
 };
 
 DNodeView.prototype.showInplace = function() {
@@ -444,17 +448,11 @@ DNodeView.prototype.showInplace = function() {
 		var self = this;
 		var top = this.divText.offset().y;
 		this.divText.text("");
-		
 		this.edit = new InplaceEditor(this.div, top, this.node.desc, function(newDesc) {
 			var node = self.node;
 			self.divText.html(node.getHtmlDescription());
 			if(node.desc != newDesc) {
 				self.viewer.getDCase().setDescription(node, newDesc);
-				//setTimeout(function() {
-				//	var b = self.svg.outer(200, self.divText.height() + 60);
-				//	self.bounds.h = b.h;
-				//	self.viewer.repaintAll();
-				//}, 100);
 			}
 			self.edit = null;
 		});
@@ -465,8 +463,22 @@ DNodeView.prototype.getTreeBounds = function() {
 	return this.argumentBounds;
 };
 
-DNodeView.prototype.removeView = function(view) {
-	//TODO
+DNodeView.prototype.remove = function(parentView) {
+	var self = this;
+	this.forEachNode(function(view) {
+		view.remove(self);
+	});
+	$(this.svg.elems[0]).remove();
+	this.div.remove();
+	if(this.svgUndevel != null) $(this.svgUndevel).remove();
+	if(this.argumentBorder != null) $(this.argumentBorder).remove();
+	if(this.line != null) $(this.line).remove();
+
+	if(this.node.isContext) {
+		parentView.context = null;
+	} else {
+		parentView.children.splice(parentView.children.indexOf(this), 1);
+	}
 };
 
 function getColorByState(node) {

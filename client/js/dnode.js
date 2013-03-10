@@ -267,7 +267,7 @@ DCase.prototype.insertNode = function(parent, type, desc, index) {
 
 DCase.prototype.removeNode = function(parent, node) {
 	var self = this;
-	var index = this.parent[0].children.indexOf(node);
+	var index = parent.children.indexOf(node);
 	this.applyOperation({
 		redo: function() {
 			parent.removeChild(node);
