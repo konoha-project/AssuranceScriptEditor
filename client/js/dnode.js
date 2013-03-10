@@ -1,10 +1,10 @@
 //-----------------------------------------------------------------------------
 
-var DNode = function(id, name, type, desc) {
+var DCaseNode = function(id, name, type, desc) {
 	this.id = id;
 	this.name = name;
-	this.desc = desc;
 	this.type = type;
+	this.desc = desc;
 	this.children = [];
 	this.context = null;
 	this.parents = [];
@@ -18,18 +18,18 @@ var DNode = function(id, name, type, desc) {
 	}
 };
 
-DNode.prototype.isContext = false;
-DNode.prototype.isArgument = false;
-DNode.prototype.isUndeveloped = false;
-DNode.prototype.isDScript = false;
+DCaseNode.prototype.isContext = false;
+DCaseNode.prototype.isArgument = false;
+DCaseNode.prototype.isUndeveloped = false;
+DCaseNode.prototype.isDScript = false;
 
 //-----------------------------------------------------------------------------
 
-DNode.prototype.getNodeCount = function() {
+DCaseNode.prototype.getNodeCount = function() {
 	return this.children.length + (this.context != null ? 1 : 0);
 };
 
-DNode.prototype.eachNode = function(f) {
+DCaseNode.prototype.eachNode = function(f) {
 	$.each(this.children, function(i, node) {
 		f(node);
 	});
@@ -38,7 +38,7 @@ DNode.prototype.eachNode = function(f) {
 	}
 };
 
-DNode.prototype.traverse = function(f, parent, index) {
+DCaseNode.prototype.traverse = function(f, parent, index) {
 	f(this, parent, index);
 	var self = this;
 	$.each(this.children, function(i, node) {
@@ -49,8 +49,8 @@ DNode.prototype.traverse = function(f, parent, index) {
 	}
 };
 
-DNode.prototype.deepCopy = function() {
-	var node = new DNode(this.id, this.name, this.type, this.desc);
+DCaseNode.prototype.deepCopy = function() {//FIXME id
+	var node = new DCaseNode(this.id, this.name, this.type, this.desc);
 	this.eachNode(function(child) {
 		node.addChild(child.deepCopy());
 	});
@@ -59,10 +59,9 @@ DNode.prototype.deepCopy = function() {
 
 //-----------------------------------------------------------------------------
 
-DNode.prototype.addChild = function(node, index) {
-	// TODO index
+DCaseNode.prototype.insertChild = function(node, index) {
 	if(!node.isContext) {
-		this.children.push(node);
+		this.children.splice(index, 0, node);
 	} else {
 		this.context = node;
 	}
@@ -70,26 +69,25 @@ DNode.prototype.addChild = function(node, index) {
 	this.updateFlags();
 };
 
-DNode.prototype.removeChild = function(node) {
+DCaseNode.prototype.removeChild = function(node) {
 	if(this.context == node) {
 		this.context = null;
 	} else {
-		var n = this.children.indexOf(node);
-		if(n != -1) {
-			this.children.splice(n, 1);
-		}
+		var i = this.children.indexOf(node);
+		this.children.splice(i, 1);
 	}
+	node.parents.splice(node.parents.indexOf(this), 1);
 	this.updateFlags();
 };
 
-DNode.prototype.updateFlags = function() {
+DCaseNode.prototype.updateFlags = function() {
 	if(this.type == "Goal") {
 		this.isArgument = this.context != null;
 		this.isUndeveloped = this.children.length == 0;
 	}
 };
 
-DNode.prototype.getHtmlDescription = function() {
+DCaseNode.prototype.getHtmlDescription = function() {
 	if(this.desc == "") {
 		return "<font color=\"gray\">(no description)</font>";
 	} else {
@@ -99,12 +97,12 @@ DNode.prototype.getHtmlDescription = function() {
 	}
 };
 
-DNode.prototype.isAppendableType = function(type) {
-	var types = DNode.SELECTABLE_TYPES[this.type];
+DCaseNode.prototype.isAppendableType = function(type) {
+	var types = DCaseNode.SELECTABLE_TYPES[this.type];
 	return types.indexOf(type) != -1;
 };
 
-DNode.prototype.toJson = function() {
+DCaseNode.prototype.toJson = function() {
 	var children = [];
 	this.eachNode(function(node) {
 		children.push(node.toJson());
@@ -120,12 +118,12 @@ DNode.prototype.toJson = function() {
 
 //-----------------------------------------------------------------------------
 
-DNode.TYPES = [
+DCaseNode.TYPES = [
 	"Goal", "Context", "Subject",
 	"Strategy", "Evidence", "Solution", "Rebuttal"
 ];
 
-DNode.SELECTABLE_TYPES = {
+DCaseNode.SELECTABLE_TYPES = {
 	"Goal": [ "Goal", "Context", "Subject", "Strategy", "Evidence", "Solution" ],
 	"Context": [],
 	"Subject": [],
@@ -135,64 +133,73 @@ DNode.SELECTABLE_TYPES = {
 	"Rebuttal": [],
 };
 
+DCaseNode.NAME_PREFIX = {
+	"Goal": "G_",
+	"Context": "C_",
+	"Subject": "Sub_",
+	"Strategy": "S_",
+	"Evidence": "E_",
+	"Solution": "Sol_",
+	"Rebuttal": "R_",
+};
+
 //-----------------------------------------------------------------------------
 
-var Argument = function(topGoal, argId, commitId) {
-	this.node = topGoal;
+var DCase = function(tree, argId, commitId) {
+	this.node = null;
 	this.commitId = commitId;
 	this.argId = argId;
 	this.opQueue = [];
 	this.undoCount = 0;
-};
+	this.nodeCound = 0;
+	this.typeCount = {};
+	this.view = [];
 
-Argument.prototype.isChanged = function() {
-	return this.opQueue.length - this.undoCount > 0;
-};
-
-Argument.prototype.getArgumentId = function() {
-	return this.argId;
-};
-
-Argument.prototype.getCommitId = function() {
-	return this.commitId;
-};
-
-Argument.prototype.undo = function() {
-	var n = this.opQueue.length;
-	if(n > this.undoCount) {
-		this.undoCount++;
-		var op = this.opQueue[n - this.undoCount];
-		op.undo();
-		return true;
+	var types = DCaseNode.TYPES;
+	for(var i=0; i<types.length; i++) {
+		this.typeCount[types[i]] = 1;
+	}
+	if(tree != null) {
+		this.decode(tree);
 	} else {
-		return false;
+		// TODO: add topgoal
 	}
 };
 
-Argument.prototype.redo = function() {
-	if(this.undoCount > 0) {
-		var op = this.opQueue[this.opQueue.length - this.undoCount];
-		this.undoCount--;
-		op.redo();
-		return true;
-	} else {
-		return false;
+//-----------------------------------------------------------------------------
+
+DCase.prototype.decode = function(tree) {
+	function contextParams(params) {
+		var s = "";
+		for(key in params) {
+			s += "@" + key + " : " + params[key] + "\n";
+		}
+		return s;
 	}
+
+	var self = this;
+	var nodes = [];
+	for(var i=0; i<tree.NodeList.length; i++) {
+		var c = tree.NodeList[i];
+		nodes[c.ThisNodeId] = c;
+	}
+	function create(id) {
+		var data = nodes[id];
+		var type = data.NodeType;
+		var desc = data.Description;
+		var node = self.createNode(type, desc);
+		for(var i=0; i<data.Children.length; i++) {
+			node.insertChild(create(data.Children[i]));
+		}
+		return node;
+	}
+	var topId = tree.TopGoalId;
+	this.node = create(topId);
 };
 
-Argument.prototype.applyOperation = function(op) {
-	this.opQueue.push(op);
-	this.undoCount = 0;
-	op.redo();
-};
-
-Argument.prototype.commit = function(msg, userId) {
+DCase.prototype.encode = function() {
 	var tl = [];
-	var id = 1;
 	var node = this.node;
-	node.traverse(function(node) {//FIXME
-		node.id = id++;
-	});
 	node.traverse(function(node) {
 		var c = [];
 		node.eachNode(function(node) {
@@ -207,8 +214,117 @@ Argument.prototype.commit = function(msg, userId) {
 	});
 	var tree = {
 		NodeList: tl,
-		TopGoalId: node.id
+		TopGoalId: node.id,
+		NodeCount: this.nodeCount
 	};
+	return tree;
+};
+
+//-----------------------------------------------------------------------------
+
+DCase.prototype.isChanged = function() {
+	return this.opQueue.length - this.undoCount > 0;
+};
+
+DCase.prototype.getArgumentId = function() {
+	return this.argId;
+};
+
+DCase.prototype.getCommitId = function() {
+	return this.commitId;
+};
+
+DCase.prototype.getTopGoal = function() {
+	return this.node;
+};
+
+//-----------------------------------------------------------------------------
+
+DCase.prototype.createNode = function(type, desc) {
+	var id = this.nodeCount++;
+	var name = DCaseNode.NAME_PREFIX[type] + (this.typeCount[type]++);
+	return new DCaseNode(id, name, type, desc);
+};
+
+DCase.prototype.insertNode = function(parent, type, desc, index) {
+	var self = this;
+	if(index == null) {
+		index = parent.children.length;
+	}
+	var node = this.createNode(type, desc);
+	this.applyOperation({
+		redo: function() {
+			parent.insertChild(node, index);
+			self.nodeInserted(parent, node, index);
+		},
+		undo: function() {
+			parent.removeChild(node);
+			self.nodeRemoved(parent, node);
+		},
+	});
+};
+
+DCase.prototype.removeNode = function(parent, node) {
+	var self = this;
+	var index = this.parent[0].children.indexOf(node);
+	this.applyOperation({
+		redo: function() {
+			parent.removeChild(node);
+			self.nodeRemoved(parent, node);
+		},
+		undo: function() {
+			parent.insertChild(node, index);
+			self.nodeInserted(parent, node, index);
+		},
+	});
+};
+
+DCase.prototype.setDescription = function(node, desc) {
+	var self = this;
+	var oldDesc = node.desc;
+	this.applyOperation({
+		redo: function() {
+			node.desc = desc;
+			self.nodeChanged(node);
+		},
+		undo: function() {
+			node.desc = oldDesc;
+			self.nodeChanged(node);
+		},
+	});
+};
+
+DCase.prototype.undo = function() {
+	var n = this.opQueue.length;
+	if(n > this.undoCount) {
+		this.undoCount++;
+		var op = this.opQueue[n - this.undoCount];
+		op.undo();
+		return true;
+	} else {
+		return false;
+	}
+};
+
+DCase.prototype.redo = function() {
+	if(this.undoCount > 0) {
+		var op = this.opQueue[this.opQueue.length - this.undoCount];
+		this.undoCount--;
+		op.redo();
+		return true;
+	} else {
+		return false;
+	}
+};
+
+DCase.prototype.applyOperation = function(op) {
+	this.opQueue.splice(this.opQueue.length - this.undoCount, this.undoCount, op);
+	this.undoCount = 0;
+	op.redo();
+};
+
+DCase.prototype.commit = function(msg, userId) {
+	var tree = this.encode();
 	var r = DCaseAPI.commit(tree, this.commitId, msg, userId);
 	this.commitId = r.commitId;
 	this.undoCount = 0;
@@ -216,7 +332,9 @@ Argument.prototype.commit = function(msg, userId) {
 	return true;
 };
 
-Argument.prototype.getTopGoal = function() {
-	return this.node;
-};
+//-----------------------------------------------------------------------------
+
+DCase.prototype.nodeInserted = function() {};
+DCase.prototype.nodeRemoved = function(){};
+DCase.prototype.nodeChanged = function(){};
 
