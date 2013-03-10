@@ -50,6 +50,14 @@ DCaseViewer.prototype.getArgument = function() {
 
 DCaseViewer.prototype.setArgument = function(arg) {
 	var self = this;
+	
+	if(this.argument != null) {
+		this.argument.removeListener(self);
+	}
+	if(arg != null) {
+		arg.addListener(self);
+	}
+
 	this.argument = arg;
 
 	this.$svg.empty();
@@ -90,6 +98,8 @@ DCaseViewer.prototype.setArgument = function(arg) {
 DCaseViewer.prototype.structureUpdated = function(ms) {
 	this.setArgument(this.argument);//TODO animation
 };
+
+DCaseViewer.prototype.updated = DCaseViewer.prototype.structureUpdated;
 
 DCaseViewer.prototype.centerize = function(view, ms) {
 	if(this.rootview == null) return;
@@ -339,8 +349,7 @@ DNodeView.prototype.showInplace = function() {
 		this.edit = new InplaceEditor(this.div, top, this.node.desc, function(newDesc) {
 			var node = self.node;
 			if(node.desc != newDesc) {
-				var op = new EditOperation(node, node.desc, newDesc);
-				self.viewer.getArgument().applyOperation(op);
+				self.viewer.getArgument().setDescription(node, newDesc);
 				setTimeout(function() {
 					var b = self.svg.outer(200, self.divText.height() + 60);
 					self.bounds.h = b.h;

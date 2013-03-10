@@ -37,25 +37,28 @@ DCaseAPI.getCommitList = function(arg) {
 	return this.call("getCommitList", { argumentId: arg }).commitIdList;
 };
 
-DCaseAPI.getArgument = function(argId, commitId) {
+DCaseAPI.getDCase = function(argId, commitId) {
 	var r = this.call("getNodeTree", { commitId: commitId });
-	return new Argument(this.createNode(r.tree), argId, commitId);
+	return new DCase(r.tree, argId, commitId);
 };
 
-DCaseAPI.createArgument = function(newNode, userId) {
+DCaseAPI.createDCase = function(desc, userId) {
+	var id = 0;
+	var tree = {
+		NodeList: [{
+			ThisNodeId: id,
+			NodeType: "Goal",
+			Description: desc,
+			Children: [],
+		}],
+		TopGoalId: id,
+		NodeCount: 1,
+	};
 	var r = this.call("createTopGoal", {
-		tree: {
-			NodeList: [{
-				ThisNodeId: newNode.id,
-				NodeType: newNode.type,
-				Description: newNode.desc,
-				Children: [],
-			}],
-			TopGoalId: newNode.id,
-		},
+		tree:	tree,
 		userId: userId
 	});
-	return new Argument(newNode, r.argmentId, r.commitId);
+	return new DCase(tree, r.argmentId, r.commitId);
 };
 
 DCaseAPI.search = function(text) {

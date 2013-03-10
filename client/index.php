@@ -60,7 +60,6 @@ body {
 <script type="text/javascript" src="js/ase.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
 <script type="text/javascript" src="js/animation.js"></script>
-<script type="text/javascript" src="js/operation.js"></script>
 <script type="text/javascript">
 
 $(function() {

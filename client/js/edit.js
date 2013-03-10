@@ -11,7 +11,7 @@ var DNodeEditWindow = (function() {
 		success = _success;
 		node = _node;
 		if(selectable == null) {
-			selectable = DNode.TYPES;
+			selectable = DCaseNode.TYPES;
 		}
 		$select.empty();
 		$.each(selectable, function(i, type) {
@@ -23,7 +23,7 @@ var DNodeEditWindow = (function() {
 		if(node != null) {
 			selectedType = node.type;
 			$select.attr("disabled", true);
-			$desc.attr("value", node.text);
+			$desc.attr("value", node.desc);
 		} else {
 			selectedType = selectable[0];
 			$select.attr("disabled", false);
@@ -34,13 +34,8 @@ var DNodeEditWindow = (function() {
 	};
 
 	DNodeEditWindow.applyAndClose = function() {
-		if(node != null) {
-			node.text = $desc.attr("value");
-		} else {
-			node = new DNode(-1, "NewNode", selectedType, $desc.attr("value"));
-		}
 		self.close();
-		success(node);
+		success(selectedType, $desc.attr("value"));
 	};
 
 	DNodeEditWindow.close = function() {

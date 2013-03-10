@@ -13,7 +13,7 @@ var ASE = function(body) {
 
 	timeline.onArgumentSelected = function(argId, commitId) {
 		if(self.checkCommited()) {
-			var arg = DCaseAPI.getArgument(argId, commitId);
+			var arg = DCaseAPI.getDCase(argId, commitId);
 			viewer.setArgument(arg);
 			return true;
 		} else {
@@ -26,11 +26,9 @@ var ASE = function(body) {
 	this.insertToSelectedNode = function() {
 		var view = viewer.getSelectedNode();
 		if(view != null) {
-			var sel = DNode.SELECTABLE_TYPES[view.node.type];
-			DNodeEditWindow.open(null, sel, function(newNode) {
-				var op = new InsertOperation(view.node, newNode);
-				viewer.getArgument().applyOperation(op);
-				viewer.structureUpdated();
+			var sel = DCaseNode.SELECTABLE_TYPES[view.node.type];
+			DNodeEditWindow.open(null, sel, function(type, desc) {
+				viewer.getArgument().insertNode(view.node, type, desc);
 			});
 		}
 	};
@@ -41,30 +39,28 @@ var ASE = function(body) {
 			var parents = view.node.parents;
 			if(parents.length > 0) {
 				if(confirm("ノードを削除しますか？")) {
-					var op = new RemoveOperation(parents[0], view.node);
-					viewer.getArgument().applyOperation(op);
-					viewer.structureUpdated();
+					viewer.getArgument().removeNode(parents[0], view.node);
 				}
 			}
 		}
 	};
 
 	this.createNewArgument = function() {
-		DNodeEditWindow.open(null, ["Goal"], function(newNode) {
-			if(self.checkCommited()) {
-				var arg = DCaseAPI.createArgument(newNode, userId);
-				viewer.setArgument(arg);
-				timeline.repaint(arg);
-				updateArgumentList();
-			}
-		});
+		if(self.checkCommited()) {
+			DNodeEditWindow.open(null, ["Goal"], function(type, desc) {
+					var arg = DCaseAPI.createDCase(desc, userId);
+					viewer.setArgument(arg);
+					timeline.repaint(arg);
+					self.updateArgumentList();
+			});
+		}
 	};
 
 	this.commit = function() {
 		var msg = prompt("コミットメッセージを入力して下さい");
 		if(msg != null) {
 			if(viewer.getArgument().commit(msg, userId)) {
-				var arg = DCaseAPI.getArgument(arg, br);
+				//var arg = DCaseAPI.getDCase(arg, br);
 				timeline.repaint();
 				alert("コミットしました");
 			}
@@ -117,7 +113,7 @@ var ASE = function(body) {
 				.html("<a href=\"#\">" + br.commitId + "</a>")
 				.click(function() {
 					if(self.checkCommited()) {
-						var arg = DCaseAPI.getArgument(arg, br);
+						var arg = DCaseAPI.getDCase(arg, br);
 						viewer.setArgument(arg);
 						timeline.repaint(arg);
 					}

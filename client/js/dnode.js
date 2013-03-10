@@ -334,7 +334,29 @@ DCase.prototype.commit = function(msg, userId) {
 
 //-----------------------------------------------------------------------------
 
-DCase.prototype.nodeInserted = function() {};
-DCase.prototype.nodeRemoved = function(){};
-DCase.prototype.nodeChanged = function(){};
+DCase.prototype.addListener = function(view) {
+	this.view.push(view);
+};
+
+DCase.prototype.removeListener = function(view) {
+	this.view.splice(this.view.indexOf(view), 1);
+};
+
+DCase.prototype.nodeInserted = function() {
+	$.each(this.view, function(i, view) {
+		view.updated();//FIXME
+	});
+};
+
+DCase.prototype.nodeRemoved = function(){
+	$.each(this.view, function(i, view) {
+		view.updated();//FIXME
+	});
+};
+
+DCase.prototype.nodeChanged = function(){
+	$.each(this.view, function(i, view) {
+		view.updated();//FIXME
+	});
+};
 
