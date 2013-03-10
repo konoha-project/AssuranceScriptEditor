@@ -20,10 +20,10 @@ var defaultColorTheme = {
 		"Rebuttal": "none",
 	},
 	fill: {
-		"Goal"    : "#A0A0A0",
-		"Context" : "#E0E0E0",
-		"Subject" : "#E0E0E0",
-		"Strategy": "#C0C0C0",
+		"Goal"    : "#E0E0E0",
+		"Context" : "#C0C0C0",
+		"Subject" : "#C0C0C0",
+		"Strategy": "#B0B0B0",
 		"Evidence": "#D0D0D0",
 		"Solution": "#D0D0D0",
 		"Rebuttal": "#EEAAAA",
@@ -400,20 +400,28 @@ var DNodeView = function(viewer, node, parentView) {
 	}
 
 	var touchinfo = {};
+
+	this.$divText.click(function() {
+		self.showInplace();
+	});
+
 	this.$div.mouseup(function(e) {
-		if(self.selected) {
-			self.showInplace();
-		}
 		viewer.dragEnd(self);
-	}).dblclick(function(e) {
+	});
+
+	this.$div.dblclick(function(e) {
 		if(self.edit != null) {
 			self.edit.close();
 		}
 		viewer.expandBranch(self);
-	}).bind("touchstart", function(e) {
+	});
+	
+	this.$div.bind("touchstart", function(e) {
 		var touches = e.originalEvent.touches;
 		touchinfo.count = touches.length;
-	}).bind("touchend", function(e) {
+	});
+	
+	this.$div.bind("touchend", function(e) {
 		var DBLTOUCH_THRESHOLD = 300;
 		viewer.dragEnd(self);
 		if(touchinfo.time != null &&
@@ -427,14 +435,15 @@ var DNodeView = function(viewer, node, parentView) {
 			touchinfo.time = null;
 		}
 	});
+
 	this.$div.hover(function() {
-		//viewer.showToolbox(self);
 		self.hovered = true;
 		self.updateColor();
+		//self.showToolbox(true);
 	}, function() {
-		//viewer.showToolbox(null);
 		self.hovered = false;
 		self.updateColor();
+		//self.showToolbox(false);
 	});
 
 	this.nodeChanged();

@@ -265,8 +265,9 @@ DCase.prototype.insertNode = function(parent, type, desc, index) {
 	});
 };
 
-DCase.prototype.removeNode = function(parent, node) {
+DCase.prototype.removeNode = function(node) {
 	var self = this;
+	var parent = node.parents[0];
 	var index = parent.children.indexOf(node);
 	this.applyOperation({
 		redo: function() {

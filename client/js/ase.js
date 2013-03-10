@@ -39,7 +39,7 @@ var ASE = function(body) {
 			var parents = view.node.parents;
 			if(parents.length > 0) {
 				if(confirm("ノードを削除しますか？")) {
-					viewer.getDCase().removeNode(parents[0], view.node);
+					viewer.getDCase().removeNode(view.node);
 				}
 			}
 		}

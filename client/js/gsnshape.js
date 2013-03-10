@@ -16,16 +16,16 @@ var GsnShape = {
 		return Goal;
 	}()),
 	"Context": (function() {
-		var N = 10;
+		var N = 20;
 		var Context = function($svg) {
 			this.elems = [ $svg.createSvg("rect") ];
 		};
 		Context.prototype.animate = function(a, x, y, w, h, scale) {
+			var n = N * scale;
 			a.moves(this.elems[0], {
-				rx: N * scale, ry: N * scale,
-				x : x, y : y, width : w, height: h
+				rx: n, ry: n, x: x, y: y, width: w, height: h
 			});
-			return { x: N, y: N };
+			return { x: N/2, y: N/2};
 		};
 		Context.prototype.outer = function(w, h) {
 			return { w: w + N, h: h + N };
@@ -54,7 +54,7 @@ var GsnShape = {
 				{ x: x+w*5/8, y:y+n },
 				{ x: x+w*5/8+n*2, y:y },
 			]);
-			return  { x: n/2, y: n/2 };
+			return  { x: N/2, y: N/2 };
 		};
 		Subject.prototype.outer = function(w, h) {
 			return { w: w + N, h: h + N };
