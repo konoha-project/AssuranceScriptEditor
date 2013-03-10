@@ -85,7 +85,7 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 
 	setTimeout(function() {
 		function f(v) {//FIXME
-			var b = v.svg.outer(200, v.divText.height() + 60);
+			var b = v.svg.outer(200, v.$divText.height() + 60);
 			v.bounds.w = b.w;
 			v.bounds.h = b.h;
 			v.forEachNode(function(e) {
@@ -167,7 +167,7 @@ DCaseViewer.prototype.nodeChanged = function(node) {
 	view.nodeChanged();
 	setTimeout(function() {
 		function f(v) {//FIXME
-			var b = v.svg.outer(200, v.divText.height() + 60);
+			var b = v.svg.outer(200, v.$divText.height() + 60);
 			v.bounds.w = b.w;
 			v.bounds.h = b.h;
 		}
@@ -223,8 +223,8 @@ DCaseViewer.prototype.showToolbox = function(node) {
 	if(this.toolboxNode != node) {
 		if(node != null) {
 			var data = node.node;
-			var b = node.div.offset();
-			var w = node.div.width();
+			var b = node.$div.offset();
+			var w = node.$div.width();
 			var x = 120;
 
 			$("#toolbar").css({
@@ -308,7 +308,7 @@ var DNodeView = function(viewer, node, parentView) {
 	this.viewer = viewer;
 	this.node = node;
 	this.svg = new GsnShape[node.type](viewer);
-	this.div = $("<div></div>")
+	this.$div = $("<div></div>")
 			.addClass("node-container")
 			.width(DEF_WIDTH)
 			.css("left", $(document).width())//FIXME
@@ -318,15 +318,15 @@ var DNodeView = function(viewer, node, parentView) {
 	this.svgUndevel = null;
 	this.argumentBorder = null;
 	
-	this.divName = $("<div></div>")
+	this.$divName = $("<div></div>")
 		.addClass("node-name")
-		.appendTo(this.div);
-	this.divText = $("<div></div>")
+		.appendTo(this.$div);
+	this.$divText = $("<div></div>")
 		.addClass("node-text")
-		.appendTo(this.div);
-	this.divNodes = $("<div></div>")
+		.appendTo(this.$div);
+	this.$divNodes = $("<div></div>")
 		.addClass("node-closednodes")
-		.appendTo(this.div);
+		.appendTo(this.$div);
 
 	this.children = [];
 	this.context = null;
@@ -362,7 +362,7 @@ var DNodeView = function(viewer, node, parentView) {
 	}
 
 	var touchinfo = {};
-	this.div.mouseup(function(e) {
+	this.$div.mouseup(function(e) {
 		if(self == viewer.getSelectedNode()) {
 			self.showInplace();
 		}
@@ -389,7 +389,7 @@ var DNodeView = function(viewer, node, parentView) {
 			touchinfo.time = null;
 		}
 	});
-	//this.div.hover(function() {
+	//this.$div.hover(function() {
 	//	viewer.showToolbox(self);
 	//}, function() {
 	//	viewer.showToolbox(null);
@@ -432,25 +432,25 @@ DNodeView.prototype.nodeChanged = function() {
 	}
 
 	// node name and description
-	this.divName.html(node.name);
-	this.divText.html(node.getHtmlDescription());
+	this.$divName.html(node.name);
+	this.$divText.html(node.getHtmlDescription());
 	var count = node.getNodeCount();
 	if(count != 0) {
 		this.divNodesText = count + " nodes...";
 	} else {
 		this.divNodesText = null;
-		this.divNodes.html("");
+		this.$divNodes.html("");
 	}
 };
 
 DNodeView.prototype.showInplace = function() {
 	if(this.edit == null) {
 		var self = this;
-		var top = this.divText.offset().y;
-		this.divText.text("");
-		this.edit = new InplaceEditor(this.div, top, this.node.desc, function(newDesc) {
+		var top = this.$divText.offset().y;
+		this.$divText.text("");
+		this.edit = new InplaceEditor(this.$div, top, this.node.desc, function(newDesc) {
 			var node = self.node;
-			self.divText.html(node.getHtmlDescription());
+			self.$divText.html(node.getHtmlDescription());
 			if(node.desc != newDesc) {
 				self.viewer.getDCase().setDescription(node, newDesc);
 			}
@@ -469,7 +469,7 @@ DNodeView.prototype.remove = function(parentView) {
 		view.remove(self);
 	});
 	$(this.svg.elems[0]).remove();
-	this.div.remove();
+	this.$div.remove();
 	if(this.svgUndevel != null) $(this.svgUndevel).remove();
 	if(this.argumentBorder != null) $(this.argumentBorder).remove();
 	if(this.line != null) $(this.line).remove();
@@ -605,18 +605,18 @@ DNodeView.prototype.animeStart = function(a, parent) {
 	var scale = this.viewer.scale;
 	var b = this.bounds;
 	a.show(this.svg.elems[0], this.visible);
-	a.show(this.div, this.visible);
-	a.show(this.divNodes, !this.childVisible);
+	a.show(this.$div, this.visible);
+	a.show(this.$divNodes, !this.childVisible);
 
 	var offset = this.svg.animate(a, b.x * scale, b.y * scale,
 			b.w * scale, b.h * scale, scale);
-	a.moves(this.div, {
+	a.moves(this.$div, {
 		left  : (b.x + offset.x) * scale,
 		top   : (b.y + offset.y) * scale,
 		width : (b.w - offset.x*2) * scale,
 		height: (b.h - offset.y*2) * scale,
 	});
-	this.div.css("fontSize", Math.floor(FONT_SIZE * scale));
+	this.$div.css("fontSize", Math.floor(FONT_SIZE * scale));
 
 	this.svg.elems[0].setAttribute("fill", getColorByState(this.node));
 	if(this.viewer.selectedNode == this) {
@@ -625,16 +625,16 @@ DNodeView.prototype.animeStart = function(a, parent) {
 		this.svg.elems[0].setAttribute("stroke", "none");
 	}
 	if(scale < MIN_DISP_SCALE) {
-		a.show(this.divText, false);
-		a.show(this.divName, false);
+		a.show(this.$divText, false);
+		a.show(this.$divName, false);
 		if(this.divNodesText != null) {
-			this.divNodes.html("<p></p>");
+			this.$divNodes.html("<p></p>");
 		}
 	} else {
-		a.show(this.divText, true);
-		a.show(this.divName, true);
+		a.show(this.$divText, true);
+		a.show(this.$divName, true);
 		if(this.divNodesText != null) {
-			this.divNodes.html(this.divNodesText);
+			this.$divNodes.html(this.divNodesText);
 		}
 	}
 	
