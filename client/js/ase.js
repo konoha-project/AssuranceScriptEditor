@@ -14,7 +14,7 @@ var ASE = function(body) {
 	timeline.onArgumentSelected = function(argId, commitId) {
 		if(self.checkCommited()) {
 			var arg = DCaseAPI.getDCase(argId, commitId);
-			viewer.setArgument(arg);
+			viewer.setDCase(arg);
 			return true;
 		} else {
 			return false;
@@ -28,7 +28,7 @@ var ASE = function(body) {
 		if(view != null) {
 			var sel = DCaseNode.SELECTABLE_TYPES[view.node.type];
 			DNodeEditWindow.open(null, sel, function(type, desc) {
-				viewer.getArgument().insertNode(view.node, type, desc);
+				viewer.getDCase().insertNode(view.node, type, desc);
 			});
 		}
 	};
@@ -39,19 +39,19 @@ var ASE = function(body) {
 			var parents = view.node.parents;
 			if(parents.length > 0) {
 				if(confirm("ノードを削除しますか？")) {
-					viewer.getArgument().removeNode(parents[0], view.node);
+					viewer.getDCase().removeNode(parents[0], view.node);
 				}
 			}
 		}
 	};
 
-	this.createNewArgument = function() {
+	this.createNewDCase = function() {
 		if(self.checkCommited()) {
 			DNodeEditWindow.open(null, ["Goal"], function(type, desc) {
 					var arg = DCaseAPI.createDCase(desc, userId);
-					viewer.setArgument(arg);
+					viewer.setDCase(arg);
 					timeline.repaint(arg);
-					self.updateArgumentList();
+					self.updateDCaseList();
 			});
 		}
 	};
@@ -59,7 +59,7 @@ var ASE = function(body) {
 	this.commit = function() {
 		var msg = prompt("コミットメッセージを入力して下さい");
 		if(msg != null) {
-			if(viewer.getArgument().commit(msg, userId)) {
+			if(viewer.getDCase().commit(msg, userId)) {
 				//var arg = DCaseAPI.getDCase(arg, br);
 				timeline.repaint();
 				alert("コミットしました");
@@ -79,7 +79,7 @@ var ASE = function(body) {
 		if(view != null) {
 			if(view.node.isAppendableType(copiedNode.type)) {
 				var op = new InsertOperation(view.node, copiedNode.deepCopy());
-				viewer.getArgument().applyOperation(op);
+				viewer.getDCase().applyOperation(op);
 				viewer.structureUpdated();
 			} else {
 				alert("そのタイプは貼付けられません");
@@ -87,26 +87,26 @@ var ASE = function(body) {
 		}
 	};
 
-	this.listupArgument = function(callback) {
+	this.listupDCase = function(callback) {
 		$.each(DCaseAPI.getArgumentList(), function(i, arg) {
 			callback(arg);
 		});
 	};
 
-	this.updateArgumentList = function() {
-		var $m = $("#menu-argument");
+	this.updateDCaseList = function() {
+		var $m = $("#menu-dcase");
 		$m.empty();
 
 		$("<li></li>")
 			.html("<a href=\"#\">新規</a>")
 			.click(function() {
-				self.createNewArgument();
+				self.createNewDCase();
 			})
 			.appendTo($m);
 		$("<li></li>")
 			.addClass("divider")
 			.appendTo($m);
-		self.listupArgument(function(arg) {
+		self.listupDCase(function(arg) {
 			var cl = DCaseAPI.getCommitList(arg);
 			var br = cl[cl.length-1];
 			$("<li></li>")
@@ -114,7 +114,7 @@ var ASE = function(body) {
 				.click(function() {
 					if(self.checkCommited()) {
 						var arg = DCaseAPI.getDCase(arg, br);
-						viewer.setArgument(arg);
+						viewer.setDCase(arg);
 						timeline.repaint(arg);
 					}
 				})
@@ -123,7 +123,7 @@ var ASE = function(body) {
 	};
 
 	this.checkCommited = function() {
-		var arg = viewer.getArgument();
+		var arg = viewer.getDCase();
 		if(arg != null && arg.isChanged()) {
 			if(!confirm("未コミットの変更がありますが，破棄しますか?")) {
 				return false;
@@ -133,18 +133,18 @@ var ASE = function(body) {
 	};
 
 	$(window).bind("beforeunload", function(e) {
-		var a = viewer.getArgument();
+		var a = viewer.getDCase();
 		if(a != null && a.isChanged()) {
 			return "未コミットの変更があります";
 		}
 	});
 
-	self.updateArgumentList();
+	self.updateDCaseList();
 
 	//--------------------------------------------------------
 
 	this.searchNode = function(text, types, beginDate, endDate, callback) {
-		var root = viewer.getArgument().getTopGoal();
+		var root = viewer.getDCase().getTopGoal();
 		root.traverse(function(node) {
 			var name = node.name;
 			var desc = node.text;
@@ -158,7 +158,7 @@ var ASE = function(body) {
 		});
 	};
 
-	this.searchArgument = function(text, types, beginDate, endDate, callback) {
+	this.searchDCase = function(text, types, beginDate, endDate, callback) {
 		//TODO
 	};
 
@@ -194,7 +194,7 @@ var ASE = function(body) {
 	var URL_EXPORT = "cgi/view.cgi";
 
 	this.exportTree = function(type) {
-		var commitId = viewer.getArgument().commitId;
+		var commitId = viewer.getDCase().commitId;
 		var url = URL_EXPORT + "?" + commitId + "." + type;
 		window.open(url, "_black");
 	};
@@ -206,13 +206,13 @@ var ASE = function(body) {
 	});
 
 	$("#menu-undo").click(function() {
-		if(viewer.getArgument().undo()) {
+		if(viewer.getDCase().undo()) {
 			viewer.structureUpdated();
 		}
 	});
 
 	$("#menu-redo").click(function() {
-		if(viewer.getArgument().redo()) {
+		if(viewer.getDCase().redo()) {
 			viewer.structureUpdated();
 		}
 	});

@@ -11,7 +11,7 @@ var DEF_WIDTH = 200;
 
 //-----------------------------------------------------------------------------
 
-var DCaseViewer = function(root, arg) {
+var DCaseViewer = function(root, dcase) {
 
 	this.$root = $(root);
 	root.className = "viewer-root";
@@ -24,9 +24,10 @@ var DCaseViewer = function(root, arg) {
 	this.$dom = $("<div></div>").css({
 		position: "absolute", left: 0, top: 0, width: "100%", height: "100%"
 	}).appendTo(this.$root);
+
 	//------------------------------------
 
-	this.argument = null;
+	this.dcase = null;
 	this.moving = false;
 	this.shiftX = 0;
 	this.shiftY = 0;
@@ -39,33 +40,33 @@ var DCaseViewer = function(root, arg) {
 
 	//------------------------------------
 
-	this.setArgument(arg);
+	this.setDCase(dcase);
 	this.addEventHandler();
 	this.setTextSelectable(false);
 }
 
-DCaseViewer.prototype.getArgument = function() {
-	return this.argument;
+DCaseViewer.prototype.getDCase = function() {
+	return this.dcase;
 };
 
-DCaseViewer.prototype.setArgument = function(arg) {
+DCaseViewer.prototype.setDCase = function(dcase) {
 	var self = this;
 	
-	if(this.argument != null) {
-		this.argument.removeListener(self);
+	if(this.dcase != null) {
+		this.dcase.removeListener(self);
 	}
-	if(arg != null) {
-		arg.addListener(self);
+	if(dcase != null) {
+		dcase.addListener(self);
 	}
 
-	this.argument = arg;
+	this.dcase = dcase;
 
 	this.$svg.empty();
 	this.$dom.empty();
 	this.showToolbox(null);
 
-	if(arg == null) {
-		//TODO show new_argument button
+	if(dcase == null) {
+		//TODO show new_dcase button
 		return;
 	}
 
@@ -76,7 +77,7 @@ DCaseViewer.prototype.setArgument = function(arg) {
 		});
 		return view;
 	}
-	this.rootview = create(arg.getTopGoal());
+	this.rootview = create(dcase.getTopGoal());
 
 	setTimeout(function() {
 		function f(v) {//FIXME
@@ -96,7 +97,7 @@ DCaseViewer.prototype.setArgument = function(arg) {
 }
 
 DCaseViewer.prototype.structureUpdated = function(ms) {
-	this.setArgument(this.argument);//TODO animation
+	this.setDCase(this.dcase);//TODO animation
 };
 
 DCaseViewer.prototype.nodeInserted = DCaseViewer.prototype.structureUpdated;
@@ -351,7 +352,7 @@ DNodeView.prototype.showInplace = function() {
 		this.edit = new InplaceEditor(this.div, top, this.node.desc, function(newDesc) {
 			var node = self.node;
 			if(node.desc != newDesc) {
-				self.viewer.getArgument().setDescription(node, newDesc);
+				self.viewer.getDCase().setDescription(node, newDesc);
 				setTimeout(function() {
 					var b = self.svg.outer(200, self.divText.height() + 60);
 					self.bounds.h = b.h;

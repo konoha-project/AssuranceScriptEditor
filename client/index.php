@@ -93,8 +93,8 @@ $(function() {
 			<div class="nav-collapse collapse">
 				<ul class="nav">
 					<li class="dropdown">
-						<a class="dropdown-toggle" date-toggle="dropdown" href="#">Argumentの選択<b class="caret"></b></a>
-						<ul class="dropdown-menu" id="menu-argument">
+						<a class="dropdown-toggle" date-toggle="dropdown" href="#">DCaseの選択<b class="caret"></b></a>
+						<ul class="dropdown-menu" id="menu-dcase">
 						</ul>
 					</li>
 					<li class="dropdown">

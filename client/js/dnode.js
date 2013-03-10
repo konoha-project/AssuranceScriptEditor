@@ -187,7 +187,7 @@ DCase.prototype.decode = function(tree) {
 		var data = nodes[id];
 		var type = data.NodeType;
 		var desc = data.Description;
-		var node = self.createNode(type, desc);
+		var node = self.createNode(id, type, desc);
 		for(var i=0; i<data.Children.length; i++) {
 			node.insertChild(create(data.Children[i]));
 		}
@@ -195,6 +195,7 @@ DCase.prototype.decode = function(tree) {
 	}
 	var topId = tree.TopGoalId;
 	this.node = create(topId);
+	this.nodeCount = tree.NodeCount;
 };
 
 DCase.prototype.encode = function() {
@@ -240,8 +241,7 @@ DCase.prototype.getTopGoal = function() {
 
 //-----------------------------------------------------------------------------
 
-DCase.prototype.createNode = function(type, desc) {
-	var id = this.nodeCount++;
+DCase.prototype.createNode = function(id, type, desc) {
 	var name = DCaseNode.NAME_PREFIX[type] + (this.typeCount[type]++);
 	return new DCaseNode(id, name, type, desc);
 };
@@ -251,7 +251,8 @@ DCase.prototype.insertNode = function(parent, type, desc, index) {
 	if(index == null) {
 		index = parent.children.length;
 	}
-	var node = this.createNode(type, desc);
+	var id = this.nodeCount++;
+	var node = this.createNode(id, type, desc);
 	this.applyOperation({
 		redo: function() {
 			parent.insertChild(node, index);

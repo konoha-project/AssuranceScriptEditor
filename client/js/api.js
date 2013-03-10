@@ -55,8 +55,7 @@ DCaseAPI.createDCase = function(desc, userId) {
 		NodeCount: 1,
 	};
 	var r = this.call("createTopGoal", {
-		tree:	tree,
-		userId: userId
+		tree:	tree, userId: userId
 	});
 	return new DCase(tree, r.argmentId, r.commitId);
 };
