@@ -796,8 +796,9 @@ DNodeView.prototype.animeStart = function(a, parent) {
 				y: y2,
 			});
 		} else {
+			var n = parent.node.type == "Strategy" ? 10 : 0;
 			a.moves(l, {
-				x1: (pb.x + pb.w  ) * scale,
+				x1: (pb.x + pb.w - n) * scale,
 				y1: (pb.y + pb.h/2) * scale,
 				x2: (b.x) * scale,
 				y2: (b.y + b.h/2) * scale,
