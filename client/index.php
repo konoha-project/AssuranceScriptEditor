@@ -137,6 +137,9 @@ $(function() {
 						<ul class="dropdown-menu" id="menu-dcase">
 						</ul>
 					</li>
+<?php
+if(!(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0)) {
+echo <<<EOT
 					<li class="dropdown">
 						<a class="dropdown-toggle" date-toggle="dropdown" href="#">編集<b class="caret"></b></a>
 						<ul class="dropdown-menu">
@@ -157,6 +160,9 @@ $(function() {
 					</li>
 					<li><a id="menu-commit" href="#">コミット</a></li>
 
+EOT;
+}
+?>
 					<li class="dropdown">
 						<a class="dropdown-toggle" id="menu-history-toggle" href="#">コミット履歴<b class="caret"></b></a>
 					</li>

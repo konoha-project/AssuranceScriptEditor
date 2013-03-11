@@ -1,14 +1,16 @@
 var ASE = function(body) {
 	var self = this;
-	var $body = this.$body = $(body);
-	var viewer = this.viewer = new DCaseViewer(document.getElementById("viewer"));
-	var timeline = this.timeline = new TimeLine($body);
 
 	//--------------------------------------------------------
 
 	var copiedNode = null;
 	var matchResult = document.cookie.match(/userId=(\w+);?/);
-	var userId = matchResult ? parseInt(matchResult[1]) : "null";
+	var userId = matchResult ? parseInt(matchResult[1]) : null;
+
+	var $body = this.$body = $(body);
+	var viewer = this.viewer = new DCaseViewer(document.getElementById("viewer"),
+			null, userId != null);
+	var timeline = this.timeline = new TimeLine($body);
 
 	//--------------------------------------------------------
 
@@ -101,15 +103,18 @@ var ASE = function(body) {
 		var $m = $("#menu-dcase");
 		$m.empty();
 
-		$("<li></li>")
-			.html("<a href=\"#\">新規</a>")
-			.click(function() {
-				self.createNewDCase();
-			})
-			.appendTo($m);
-		$("<li></li>")
-			.addClass("divider")
-			.appendTo($m);
+		if(userId != null) {
+			$("<li></li>")
+				.html("<a href=\"#\">新規</a>")
+				.click(function() {
+					self.createNewDCase();
+				})
+				.appendTo($m);
+			$("<li></li>")
+				.addClass("divider")
+				.appendTo($m);
+		}
+
 		self.listupDCase(function(dcase) {
 			var commitList = DCaseAPI.getCommitList(dcase.dcaseId);
 			var latest = commitList[commitList.length-1];

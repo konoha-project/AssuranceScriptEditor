@@ -31,6 +31,8 @@ var DNodeView_ExpandBranch = function(self) {
 var DNodeView_InplaceEdit = function(self) {
 	var $edit = null;
 
+	self.$divText.addClass("node-text-editable");
+
 	function showInplace() {
 		if($edit == null) {
 			var cc = 0;

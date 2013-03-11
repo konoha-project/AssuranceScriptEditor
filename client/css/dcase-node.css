@@ -13,7 +13,7 @@
 	font-size: 100%;
 	text-align: left;
 }
-.node-text:hover {
+.node-text-editable:hover {
 	background: #EEEEAA;
 }
 

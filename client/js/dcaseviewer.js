@@ -11,7 +11,7 @@ var DEF_WIDTH = 200;
 
 //-----------------------------------------------------------------------------
 
-var DCaseViewer = function(root, dcase) {
+var DCaseViewer = function(root, dcase, editable) {
 
 	this.$root = $(root);
 	root.className = "viewer-root";
@@ -44,9 +44,11 @@ var DCaseViewer = function(root, dcase) {
 	];
 	this.nodeview_addons = [
 		DNodeView_ExpandBranch,
-		DNodeView_InplaceEdit,
-		DNodeView_ToolBox,
 	];
+	if(editable) {
+		this.nodeview_addons.push(DNodeView_InplaceEdit);
+		this.nodeview_addons.push(DNodeView_ToolBox);
+	}
 
 	//------------------------------------
 
