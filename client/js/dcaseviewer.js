@@ -429,7 +429,7 @@ DNodeView.prototype.showNewNode = function(visible) {
 	var self = this;
 	var type_selected = null;
 	if(visible) {
-		if(self.$edit == null) {
+		if(self.$edit == null && self.node.appendableTypes().length > 0) {
 			function edit_activate() {
 				if(!self.edit_active) {
 					self.edit_active = true;
@@ -472,7 +472,7 @@ DNodeView.prototype.showNewNode = function(visible) {
 
 			var $ul = self.$edit.find("ul");
 			$ul.empty();
-			$.each(DCaseNode.SELECTABLE_TYPES[self.node.type], function(i, type) {
+			$.each(self.node.appendableTypes(), function(i, type) {
 				var $li = $("<li></li>")
 					.html("<a href=\"#\">" + type + "</a>")
 					.click(function() {
@@ -509,6 +509,7 @@ DNodeView.prototype.showNewNode = function(visible) {
 
 DNodeView.prototype.showToolbox = function(visible) {
 	if(visible) {
+		if(this.$toolbox != null) return;
 		var self = this;
 		
 		this.$toolbox = $("<div></div>")
@@ -533,6 +534,7 @@ DNodeView.prototype.showToolbox = function(visible) {
 			.appendTo(this.$toolbox);
 	} else {
 		this.$toolbox.remove();
+		this.$toolbox = null;
 	}
 };
 
