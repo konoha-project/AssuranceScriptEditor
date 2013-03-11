@@ -229,10 +229,10 @@ EOT;
 	</div>
 
 	<table id="edit-newnode" style="display: none;">
-		<tr><td width="30%">
+		<tr><td width="80">
 			<ul class="nav nav-list">
 			</ul>
-		</td><td width="70%">
+		</td><td width="200">
 			<textarea style="margin: 0px; padding: 0px; width: 100%; height: 100%;"></textarea>
 		</td></tr>
 	</table>

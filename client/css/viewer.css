@@ -26,7 +26,8 @@
 	border-color: gray;
 	font-size: 12px;
 	padding: 4px;
-	width: 320px;
+	width: 280px;
+	max-width: none;
 	z-index: 99;
 }
 
