@@ -62,7 +62,7 @@ void getCommitList (Json request) {
 	int dcaseId = request.getInt("dcaseId");
 	Json commitIdList = global.model.GetCommitList(dcaseId);
 	Json res = new Json();
-	res.set("commitIdList", commitIdList);
+	res.set("commitList", commitIdList);
 	Json response = createMessage(res);
 	stdout.print(response);
 }
