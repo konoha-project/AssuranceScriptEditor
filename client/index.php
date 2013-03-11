@@ -200,6 +200,15 @@ EOT;
 		<input id="edit-ok" type="button" value="OK"></input>
 		<input id="edit-cancel"type="button" value="Cancel"></input>
 	</div>
+
+	<table id="edit-newnode" style="display: none;">
+		<tr><td width="30%">
+			<ul class="nav nav-list">
+			</ul>
+		</td><td width="70%">
+			<textarea style="margin: 0px; padding: 0px; width: 100%; height: 100%;"></textarea>
+		</td></tr>
+	</table>
 </div>
 
 <svg width="0" height="0">

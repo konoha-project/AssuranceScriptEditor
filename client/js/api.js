@@ -25,32 +25,15 @@ DCaseAPI.call = function(method, params) {
 	} catch(e) {
 		console.log("json parse error!");
 	}
-}
+};
 
 //-------------------------------------
 
-DCaseAPI.getArgumentList = function() {
-	try {
-		return this.call("getArgumentList", {}).argumentIdList;
-	} catch(e) {
-		return [];
-	}
+DCaseAPI.getDCaseList = function() {
+	return this.call("getDCaseList", {}).dcaseList;
 };
 
-DCaseAPI.getCommitList = function(arg) {
-	try {
-		return this.call("getCommitList", { argumentId: arg }).commitIdList;
-	} catch(e) {
-		return [];
-	}
-};
-
-DCaseAPI.getDCase = function(argId, commitId) {
-	var r = this.call("getNodeTree", { commitId: commitId });
-	return new DCase(r.tree, argId, commitId);
-};
-
-DCaseAPI.createDCase = function(desc, userId) {
+DCaseAPI.createDCase = function(name, desc, userId) {
 	var id = 0;
 	var tree = {
 		NodeList: [{
@@ -62,22 +45,31 @@ DCaseAPI.createDCase = function(desc, userId) {
 		TopGoalId: id,
 		NodeCount: 1,
 	};
-	var r = this.call("createTopGoal", {
-		tree:	tree, userId: userId
+	var r = this.call("createDCase", {
+		dcaseName: name, tree: tree, userId: userId
 	});
-	return new DCase(tree, r.argmentId, r.commitId);
+	return new DCase(tree, r.dcaseId, r.commitId);
 };
 
-DCaseAPI.search = function(text) {
-	return this.call("search", {text: text});
-}
+DCaseAPI.getCommitList = function(dcaseId) {
+	return this.call("getCommitList", { dcaseId:dcaseId }).commitList;
+};
 
-DCaseAPI.commit = function(tree, commitId, msg, userId) {
+DCaseAPI.commit = function(tree, msg, commitId, userId) {
 	return this.call("commit", {
 		tree: tree,
+		commitMessage: msg,
 		commitId: commitId, 
-		message: msg,
 		userId: userId
-	});
-}
+	}).commitId;
+};
+
+DCaseAPI.getNodeTree = function(dcaseId, commitId) {
+	var r = this.call("getNodeTree", { commitId: commitId });
+	return new DCase(r.tree, dcaseId, commitId);
+};
+
+DCaseAPI.searchDCase = function(text) {
+	return this.call("searchDCase", { text: text }).searchResultList;
+};
 

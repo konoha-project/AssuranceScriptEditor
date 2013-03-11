@@ -12,10 +12,10 @@ var ASE = function(body) {
 
 	//--------------------------------------------------------
 
-	timeline.onArgumentSelected = function(argId, commitId) {
+	timeline.onDCaseSelected = function(argId, commitId) {
 		if(self.checkCommited()) {
-			var arg = DCaseAPI.getDCase(argId, commitId);
-			viewer.setDCase(arg);
+			var dcase = DCaseAPI.getNodeTree(argId, commitId);
+			viewer.setDCase(dcase);
 			return true;
 		} else {
 			return false;
@@ -49,10 +49,11 @@ var ASE = function(body) {
 	this.createNewDCase = function() {
 		if(self.checkCommited()) {
 			DNodeEditWindow.open(null, ["Goal"], function(type, desc) {
-					var arg = DCaseAPI.createDCase(desc, userId);
-					viewer.setDCase(arg);
-					timeline.repaint(arg);
-					self.updateDCaseList();
+				var name = "new DCase";
+				var dcase = DCaseAPI.createDCase(name, desc, userId);
+				viewer.setDCase(dcase);
+				timeline.repaint(dcase);
+				self.updateDCaseList();
 			});
 		}
 	};
@@ -61,9 +62,8 @@ var ASE = function(body) {
 		var msg = prompt("コミットメッセージを入力して下さい");
 		if(msg != null) {
 			if(viewer.getDCase().commit(msg, userId)) {
-				//var arg = DCaseAPI.getDCase(arg, br);
-				timeline.repaint();
 				alert("コミットしました");
+				timeline.repaint();
 			}
 		}
 	};
@@ -89,7 +89,7 @@ var ASE = function(body) {
 	};
 
 	this.listupDCase = function(callback) {
-		$.each(DCaseAPI.getArgumentList(), function(i, arg) {
+		$.each(DCaseAPI.getDCaseList(), function(i, arg) {
 			callback(arg);
 		});
 	};
@@ -107,16 +107,16 @@ var ASE = function(body) {
 		$("<li></li>")
 			.addClass("divider")
 			.appendTo($m);
-		self.listupDCase(function(arg) {
-			var cl = DCaseAPI.getCommitList(arg);
-			var br = cl[cl.length-1];
+		self.listupDCase(function(dcase) {
+			var commitList = DCaseAPI.getCommitList(dcase);
+			var latest = commitList[commitList.length-1];
 			$("<li></li>")
-				.html("<a href=\"#\">" + br.commitId + "</a>")
+				.html("<a href=\"#\">" + dcase.dcaseName+ "</a>")
 				.click(function() {
 					if(self.checkCommited()) {
-						var arg = DCaseAPI.getDCase(arg, br);
-						viewer.setDCase(arg);
-						timeline.repaint(arg);
+						var dcase0 = DCaseAPI.getNodeTree(dcase.dcaseId, latest.commitId);
+						viewer.setDCase(dcase0);
+						timeline.repaint(dcase0);
 					}
 				})
 				.appendTo($m);
@@ -124,8 +124,8 @@ var ASE = function(body) {
 	};
 
 	this.checkCommited = function() {
-		var arg = viewer.getDCase();
-		if(arg != null && arg.isChanged()) {
+		var dcase = viewer.getDCase();
+		if(dcase != null && dcase.isChanged()) {
 			if(!confirm("未コミットの変更がありますが，破棄しますか?")) {
 				return false;
 			}
@@ -134,8 +134,8 @@ var ASE = function(body) {
 	};
 
 	$(window).bind("beforeunload", function(e) {
-		var a = viewer.getDCase();
-		if(a != null && a.isChanged()) {
+		var dcase = viewer.getDCase();
+		if(dcase != null && dcase.isChanged()) {
 			return "未コミットの変更があります";
 		}
 	});
