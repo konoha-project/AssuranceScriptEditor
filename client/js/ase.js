@@ -7,7 +7,8 @@ var ASE = function(body) {
 	//--------------------------------------------------------
 
 	var copiedNode = null;
-	var userId = document.cookie.match(/userName=(\w+);?/)[1];
+	var matchResult = document.cookie.match(/userName=(\w+);?/);
+	var userId = matchResult ?  matchResult[1] : "null";
 
 	//--------------------------------------------------------
 
