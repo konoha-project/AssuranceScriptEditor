@@ -135,7 +135,7 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 		f(self.rootview);
 		self.rootview.updateLocation(0, 0);
 		self.shiftX = (self.$root.width() - self.treeSize().w * self.scale)/2;
-		self.shiftY = 20;
+		self.shiftY = 60;
 		self.repaintAll();
 	}, 100);
 };

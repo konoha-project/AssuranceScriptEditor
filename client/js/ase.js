@@ -12,6 +12,10 @@ var ASE = function(body) {
 
 	//--------------------------------------------------------
 
+	$("#menu-history-toggle").click(function() {
+		timeline.visible();
+	});
+
 	timeline.onDCaseSelected = function(argId, commitId) {
 		if(self.checkCommited()) {
 			var dcase = DCaseAPI.getNodeTree(argId, commitId);

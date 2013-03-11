@@ -37,7 +37,7 @@ body {
 #ase-logo {
 	position: absolute;
 	right: 0px;
-	top: 60px;
+	top: 40px;
 }
 </style>
 <script type="text/javascript" src="lib/jquery.min.js"></script>
@@ -156,6 +156,11 @@ $(function() {
 						</ul>
 					</li>
 					<li><a id="menu-commit" href="#">コミット</a></li>
+
+					<li class="dropdown">
+						<a class="dropdown-toggle" id="menu-history-toggle" href="#">コミット履歴<b class="caret"></b></a>
+					</li>
+
 					<li class="dropdown">
 						<a class="dropdown-toggle" date-toggle="dropdown" href="#">設定<b class="caret"></b></a>
 						<ul class="dropdown-menu">

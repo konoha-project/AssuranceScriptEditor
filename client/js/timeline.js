@@ -12,11 +12,6 @@ var TimeLine = function($root) {
 		position: "absolute", left: 0, top: 0,
 	}).appendTo($timeline);
 
-	var $control = $("<div></div>")
-		.addClass("timeline-control")
-		.html("▼")
-		.appendTo($root);
-
 	$("<div></div>")
 		.addClass("timeline-title")
 		.html("Commit History")
@@ -48,12 +43,12 @@ var TimeLine = function($root) {
 		self.drag();
 	});
 
-	var visible = true;
-	$control.click(function() {
-		visible = !visible;
+	var visible = false;
+	this.visible = function(b) {
+		if(b == null) visible = !visible;
+		else visible = b;
 		$timeline.css("display", visible ? "block" : "none");
-		$control.html(visible ? "▼" : "▲");
-	});
+	};
 
 	//--------------------------------------------------------
 
@@ -83,7 +78,7 @@ var TimeLine = function($root) {
 			" " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
 
 		$d.popover({
-			placement: "top",
+			placement: "bottom",
 			title: timefmt + " " + info.userName,
 			content: info.commitMessage,
 			trigger: "hover",
@@ -148,7 +143,6 @@ var TimeLine = function($root) {
 		self.argument = arg;
 		$container.empty();
 
-		$timeline.css("display", arg != null ? "block" : "none");
 		if(arg == null) {
 			return;
 		}
