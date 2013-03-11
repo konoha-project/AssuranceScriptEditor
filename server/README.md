@@ -38,7 +38,7 @@ API
 * register(userName: String, password: String)
 
 ## 検索(暫定)
-* searchDCase(text: String) return Array[SearchResult]
+* searchDCase(text: String) return searchResultList: Array[SearchResult]
 
 ###Search系の改正案
 * ノードの種類
