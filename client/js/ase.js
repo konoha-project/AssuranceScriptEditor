@@ -80,9 +80,7 @@ var ASE = function(body) {
 		var view = viewer.getSelectedNode();
 		if(view != null) {
 			if(view.node.appendableTypes().indexOf(copiedNode.type) != -1) {
-				var op = new InsertOperation(view.node, copiedNode.deepCopy());
-				viewer.getDCase().applyOperation(op);
-				viewer.structureUpdated();
+				viewer.getDCase().pasteNode(view.node, copiedNode);
 			} else {
 				alert("そのタイプは貼付けられません");
 			}

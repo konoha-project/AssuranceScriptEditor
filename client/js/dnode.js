@@ -52,7 +52,7 @@ DCaseNode.prototype.traverse = function(f, parent, index) {
 DCaseNode.prototype.deepCopy = function() {//FIXME id
 	var node = new DCaseNode(this.id, this.name, this.type, this.desc);
 	this.eachNode(function(child) {
-		node.addChild(child.deepCopy());
+		node.insertChild(child.deepCopy());
 	});
 	return node;
 };
@@ -241,6 +241,15 @@ DCase.prototype.createNode = function(id, type, desc) {
 	return new DCaseNode(id, name, type, desc);
 };
 
+DCase.prototype.copyNode = function(node) {
+	var self = this;
+	var newNode = self.createNode(this.nodeCount++, node.type, node.desc);
+	node.eachNode(function(child) {
+		newNode.insertChild(self.copyNode(child));
+	});
+	return newNode;
+};
+
 DCase.prototype.insertNode = function(parent, type, desc, index) {
 	var self = this;
 	if(index == null) {
@@ -256,6 +265,25 @@ DCase.prototype.insertNode = function(parent, type, desc, index) {
 		undo: function() {
 			parent.removeChild(node);
 			self.nodeRemoved(parent, node, index);
+		},
+	});
+};
+
+DCase.prototype.pasteNode = function(parent, old_node, index) {
+	var self = this;
+	if(index == null) {
+		index = parent.children.length;
+	}
+	var node = self.copyNode(old_node);
+
+	this.applyOperation({
+		redo: function() {
+			parent.insertChild(node, index);
+			self.structureUpdated();
+		},
+		undo: function() {
+			parent.removeChild(node);
+			self.structureUpdated();
 		},
 	});
 };
@@ -337,6 +365,12 @@ DCase.prototype.addListener = function(view) {
 
 DCase.prototype.removeListener = function(view) {
 	this.view.splice(this.view.indexOf(view), 1);
+};
+
+DCase.prototype.structureUpdated = function() {
+	$.each(this.view, function(i, view) {
+		view.structureUpdated();
+	});
 };
 
 DCase.prototype.nodeInserted = function(parent, node, index) {
