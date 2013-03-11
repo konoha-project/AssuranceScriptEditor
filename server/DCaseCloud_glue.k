@@ -179,11 +179,12 @@ class DCaseModel {
 		json.setInt("time",r.getInt("DateTime"));
 		json.setString("commitMessage",r.getString("message"));
 		json.setInt("userId",r.getInt("user_id")); //FIXME
+		json.setString("userName",r.getString("user_name"));
 		return json;
 	}
 
 	Json getLatestCommit(int dcase_id) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT id,DateTime,message,user_id FROM commit WHERE dcase_id=? AND latest_flag=TRUE");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT commit.id,DateTime,message,user_id,user_name FROM commit INNER JOIN user ON commit.user_id=user.id WHERE dcase_id=? AND latest_flag=TRUE");
 		p.setInt("@a",dcase_id);
 		ResultSet r = p.execute();
 		r.next();
@@ -196,7 +197,7 @@ class DCaseModel {
 		int id = commit.getInt("commitId");
 		ret.add(commit);
 		while(id != 0) {
-			PreparedStatement p = this.db.newPreparedStatement("SELECT id,DateTime,message,user_id,prev_commit_id FROM commit WHERE id=?");
+			PreparedStatement p = this.db.newPreparedStatement("SELECT commit.id,DateTime,message,user_id,user_name,prev_commit_id FROM commit INNER JOIN user ON commit.user_id=user.id WHERE commit.id=?");
 			p.setInt("@a",id);
 			ResultSet r = p.execute();
 			r.next();
