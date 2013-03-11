@@ -132,7 +132,6 @@ var DNodeView_ToolBox = function(self) {
 				.appendTo(self.$div);
 	
 				var $ul = $edit.find("ul");
-				$ul.empty();
 				$.each(self.node.appendableTypes(), function(i, type) {
 					var $li = $("<li></li>")
 						.html("<a href=\"#\">" + type + "</a>")

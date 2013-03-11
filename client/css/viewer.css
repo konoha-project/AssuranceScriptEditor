@@ -29,5 +29,6 @@
 	width: 280px;
 	max-width: none;
 	z-index: 99;
+	box-shadow: 0 5px 10px rgba(0,0,0,0.2);
 }
 
