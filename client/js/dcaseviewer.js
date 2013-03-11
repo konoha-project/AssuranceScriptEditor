@@ -278,35 +278,6 @@ DCaseViewer.prototype.fit = function(ms) {
 
 //-----------------------------------------------------------------------------
 
-var InplaceEditor = function($root, top, defaultText, onClose) {
-	var self = this;
-	var cc = 0;
-	var $txt = $("<textarea></textarea>")
-		.addClass("node-inplace")
-		.css("top", top)
-		.attr("value", defaultText)
-		.appendTo($root)
-		.focus()
-		.mousedown(function(e) { e.stopPropagation(); })
-		.mouseup(function(e) { e.stopPropagation(); })
-		.mousemove(function(e) { e.stopPropagation(); })
-		.dblclick(function(e) {
-			if(cc >= 2) e.stopPropagation();
-			cc = 0;
-		})
-		.click(function(e) { cc++; e.stopPropagation(); })
-		.mousewheel(function(e) { e.stopPropagation(); })
-		.blur(function() { self.close(); });
-
-	this.close = function() {
-		var text = $txt.attr("value");
-		onClose(text);
-		$txt.remove();
-	};
-};
-
-//-----------------------------------------------------------------------------
-
 var DNodeView = function(viewer, node, parentView) {
 	var self = this;
 	this.viewer = viewer;
@@ -341,7 +312,6 @@ var DNodeView = function(viewer, node, parentView) {
 	this.childVisible = true;
 	this.childOpen = true;
 	this.divNodesText = null;
-	this.edit = null;
 
 	this.selected = false;
 	this.hovered = false;
@@ -368,167 +338,23 @@ var DNodeView = function(viewer, node, parentView) {
 		}
 	}
 
-	var touchinfo = {};
-
-	this.$divText.click(function() {
-		self.showInplace();
-	});
-
 	this.$div.mouseup(function(e) {
-		viewer.dragEnd(self);
-	});
-
-	this.$div.dblclick(function(e) {
-		if(self.edit != null) {
-			self.edit.close();
-		}
-		viewer.expandBranch(self);
-	});
-	
-	this.$div.bind("touchstart", function(e) {
-		var touches = e.originalEvent.touches;
-		touchinfo.count = touches.length;
-	});
-	
-	this.$div.bind("touchend", function(e) {
-		var DBLTOUCH_THRESHOLD = 300;
-		viewer.dragEnd(self);
-		if(touchinfo.time != null &&
-				(new Date() - touchinfo.time) < DBLTOUCH_THRESHOLD) {
-			viewer.expandBranch(self);
-			touchinfo.time = null;
-		}
-		if(touchinfo.count == 1) {
-			touchinfo.time = new Date();
-		} else {
-			touchinfo.time = null;
-		}
+		self.viewer.dragEnd(self);
 	});
 
 	this.$div.hover(function() {
 		self.hovered = true;
 		self.updateColor();
-		self.showToolbox(true);
 	}, function() {
 		self.hovered = false;
 		self.updateColor();
-		self.showToolbox(false);
 	});
 
 	this.nodeChanged();
-};
 
-DNodeView.prototype.showNewNode = function(visible) {
-	var self = this;
-	var type_selected = null;
-	if(visible) {
-		if(self.$edit == null && self.node.appendableTypes().length > 0) {
-			function edit_activate() {
-				if(!self.edit_active) {
-					self.edit_active = true;
-					self.$edit.css("opacity", 0.95);
-					self.edit_lock = true;
-					self.viewer.$root.one("click", function() {
-						var text = self.$edit.find("textarea").attr("value");
-						if(text != "") {
-							self.viewer.getDCase().insertNode(self.node, type_selected, text);
-						}
-						self.$edit.remove();
-						self.$edit = null;
-					});
-				}
-			}
-			// create
-			self.$edit = $("#edit-newnode").clone()
-			.css({
-				display: "block",
-				left: 0, top: self.$div.height(),
-				opacity: 0.6,
-			})
-			.hover(function() {
-				self.edit_hover = true;
-				if(self.timeout != null) {
-					clearTimeout(self.timeout);
-					self.timeout = null;
-				}
-			}, function() {
-				self.edit_hover = false;
-				self.showNewNode(false);
-			})
-			.one("click", function() { edit_activate(); })
-			.click(function(e) { e.stopPropagation(); })
-			.appendTo(self.$div);
-
-			self.edit_lock = false;
-			self.edit_hover = false;
-			self.edit_active = false;
-
-			var $ul = self.$edit.find("ul");
-			$ul.empty();
-			$.each(self.node.appendableTypes(), function(i, type) {
-				var $li = $("<li></li>")
-					.html("<a href=\"#\">" + type + "</a>")
-					.click(function() {
-						type_selected = type;
-						$("li").removeClass("active");
-						$li.addClass("active");
-						$("textarea").focus();
-					})
-					.appendTo($ul);
-				if(i == 0) {
-					$li.addClass("active");
-					type_selected = type;
-				}
-			});
-			self.$edit.find("textarea")
-				.focus()
-				.one("keydown", function() { edit_activate(); });
-		}
-		if(this.timeout != null) {
-			clearTimeout(this.timeout);
-			this.timeout = null;
-		}
-	} else if(this.$edit != null) {
-		if(!self.edit_lock && !self.edit_hover) {
-			if(this.timeout == null) {
-				this.timeout = setTimeout(function() {
-					self.$edit.remove();
-					self.$edit = null;
-				}, 100);
-			}
-		}
-	}
-};
-
-DNodeView.prototype.showToolbox = function(visible) {
-	if(visible) {
-		if(this.$toolbox != null) return;
-		var self = this;
-		
-		this.$toolbox = $("<div></div>")
-				.appendTo(this.$div);
-
-		$("<a href=\"#\"><i></i></a>").addClass("icon-plus")
-			.css({ position: "absolute",bottom: 4, left: 4, })
-			.hover(function() {
-				self.showNewNode(true);
-			}, function() {
-				self.showNewNode(false);
-			})
-			.appendTo(this.$toolbox);
-
-		$("<a href=\"#\"><i></i></a>").addClass("icon-remove")
-			.css({ position: "absolute",bottom: 4, left: 24, })
-			.click(function(e) {
-				if(confirm("ノードを削除しますか？")) {
-					self.viewer.getDCase().removeNode(self.node);
-				}
-			})
-			.appendTo(this.$toolbox);
-	} else {
-		this.$toolbox.remove();
-		this.$toolbox = null;
-	}
+	DNodeView_ExpandBranch(this);
+	DNodeView_InplaceEdit(this);
+	DNodeView_ToolBox(this);
 };
 
 DNodeView.prototype.nodeChanged = function() {
@@ -578,29 +404,9 @@ DNodeView.prototype.updateColor = function() {
 	} else {
 		stroke = this.viewer.colorTheme.stroke[this.node.type];
 	}
-	//function getColorByState(node) {
-	//	if(node.type == "Rebuttal") return "#FF8080";
-	//	return node.isEvidence ? "#80FF80" : "#E0E0E0";
-	//}
 	var fill = this.viewer.colorTheme.fill[this.node.type];
 	this.svg.elems[0].setAttribute("stroke", stroke);
 	this.svg.elems[0].setAttribute("fill", fill);
-};
-
-DNodeView.prototype.showInplace = function() {
-	if(this.edit == null) {
-		var self = this;
-		var top = this.$divText.offset().y;
-		this.$divText.text("");
-		this.edit = new InplaceEditor(this.$div, top, this.node.desc, function(newDesc) {
-			var node = self.node;
-			self.$divText.html(node.getHtmlDescription());
-			if(node.desc != newDesc) {
-				self.viewer.getDCase().setDescription(node, newDesc);
-			}
-			self.edit = null;
-		});
-	}
 };
 
 DNodeView.prototype.getTreeBounds = function() {
