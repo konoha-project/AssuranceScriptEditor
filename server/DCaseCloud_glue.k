@@ -128,7 +128,7 @@ class DCaseModel {
 		return p.getInsertId();
 	}
 
-	int getDCasetId(int commit_id) {
+	int getDCaseId(int commit_id) {
 		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id FROM commit WHERE id=?");
 		p.setInt("@a",commit_id);
 		ResultSet r = p.execute();
