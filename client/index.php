@@ -66,7 +66,9 @@ $(function() {
 	var ase = new ASE(document.getElementById("ase"));
 
 	$(".dropdown-toggle").dropdown();
-	
+	$('.dropdown input, .dropdown label').click(function(e) {
+		e.stopPropagation();
+	});	
 	// hide url bar for ipod touch
 	setTimeout(function(){
 		window.scrollTo(0, 0);
@@ -85,9 +87,12 @@ $(function() {
 				<span class="icon-bar"></span>
 			</button>
 			<form class="navbar-search pull-left">
-				<div class="input-append">
-					<input type="text" class="search-query" placeholder="Search">
-					<!--<button class="btn search-btn"><i class="icon-search"></i></button>-->
+				<div class="dropdown">
+					<input type="text" class="search-query dropdown-toggle" placeholder="Search">
+					<ul class="dropdown-menu">
+						<li><a href="#">hoge</a></li>
+						<li><a href="#">fuga</a></li>
+					</ul>
 				</div>
 			</form>
 			<div class="nav-collapse collapse">
