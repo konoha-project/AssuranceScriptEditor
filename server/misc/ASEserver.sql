@@ -13,7 +13,8 @@ CREATE  TABLE IF NOT EXISTS `dcase`.`user` (
   `user_name` VARCHAR(45) NULL ,
   `password_hash` VARCHAR(255) NULL ,
   `created_at` TIMESTAMP NULL ,
-  PRIMARY KEY (`id`) )
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `user_name_UNIQUE` (`user_name` ASC) )
 ENGINE = InnoDB;
 
 
@@ -24,6 +25,7 @@ CREATE  TABLE IF NOT EXISTS `dcase`.`dcase` (
   `id` INT NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(255) NULL ,
   `user_id` INT NOT NULL ,
+  `delete_flag` TINYINT(1) NULL DEFAULT FALSE ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_Argument_user1_idx` (`user_id` ASC) ,
   CONSTRAINT `fk_Argument_user1`
@@ -39,8 +41,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `dcase`.`commit` (
   `id` INT NOT NULL AUTO_INCREMENT ,
-  `Data` TEXT NULL DEFAULT NULL ,
-  `DateTime` BIGINT NULL ,
+  `data` TEXT NULL DEFAULT NULL ,
+  `date_time` BIGINT NULL ,
   `prev_commit_id` INT NULL ,
   `latest_flag` TINYINT(1) NULL DEFAULT TRUE ,
   `message` TEXT NULL ,

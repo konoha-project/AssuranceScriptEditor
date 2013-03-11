@@ -108,7 +108,7 @@ class DCaseModel {
 
 	@Public int Commit(Json tree, int prev_id, int user_id, String message) {
 		int dcase_id = this.getDCaseId(prev_id);
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `dcase_id`, `user_id`, `message`) VALUES(?,?,?,TRUE,?,?,?)");
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`data`,`date_time`,`prev_commit_id`,`latest_flag`, `dcase_id`, `user_id`, `message`) VALUES(?,?,?,TRUE,?,?,?)");
 		p.setString("@a",tree.toString());
 		p.setInt("@b"   , new Date().getTime());
 		p.setInt("@c"   , prev_id);
@@ -138,7 +138,7 @@ class DCaseModel {
 
 	@Public Json createDCase(Json tree, String dcaseName, int user_id) {
 		int dcase_id = this._createDcase(user_id, dcaseName);
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `message`, `dcase_id`, `user_id`) VALUES(?,?,0,TRUE,?,?,?)");
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`data`,`date_time`,`prev_commit_id`,`latest_flag`, `message`, `dcase_id`, `user_id`) VALUES(?,?,0,TRUE,?,?,?)");
 		p.setString("@a",tree.toString());
 		p.setInt("@b", new Date().getTime());
 		p.setString("@c","Initial Commit");
@@ -153,11 +153,11 @@ class DCaseModel {
 	}
 
 	@Public Json GetNodeTree(int commit_id) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT Data,DateTime,prev_commit_id FROM commit WHERE id=?");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT data,date_time,prev_commit_id FROM commit WHERE id=?");
 		p.setInt("@a",commit_id);
 		ResultSet r = p.execute();
 		r.next();
-		return Json.parse(EscapeCR(r.getString("Data"))); //FIXME Escape
+		return Json.parse(EscapeCR(r.getString("data"))); //FIXME Escape
 	}
 
 	@Public Json getDCaseList() {
@@ -176,7 +176,7 @@ class DCaseModel {
 	Json getCommitJson(ResultSet r) {
 		Json json = new Json();
 		json.setInt("commitId",r.getInt("id"));
-		json.setInt("time",r.getInt("DateTime"));
+		json.setInt("time",r.getInt("date_time"));
 		json.setString("commitMessage",r.getString("message"));
 		json.setInt("userId",r.getInt("user_id")); //FIXME
 		json.setString("userName",r.getString("user_name"));
@@ -184,7 +184,7 @@ class DCaseModel {
 	}
 
 	Json getLatestCommit(int dcase_id) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT commit.id,DateTime,message,user_id,user_name FROM commit INNER JOIN user ON commit.user_id=user.id WHERE dcase_id=? AND latest_flag=TRUE");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT commit.id,date_time,message,user_id,user_name FROM commit INNER JOIN user ON commit.user_id=user.id WHERE dcase_id=? AND latest_flag=TRUE");
 		p.setInt("@a",dcase_id);
 		ResultSet r = p.execute();
 		r.next();
@@ -196,7 +196,7 @@ class DCaseModel {
 		Json ret = new Json([]);
 		int id = commit.getInt("commitId");
 		while(id != 0) {
-			PreparedStatement p = this.db.newPreparedStatement("SELECT commit.id,DateTime,message,user_id,user_name,prev_commit_id FROM commit INNER JOIN user ON commit.user_id=user.id WHERE commit.id=?");
+			PreparedStatement p = this.db.newPreparedStatement("SELECT commit.id,date_time,message,user_id,user_name,prev_commit_id FROM commit INNER JOIN user ON commit.user_id=user.id WHERE commit.id=?");
 			p.setInt("@a",id);
 			ResultSet r = p.execute();
 			r.next();
@@ -217,7 +217,7 @@ class DCaseModel {
 
 	//FIXME
 	@Public Json search(String text) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id FROM commit WHERE latest_flag=TRUE AND Data LIKE ?");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id FROM commit WHERE latest_flag=TRUE AND data LIKE ?");
 		p.setString("@a","%"+text+"%");
 		ResultSet r = p.execute();
 		Json ret = new Json([]);
