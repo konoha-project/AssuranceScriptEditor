@@ -94,6 +94,21 @@ $(function() {
 		return false;
 	});
 
+	var $id    = $('#signup-userid');
+	var $pass1 = $('#signup-pass');
+	var $pass2 = $('#signup-pass2');
+
+	var varify = function(){
+		if($id.val().length > 0 && $pass1.val().length > 0 && $pass1.val() == $pass2.val()){
+			$('#sign-up-form .btn').removeAttr("disabled");
+		}else{
+			$('#sign-up-form .btn').attr("disabled", "disabled");
+		}
+	};
+	$id.keyup(varify);
+	$pass1.keyup(varify);
+	$pass2.keyup(varify);
+	
 	// hide url bar for ipod touch
 	setTimeout(function(){
 		window.scrollTo(0, 0);
@@ -151,7 +166,18 @@ $(function() {
 if(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0) {
 echo <<<EOT
 				<ul class="nav pull-right">
-					<li><a href="#">Sign Up</a></li>
+					<li class="dropdown">
+						<a class="dropdown-toggle" href="#" data-toggle="dropdown">Sign Up <strong class="caret"></strong></a>
+						<div class="dropdown-menu" style="padding: 15px; padding-bottom: 0px;">
+							<form id="sign-up-form" class="navbar-form pull-right" method="post" action="action/register.php">
+								<input id="signup-userid" class="span2" type="text" placeholder="username" name="username" style="margin-bottom: 15px;">
+								<input id="signup-pass" class="span2" type="password" placeholder="password" name="password" style="margin-bottom: 15px;">
+								<input id="signup-pass2" class="span2" type="password" placeholder="confirm password" name="password2" style="margin-bottom: 15px;">
+   
+								<input type="submit" class="btn btn-primary" style="margin-bottom: 15px; width: 100%; height: 32px; font-size: 13px;" value="Sign Up" disabled>
+							</form>
+						</div>
+					</li>
 					<li class="divider-vertical"></li>
 					<li class="dropdown">
 						<a class="dropdown-toggle" href="#" data-toggle="dropdown">Sign In <strong class="caret"></strong></a>
@@ -172,11 +198,12 @@ EOT;
 }else{
 echo <<<EOT
 				<ul class="nav pull-right">
+					<li class="divider-vertical"></li>
 					<li class="dropdown">
 						<a class="dropdown-toggle" href="#" data-toggle="dropdown">{$_COOKIE["userName"]} <strong class="caret"></strong></a>
 						<div class="dropdown-menu" style="padding: 15px; padding-bottom: 0px;">
 							<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/login.php">
-								<input type="submit" class="btn btn-danger" style="margin-bottom: 15px; clear: left; width: 100%; height: 32px; font-size: 13px;" value="Sign out" onclick="location.href='logout.php'">
+								<input type="submit" class="btn btn-danger" style="margin-bottom: 15px; width: 100%; height: 32px; font-size: 13px;" value="Sign out" onclick="location.href='logout.php'">
 							</form>
 						</div>
 					</li>
