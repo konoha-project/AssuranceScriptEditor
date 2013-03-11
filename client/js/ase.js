@@ -144,8 +144,15 @@ var ASE = function(body) {
 
 	//--------------------------------------------------------
 
-	this.searchNode = function(text, types, beginDate, endDate, callback) {
-		var root = viewer.getDCase().getTopGoal();
+	this.searchNode = function(text, types, beginDate, endDate, callback, callbackOnNoResult) {
+		var dcase = viewer.getDCase();
+		var root = dcase ? dcase.getTopGoal() : undefined;
+		if(!root) {
+			if(callbackOnNoResult) {
+				callbackOnNoResult();
+			}
+			return;
+		}
 		root.traverse(function(node) {
 			var name = node.name;
 			var desc = node.text;
@@ -159,35 +166,29 @@ var ASE = function(body) {
 		});
 	};
 
-	this.searchDCase = function(text, types, beginDate, endDate, callback) {
-		//TODO
+	this.searchDCase = function(text) {
+		return [];
 	};
 
-	this.updateSearchResult = function() {
-		var $res = $("#menu-search ul");
+	this.updateSearchResult = function(text) {
+		$('#search-query').popover('show');
+		var $res = $("#search_result_ul");
 		$res.empty();
 		text = text.toLowerCase();
-		function getPreviewText(target, text) { // [TODO] add color
-			var index = target.toLowerCase().indexOf(text);
-			var ret = target.substr(0, index) +
-				"<b>" + target.substr(index, text.length) +
-				"</b>" + target.substr(index + text.length)
-			return ret;
-		};
-		function showResult($res, v, name, desc) {
-			$("<ul>")
-					.addClass("sidemenu-result")
-					.html("<li>" + name + "</li>")
-					//.html("<li>" + name + "<ul>" + desc + "</ul></li>")
-					.click(function() {
-						viewer.centerize(v, 500);
-					})
-					.appendTo($res);
-		};
-		self.searchNode(text, 0, 0, 0, 0, function(node) {
-			var ptext = getPreviewText(node.desc, node.text);
-			showResult($res, v, node.name, ptext);
-		});
+		var result = this.searchDCase(text);
+		if(result.length == 0) {
+			$res.append("<li>No Results</li>");
+		} else {
+			for(var i = 0; i < result.length; ++i) {
+				var res = result[i];
+				$("<li>")
+				.text(res.dcaseId)
+				.click(function() {
+					viewer.centerize(v, 500);
+				})
+				.appendTo($res);
+			}
+		}
 	};
 
 	//--------------------------------------------------------

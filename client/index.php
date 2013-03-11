@@ -68,7 +68,32 @@ $(function() {
 	$(".dropdown-toggle").dropdown();
 	$('.dropdown input, .dropdown label').click(function(e) {
 		e.stopPropagation();
-	});	
+	});
+	
+	var searchQuery = $('#search-query');
+	searchQuery.popover({
+		html: true,
+		placement: 'bottom',
+		trigger: 'manual',
+		content: function(){
+			var wrapper = $('<div id="search_result_wrapper">');
+			$('<a class="btn btn-link">close</a>').click(function(){
+				searchQuery.popover('hide');
+				return false;
+			}).appendTo(wrapper);
+			wrapper.append('<ul id="search_result_ul" class="unstyled">');
+			wrapper.width(searchQuery.width());
+			return wrapper;
+		},
+	});
+	$('#search-form').submit(function(){
+		var query = searchQuery.val();
+		if(query.length > 0){
+			ase.updateSearchResult(query);
+		}
+		return false;
+	});
+
 	// hide url bar for ipod touch
 	setTimeout(function(){
 		window.scrollTo(0, 0);
@@ -86,14 +111,8 @@ $(function() {
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
-			<form class="navbar-search pull-left">
-				<div class="dropdown">
-					<input type="text" class="search-query dropdown-toggle" placeholder="Search">
-					<ul class="dropdown-menu">
-						<li><a href="#">hoge</a></li>
-						<li><a href="#">fuga</a></li>
-					</ul>
-				</div>
+			<form id="search-form" class="navbar-search pull-left">
+				<input type="text" id="search-query" class="search-query" placeholder="Search">
 			</form>
 			<div class="nav-collapse collapse">
 				<ul class="nav">
