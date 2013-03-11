@@ -45,7 +45,8 @@ var DCaseViewer = function(root, dcase) {
 	this.addEventHandler();
 };
 
-DCaseViewer.prototype.colorTheme = {
+DCaseViewer.prototype.default_colorTheme = {
+	themeName: "default",
 	stroke: {
 		"Goal"    : "none",
 		"Context" : "none",
@@ -68,18 +69,7 @@ DCaseViewer.prototype.colorTheme = {
 	hovered : "#8080F0",
 };
 
-DCaseViewer.prototype.colorTheme_TiffanyBlue = {
-	fill: {
-		"Goal"    : "#b4d8df",
-		"Context" : "#dbf5f3",
-		"Subject" : "#dbf5f3",
-		"Strategy": "#b4d8df",
-		"Evidence": "#dbf5f3",
-		"Solution": "#dbf5f3",
-		"Rebuttal": "#eeaaaa",
-	},
-	__proto__: DCaseViewer.prototype.colorTheme
-};
+DCaseViewer.prototype.colorTheme = DCaseViewer.prototype.default_colorTheme;
 
 //-----------------------------------------------------------------------------
 
@@ -173,6 +163,7 @@ DCaseViewer.prototype.setColorTheme = function(theme) {
 	} else {
 		delete this.colorTheme;
 	}
+	this.repaintAll();
 };
 
 //-----------------------------------------------------------------------------

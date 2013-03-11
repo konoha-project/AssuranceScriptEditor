@@ -240,6 +240,41 @@ var ASE = function(body) {
 
 	//--------------------------------------------------------
 
+	var colorThemes = [
+		viewer.default_colorTheme,
+		{
+			themeName: "TiffanyBlue",
+			fill: {
+				"Goal"    : "#b4d8df",
+				"Context" : "#dbf5f3",
+				"Subject" : "#dbf5f3",
+				"Strategy": "#b4d8df",
+				"Evidence": "#dbf5f3",
+				"Solution": "#dbf5f3",
+				"Rebuttal": "#eeaaaa",
+			},
+			__proto__: viewer.default_colorTheme
+		},
+	];
+
+	(function() {
+		var $ul = $("#menu-change-theme");
+		$.each(colorThemes, function(i, theme) {
+			var sample = "";
+			$.each(DCaseNode.TYPES, function(i, type) {
+				sample += "<span style=\"color: " + theme.fill[type] + ";\">■</span>";
+			});
+			var $li = $("<li></li>")
+				.html("<a href=\"#\">" + sample + theme.themeName + "</a>")
+				.appendTo($ul);
+			$li.click(function() {
+				viewer.setColorTheme(theme);
+			});
+		});
+	}());
+
+	//--------------------------------------------------------
+
 	$(".tool-new").click(function() {
 		self.insertToSelectedNode();
 	});

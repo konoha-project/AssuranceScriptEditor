@@ -159,7 +159,11 @@ $(function() {
 					<li class="dropdown">
 						<a class="dropdown-toggle" date-toggle="dropdown" href="#">設定<b class="caret"></b></a>
 						<ul class="dropdown-menu">
-							<li><a href="#">色の設定</a></li>
+							<li class="dropdown-submenu">
+								<a href="#">カラーテーマの変更</a>
+								<ul id="menu-change-theme" class="dropdown-menu">
+								</ul>
+							</li>
 						</ul>
 					</li>
 				</ul>
