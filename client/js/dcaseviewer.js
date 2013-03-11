@@ -90,7 +90,6 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 
 	this.$svg.empty();
 	this.$dom.empty();
-	this.showToolbox(null);
 
 	if(dcase == null) {
 		//TODO show new_dcase button
@@ -140,7 +139,6 @@ DCaseViewer.prototype.setSelectedNode = function(view) {
 		this.selectedNode.updateColor();
 	}
 	this.selectedNode = view;
-	this.showToolbox(view);
 };
 
 DCaseViewer.prototype.getSelectedNode = function() {
@@ -251,35 +249,6 @@ DCaseViewer.prototype.repaintAll = function(ms) {
 			self.moving = false;
 		}
 	}, 1000/60);
-};
-
-DCaseViewer.prototype.showToolbox = function(node) {
-	var self = this;
-	if(this.toolboxNode != node) {
-		if(node != null) {
-			var data = node.node;
-			var b = node.$div.offset();
-			var w = node.$div.width();
-			var x = 120;
-
-			$("#toolbar").css({
-				display: "block",
-				left: b.left + (w - x)/2,
-				top: b.top - 40,
-				width: x,
-				height: 30,
-			});
-
-			var hasChild = data.getNodeCount() != 0;
-			var visibleChild = node.childVisible;
-			$("#toolbar .tool-play").css("display", data.isDScript ? "inline" : "none");
-			$("#toolbar .tool-up")  .css("display", hasChild && visibleChild ? "inline" : "none");
-			$("#toolbar .tool-down").css("display", hasChild && !visibleChild ? "inline" : "none");
-		} else {
-			$("#toolbar").css("display", "none");
-		}
-		this.toolboxNode = node;
-	}
 };
 
 DCaseViewer.prototype.expandBranch = function(view, b) {
@@ -439,11 +408,11 @@ var DNodeView = function(viewer, node, parentView) {
 	this.$div.hover(function() {
 		self.hovered = true;
 		self.updateColor();
-		//self.showToolbox(true);
+		self.showToolbox(true);
 	}, function() {
 		self.hovered = false;
 		self.updateColor();
-		//self.showToolbox(false);
+		self.showToolbox(false);
 	});
 
 	this.nodeChanged();
@@ -453,6 +422,115 @@ var DNodeView = function(viewer, node, parentView) {
 		this.updateLocation(b.x, b.y);
 		this.animeStart(a, parentView);
 		a.animeFinish();
+	}
+};
+
+DNodeView.prototype.showNewNode = function(visible) {
+	var self = this;
+	var type_selected = null;
+	if(visible) {
+		if(self.$edit == null) {
+			function edit_activate() {
+				if(!self.edit_active) {
+					self.edit_active = true;
+					self.$edit.css("opacity", 0.95);
+					self.edit_lock = true;
+					self.viewer.$root.one("click", function() {
+						var text = self.$edit.find("textarea").attr("value");
+						self.viewer.getDCase().insertNode(self.node, type_selected, text);
+						self.$edit.remove();
+						self.$edit = null;
+					});
+				}
+			}
+			// create
+			self.$edit = $("#edit-newnode").clone()
+			.css({
+				display: "block",
+				left: 0, top: self.$div.height(),
+				opacity: 0.6,
+			})
+			.hover(function() {
+				self.edit_hover = true;
+				if(self.timeout != null) {
+					clearTimeout(self.timeout);
+					self.timeout = null;
+				}
+			}, function() {
+				self.edit_hover = false;
+				self.showNewNode(false);
+			})
+			.one("click", function() { edit_activate(); })
+			.click(function(e) { e.stopPropagation(); })
+			.appendTo(self.$div);
+
+			self.edit_lock = false;
+			self.edit_hover = false;
+			self.edit_active = false;
+
+			var $ul = self.$edit.find("ul");
+			$ul.empty();
+			$.each(DCaseNode.SELECTABLE_TYPES[self.node.type], function(i, type) {
+				var $li = $("<li></li>")
+					.html("<a href=\"#\">" + type + "</a>")
+					.click(function() {
+						type_selected = type;
+						$("li").removeClass("active");
+						$li.addClass("active");
+						$("textarea").focus();
+					})
+					.appendTo($ul);
+				if(i == 0) {
+					$li.addClass("active");
+					type_selected = type;
+				}
+			});
+			self.$edit.find("textarea")
+				.focus()
+				.one("keydown", function() { edit_activate(); });
+		}
+		if(this.timeout != null) {
+			clearTimeout(this.timeout);
+			this.timeout = null;
+		}
+	} else if(this.$edit != null) {
+		if(!self.edit_lock && !self.edit_hover) {
+			if(this.timeout == null) {
+				this.timeout = setTimeout(function() {
+					self.$edit.remove();
+					self.$edit = null;
+				}, 100);
+			}
+		}
+	}
+};
+
+DNodeView.prototype.showToolbox = function(visible) {
+	if(visible) {
+		var self = this;
+		
+		this.$toolbox = $("<div></div>")
+				.appendTo(this.$div);
+
+		$("<a href=\"#\"><i></i></a>").addClass("icon-plus")
+			.css({ position: "absolute",bottom: 4, left: 4, })
+			.hover(function() {
+				self.showNewNode(true);
+			}, function() {
+				self.showNewNode(false);
+			})
+			.appendTo(this.$toolbox);
+
+		$("<a href=\"#\"><i></i></a>").addClass("icon-remove")
+			.css({ position: "absolute",bottom: 4, left: 24, })
+			.click(function(e) {
+				if(confirm("ノードを削除しますか？")) {
+					self.viewer.getDCase().removeNode(self.node);
+				}
+			})
+			.appendTo(this.$toolbox);
+	} else {
+		this.$toolbox.remove();
 	}
 };
 
