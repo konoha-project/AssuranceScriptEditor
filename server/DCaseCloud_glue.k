@@ -195,17 +195,16 @@ class DCaseModel {
 		Json commit = this.getLatestCommit(dcaseId);
 		Json ret = new Json([]);
 		int id = commit.getInt("commitId");
-		ret.add(commit);
 		while(id != 0) {
 			PreparedStatement p = this.db.newPreparedStatement("SELECT commit.id,DateTime,message,user_id,user_name,prev_commit_id FROM commit INNER JOIN user ON commit.user_id=user.id WHERE commit.id=?");
 			p.setInt("@a",id);
 			ResultSet r = p.execute();
 			r.next();
 			id = r.getInt("prev_commit_id");
+			ret.add(this.getCommitJson(r));
 			if(id==0) {
 				break;
 			}
-			ret.add(this.getCommitJson(r));
 		}
 		Json reverse = new Json([]);
 		int i = ret.getSize()-1;
