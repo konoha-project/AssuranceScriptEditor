@@ -171,9 +171,15 @@ echo <<<EOT
 EOT;
 }else{
 echo <<<EOT
-				<ul id="userinfo" class="nav pull-right" >
-					<li><a href="#">{$_COOKIE["userName"]}</a></li>
-					<li><button class="btn" onclick="location.href='logout.php'">Sign out</button></li>
+				<ul class="nav pull-right">
+					<li class="dropdown">
+						<a class="dropdown-toggle" href="#" data-toggle="dropdown">{$_COOKIE["userName"]} <strong class="caret"></strong></a>
+						<div class="dropdown-menu" style="padding: 15px; padding-bottom: 0px;">
+							<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/login.php">
+								<input type="submit" class="btn btn-danger" style="margin-bottom: 15px; clear: left; width: 100%; height: 32px; font-size: 13px;" value="Sign out" onclick="location.href='logout.php'">
+							</form>
+						</div>
+					</li>
 				</ul>
 EOT;
 }
