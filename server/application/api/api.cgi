@@ -11,7 +11,7 @@ Import("JavaScript.String");
 Import("JavaScript.Regexp");
 Import("posix.process");
 
-Load("newMethod.k");
+Load("Method.k");
 
 String getMsg() {
 	String mtd_type = System.getenv("REQUEST_METHOD");

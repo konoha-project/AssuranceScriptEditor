@@ -18,13 +18,13 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `dcase`.`Argument`
+-- Table `dcase`.`dcase`
 -- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `dcase`.`Argument` (
-  `argument_id` INT NOT NULL AUTO_INCREMENT ,
-  `description` TEXT NULL ,
+CREATE  TABLE IF NOT EXISTS `dcase`.`dcase` (
+  `id` INT NOT NULL AUTO_INCREMENT ,
+  `name` VARCHAR(255) NULL ,
   `user_id` INT NOT NULL ,
-  PRIMARY KEY (`argument_id`) ,
+  PRIMARY KEY (`id`) ,
   INDEX `fk_Argument_user1_idx` (`user_id` ASC) ,
   CONSTRAINT `fk_Argument_user1`
     FOREIGN KEY (`user_id` )
@@ -35,23 +35,23 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `dcase`.`Commit`
+-- Table `dcase`.`commit`
 -- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `dcase`.`Commit` (
-  `idCommit` INT NOT NULL AUTO_INCREMENT ,
+CREATE  TABLE IF NOT EXISTS `dcase`.`commit` (
+  `id` INT NOT NULL AUTO_INCREMENT ,
   `Data` TEXT NULL DEFAULT NULL ,
-  `DateTime` BIGINT NULL DEFAULT NULL ,
-  `prev_commit_id` INT NULL DEFAULT NULL ,
+  `DateTime` BIGINT NULL ,
+  `prev_commit_id` INT NULL ,
   `latest_flag` TINYINT(1) NULL DEFAULT TRUE ,
   `message` TEXT NULL ,
-  `argument_id` INT NOT NULL ,
+  `dcase_id` INT NOT NULL ,
   `user_id` INT NOT NULL ,
-  PRIMARY KEY (`idCommit`) ,
-  INDEX `fk_Commit_Argument` (`argument_id` ASC) ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_Commit_Argument` (`dcase_id` ASC) ,
   INDEX `fk_Commit_user1_idx` (`user_id` ASC) ,
   CONSTRAINT `fk_Commit_Argument`
-    FOREIGN KEY (`argument_id` )
-    REFERENCES `dcase`.`Argument` (`argument_id` )
+    FOREIGN KEY (`dcase_id` )
+    REFERENCES `dcase`.`dcase` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_Commit_user1`

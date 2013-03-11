@@ -101,18 +101,18 @@ class DCaseModel {
 	}
 
 	void updatePrev(int prevId) {
-		PreparedStatement p = this.db.newPreparedStatement("UPDATE Commit SET latest_flag=FALSE WHERE idCommit=?");
+		PreparedStatement p = this.db.newPreparedStatement("UPDATE commit SET latest_flag=FALSE WHERE id=?");
 		p.setInt("@a",prevId);
 		p.execute();
 	}
 
 	@Public int Commit(Json tree, int prev_id, int user_id, String message) {
-		int argument_id = this.getArgumentId(prev_id);
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`, `user_id`, `message`) VALUES(?,?,?,TRUE,?,?,?)");
+		int dcase_id = this.getDCaseId(prev_id);
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `dcase_id`, `user_id`, `message`) VALUES(?,?,?,TRUE,?,?,?)");
 		p.setString("@a",tree.toString());
 		p.setInt("@b"   , new Date().getTime());
 		p.setInt("@c"   , prev_id);
-		p.setInt("@d"   , argument_id);
+		p.setInt("@d"   , dcase_id);
 		p.setInt("@e"   , user_id);
 		p.setString("@f", message);
 		p.execute();
@@ -120,83 +120,84 @@ class DCaseModel {
 		return p.getInsertId();
 	}
 
-	int CreateArgument(int user_id) {
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Argument`(`user_id`) VALUES(?)");
+	int _createDcase(int user_id,String dcaseName) {
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `dcase`(`user_id`,`name`) VALUES(?,?)");
 		p.setInt("@a",user_id);
+		p.setString("@b",dcaseName);
 		p.execute();
 		return p.getInsertId();
 	}
 
-	int getArgumentId(int commit_id) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT argument_id FROM Commit WHERE idCommit=?");
+	int getDCasetId(int commit_id) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id FROM commit WHERE id=?");
 		p.setInt("@a",commit_id);
 		ResultSet r = p.execute();
 		r.next();
-		return r.getInt("argument_id");
+		return r.getInt("dcase_id");
 	}
 
-	@Public Json CreateTopGoal(Json tree, int user_id) {
-		int argument_id = this.CreateArgument(user_id);
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `Commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `argument_id`, `user_id`) VALUES(?,?,0,TRUE,?,?)");
+	@Public Json createDCase(Json tree, String dcaseName, int user_id) {
+		int dcase_id = this._createDcase(user_id, dcaseName);
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`Data`,`DateTime`,`prev_commit_id`,`latest_flag`, `message`, `dcase_id`, `user_id`) VALUES(?,?,0,TRUE,?,?,?)");
 		p.setString("@a",tree.toString());
 		p.setInt("@b", new Date().getTime());
-		p.setInt("@c", argument_id);
-		p.setInt("@d", user_id);
+		p.setString("@c","Initial Commit");
+		p.setInt("@d", dcase_id);
+		p.setInt("@e", user_id);
 		p.execute();
 		int commit_id = p.getInsertId();
 		Json ret = new Json();
-		ret.setInt("argumentId",argument_id);
+		ret.setInt("dcaseId",dcase_id);
 		ret.setInt("commitId",commit_id);
 		return ret;
 	}
 
 	@Public Json GetNodeTree(int commit_id) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT Data,DateTime,prev_commit_id FROM Commit WHERE idCommit=?");
+		System.p(commit_id);
+		PreparedStatement p = this.db.newPreparedStatement("SELECT Data,DateTime,prev_commit_id FROM commit WHERE id=?");
 		p.setInt("@a",commit_id);
 		ResultSet r = p.execute();
 		r.next();
-		//Json json = new Json();
-		//json.setString("tree", r.getString("Data"));
-		//json.setInt("DateTime", r.getInt("DateTime"));
-		//json.setInt("PrevCommitId", r.getInt("prev_commit_id"));
-		//return Json.parse(r.getString("Data"));
-		return Json.parse(EscapeCR(r.getString("Data")));
+		return Json.parse(EscapeCR(r.getString("Data"))); //FIXME Escape
 	}
 
-	@Public int[] getArgumentList() {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT argument_id FROM Argument");
+	@Public Json getDCaseList() {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT id,name FROM dcase");
 		ResultSet r = p.execute();
-		int[] ret =[];
+		Json ret = new Json([]);
 		while(r.next()) {
-			ret.add(r.getInt("argument_id"));
+			Json json = new Json();
+			json.setInt("dcaseId", r.getInt("id"));
+			json.setString("dcaseName", r.getString("name"));
+			ret.add(json);
 		}
 		return ret;
 	}
 
 	Json getCommitJson(ResultSet r) {
 		Json json = new Json();
-		json.setInt("commitId",r.getInt("idCommit"));
+		json.setInt("commitId",r.getInt("id"));
 		json.setInt("time",r.getInt("DateTime"));
 		json.setString("commitMessage",r.getString("message"));
 		json.setInt("userId",r.getInt("user_id")); //FIXME
 		return json;
 	}
 
-	Json getLatestCommit(int argument_id) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit,DateTime,message,user_id FROM Commit WHERE argument_id=? AND latest_flag=TRUE");
-		p.setInt("@a",argument_id);
+	Json getLatestCommit(int dcase_id) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT id,DateTime,message,user_id FROM commit WHERE dcase_id=? AND latest_flag=TRUE");
+		p.setInt("@a",dcase_id);
 		ResultSet r = p.execute();
 		r.next();
 		return this.getCommitJson(r);
 	}
 
-	@Public Json getCommitList(int argumentId) {
-		Json commit = this.getLatestCommit(argumentId);
+	@Public Json getCommitList(int dcaseId) {
+		Json commit = this.getLatestCommit(dcaseId);
 		Json ret = new Json([]);
 		int id = commit.getInt("commitId");
-		ret.add(id);
+		ret.add(commit);
 		while(id != 0) {
-			PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit,DateTime,message,user_id,prev_commit_id FROM Commit WHERE idCommit=?");
+			PreparedStatement p = this.db.newPreparedStatement("SELECT id,DateTime,message,user_id,prev_commit_id FROM commit WHERE id=?");
 			p.setInt("@a",id);
 			ResultSet r = p.execute();
 			r.next();
@@ -216,13 +217,15 @@ class DCaseModel {
 	}
 
 	//FIXME
-	@Public int[] search(int commitId) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT idCommit FROM Commit WHERE latest_flag=TRUE AND Data LIKE ?");
-		p.setString("@a","%"+SearchText+"%");
+	@Public Json search(String text) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id FROM commit WHERE latest_flag=TRUE AND Data LIKE ?");
+		p.setString("@a","%"+text+"%");
 		ResultSet r = p.execute();
-		int[] ret = [];
+		Json ret = new Json([]);
 		while(r.next()) {
-			r.add(r.getInt("idCommit"));
+			Json json = new Json();
+			json.setInt("dcaseId",r.getInt("dcase_id"));
+			ret.add(json);
 		}
 		return ret;
 	}
