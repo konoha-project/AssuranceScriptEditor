@@ -39,10 +39,25 @@ var DCaseViewer = function(root, dcase) {
 	this.selectedNode = null;
 	this.rootview = null;
 
+	this.viewer_addons = [
+
+	];
+	this.nodeview_addons = [
+		DNodeView_ExpandBranch,
+		DNodeView_InplaceEdit,
+		DNodeView_ToolBox,
+	];
+
 	//------------------------------------
 
-	this.setDCase(dcase);
-	this.addEventHandler();
+	var self = this;
+	(function() {
+		$.each(self.viewer_addons, function(i, addon) {
+			addon(self);
+		});
+		self.setDCase(dcase);
+		self.addEventHandler();
+	}());
 };
 
 DCaseViewer.prototype.default_colorTheme = {
@@ -359,9 +374,9 @@ var DNodeView = function(viewer, node, parentView) {
 
 	this.nodeChanged();
 
-	DNodeView_ExpandBranch(this);
-	DNodeView_InplaceEdit(this);
-	DNodeView_ToolBox(this);
+	$.each(viewer.nodeview_addons, function(i, addon) {
+		addon(self);
+	});
 };
 
 DNodeView.prototype.nodeChanged = function() {

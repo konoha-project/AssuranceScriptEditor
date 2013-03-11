@@ -34,7 +34,7 @@ var DNodeView_InplaceEdit = function(self) {
 	function showInplace() {
 		if($edit == null) {
 			var cc = 0;
-			self.$divText.text("");
+			self.$divText.css("display", "none");
 
 			$edit = $("<textarea></textarea>")
 				.addClass("node-inplace")
@@ -54,7 +54,6 @@ var DNodeView_InplaceEdit = function(self) {
 				.blur(function() {
 					var newDesc = $edit.attr("value");
 					var node = self.node;
-					self.$divText.html(node.getHtmlDescription());
 					if(node.desc != newDesc) {
 						self.viewer.getDCase().setDescription(node, newDesc);
 					}
@@ -67,6 +66,7 @@ var DNodeView_InplaceEdit = function(self) {
 		if($edit != null) {
 			$edit.remove();
 			$edit = null;
+			self.$divText.css("display", "block");
 		}
 	}
 
