@@ -30,9 +30,9 @@ body {
 }
 #viewer {
 	left: 0px;
-	top : 60px;
+	top : 40px;
 	width : 100%;
-	height: 100%;
+	bottom: 0px;
 }
 #ase-logo {
 	position: absolute;
