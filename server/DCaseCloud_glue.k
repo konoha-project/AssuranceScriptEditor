@@ -153,7 +153,6 @@ class DCaseModel {
 	}
 
 	@Public Json GetNodeTree(int commit_id) {
-		System.p(commit_id);
 		PreparedStatement p = this.db.newPreparedStatement("SELECT Data,DateTime,prev_commit_id FROM commit WHERE id=?");
 		p.setInt("@a",commit_id);
 		ResultSet r = p.execute();

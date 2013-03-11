@@ -108,7 +108,7 @@ var ASE = function(body) {
 			.addClass("divider")
 			.appendTo($m);
 		self.listupDCase(function(dcase) {
-			var commitList = DCaseAPI.getCommitList(dcase);
+			var commitList = DCaseAPI.getCommitList(dcase.dcaseId);
 			var latest = commitList[commitList.length-1];
 			$("<li></li>")
 				.html("<a href=\"#\">" + dcase.dcaseName+ "</a>")

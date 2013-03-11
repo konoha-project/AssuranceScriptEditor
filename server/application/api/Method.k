@@ -81,7 +81,6 @@ void commit (Json request) {
 
 void getNodeTree (Json request) {
 	int commitId = request.getInt("commitId");
-	System.p(request);
 	Json tree = global.model.GetNodeTree(commitId);
 	Json res = new Json();
 	res.set("tree",tree);
