@@ -30,7 +30,11 @@ DCaseAPI.call = function(method, params) {
 //-------------------------------------
 
 DCaseAPI.getDCaseList = function() {
-	return this.call("getDCaseList", {}).dcaseList;
+	try{
+		return this.call("getDCaseList", {}).dcaseList;
+	}catch(e){
+		return [];
+	}
 };
 
 DCaseAPI.createDCase = function(name, desc, userId) {
