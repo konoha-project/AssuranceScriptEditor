@@ -97,9 +97,8 @@ DCaseNode.prototype.getHtmlDescription = function() {
 	}
 };
 
-DCaseNode.prototype.isAppendableType = function(type) {
-	var types = DCaseNode.SELECTABLE_TYPES[this.type];
-	return types.indexOf(type) != -1;
+DCaseNode.prototype.appendableTypes = function() {
+	return DCaseNode.SELECTABLE_TYPES[this.type];
 };
 
 DCaseNode.prototype.toJson = function() {

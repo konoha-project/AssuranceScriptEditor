@@ -78,7 +78,7 @@ var ASE = function(body) {
 	this.pasteToSelectedNode = function() {
 		var view = viewer.getSelectedNode();
 		if(view != null) {
-			if(view.node.isAppendableType(copiedNode.type)) {
+			if(view.node.appendableTypes().indexOf(copiedNode.type) != -1) {
 				var op = new InsertOperation(view.node, copiedNode.deepCopy());
 				viewer.getDCase().applyOperation(op);
 				viewer.structureUpdated();

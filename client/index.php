@@ -192,12 +192,6 @@ EOT;
 <div id="ase" class="container">
 	<div id="viewer"></div>
 	<img id="ase-logo" src="img/assuranceDS.png">
-	
-	<div id="toolbar" style="display: none;">
-		<a href="#" class="tool-new"><i class="icon-plus"></i></a>
-		<a href="#" class="tool-remove"><i class="icon-remove"></i></a>
-		<a href="#" class="tool-play"><i class="icon-play"></i></a>
-	</div>
 	<div id="edit" style="display: none;">
 		<h1>Type</h1>
 		<select></select>
