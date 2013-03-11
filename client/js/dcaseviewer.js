@@ -9,29 +9,6 @@ var FONT_SIZE = 13;
 var MIN_DISP_SCALE = 4 / FONT_SIZE;
 var DEF_WIDTH = 200;
 
-var defaultColorTheme = {
-	stroke: {
-		"Goal"    : "none",
-		"Context" : "none",
-		"Subject" : "none",
-		"Strategy": "none",
-		"Evidence": "none",
-		"Solution": "none",
-		"Rebuttal": "none",
-	},
-	fill: {
-		"Goal"    : "#E0E0E0",
-		"Context" : "#C0C0C0",
-		"Subject" : "#C0C0C0",
-		"Strategy": "#B0B0B0",
-		"Evidence": "#D0D0D0",
-		"Solution": "#D0D0D0",
-		"Rebuttal": "#EEAAAA",
-	},
-	selected: "#F08080",
-	hovered : "#8080F0",
-};
-
 //-----------------------------------------------------------------------------
 
 var DCaseViewer = function(root, dcase) {
@@ -61,12 +38,47 @@ var DCaseViewer = function(root, dcase) {
 	this.drag_flag = true;
 	this.selectedNode = null;
 	this.rootview = null;
-	this.colorTheme = defaultColorTheme;
 
 	//------------------------------------
 
 	this.setDCase(dcase);
 	this.addEventHandler();
+};
+
+DCaseViewer.prototype.colorTheme = {
+	stroke: {
+		"Goal"    : "none",
+		"Context" : "none",
+		"Subject" : "none",
+		"Strategy": "none",
+		"Evidence": "none",
+		"Solution": "none",
+		"Rebuttal": "none",
+	},
+	fill: {
+		"Goal"    : "#E0E0E0",
+		"Context" : "#C0C0C0",
+		"Subject" : "#C0C0C0",
+		"Strategy": "#B0B0B0",
+		"Evidence": "#D0D0D0",
+		"Solution": "#D0D0D0",
+		"Rebuttal": "#EEAAAA",
+	},
+	selected: "#F08080",
+	hovered : "#8080F0",
+};
+
+DCaseViewer.prototype.colorTheme_TiffanyBlue = {
+	fill: {
+		"Goal"    : "#b4d8df",
+		"Context" : "#dbf5f3",
+		"Subject" : "#dbf5f3",
+		"Strategy": "#b4d8df",
+		"Evidence": "#dbf5f3",
+		"Solution": "#dbf5f3",
+		"Rebuttal": "#eeaaaa",
+	},
+	__proto__: DCaseViewer.prototype.colorTheme
 };
 
 //-----------------------------------------------------------------------------
@@ -156,7 +168,11 @@ DCaseViewer.prototype.createSvg = function(name) {
 };
 
 DCaseViewer.prototype.setColorTheme = function(theme) {
-	this.colorTheme = theme != null ? theme : defaultColorTheme;
+	if(theme != null) {
+		this.colorTheme = theme;
+	} else {
+		delete this.colorTheme;
+	}
 };
 
 //-----------------------------------------------------------------------------

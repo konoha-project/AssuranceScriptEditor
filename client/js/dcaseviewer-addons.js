@@ -176,7 +176,7 @@ var DNodeView_ToolBox = function(self) {
 			$toolbox = $("<div></div>")
 				.appendTo(self.$div);
 	
-			$("<a href=\"#\"><i></i></a>").addClass("icon-plus")
+			$("<a href=\"#\"></a>").addClass("icon-plus")
 				.css({ position: "absolute",bottom: 4, left: 4, })
 				.hover(function() {
 					showNewNode(true);
@@ -185,7 +185,7 @@ var DNodeView_ToolBox = function(self) {
 				})
 				.appendTo($toolbox);
 	
-			$("<a href=\"#\"><i></i></a>").addClass("icon-remove")
+			$("<a href=\"#\"></a>").addClass("icon-trash")
 				.css({ position: "absolute",bottom: 4, left: 24, })
 				.click(function(e) {
 					if(confirm("ノードを削除しますか？")) {

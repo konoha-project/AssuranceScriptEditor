@@ -257,5 +257,6 @@ var ASE = function(body) {
 		viewer.showDScriptExecuteWindow(v.node.getDScriptNameInEvidence());
 	});
 
+	viewer.setColorTheme(viewer.colorTheme_TiffanyBlue);
 };
 
