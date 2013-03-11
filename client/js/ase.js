@@ -63,6 +63,7 @@ var ASE = function(body) {
 		if(msg != null) {
 			if(viewer.getDCase().commit(msg, userId)) {
 				alert("コミットしました");
+				self.updateDCaseList();
 				timeline.repaint();
 			}
 		}
