@@ -64,7 +64,7 @@ var ASE = function(body) {
 			if(viewer.getDCase().commit(msg, userId)) {
 				alert("コミットしました");
 				self.updateDCaseList();
-				timeline.repaint();
+				timeline.repaint(viewer.getDCase());
 			}
 		}
 	};

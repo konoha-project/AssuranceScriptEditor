@@ -416,13 +416,6 @@ var DNodeView = function(viewer, node, parentView) {
 	});
 
 	this.nodeChanged();
-	if(parentView != null) {
-		var a = new Animation();
-		var b = parentView.bounds;
-		this.updateLocation(b.x, b.y);
-		this.animeStart(a, parentView);
-		a.animeFinish();
-	}
 };
 
 DNodeView.prototype.showNewNode = function(visible) {

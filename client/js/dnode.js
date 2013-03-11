@@ -323,7 +323,7 @@ DCase.prototype.applyOperation = function(op) {
 DCase.prototype.commit = function(msg, userId) {
 	var tree = this.encode();
 	var r = DCaseAPI.commit(tree, msg, this.commitId, userId);
-	this.commitId = r.commitId;
+	this.commitId = r;
 	this.undoCount = 0;
 	this.opQueue = [];
 	return true;
