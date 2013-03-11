@@ -159,11 +159,7 @@ var DCase = function(tree, argId, commitId) {
 	for(var i=0; i<types.length; i++) {
 		this.typeCount[types[i]] = 1;
 	}
-	if(tree != null) {
-		this.decode(tree);
-	} else {
-		// TODO: add topgoal
-	}
+	this.decode(tree);
 };
 
 //-----------------------------------------------------------------------------
@@ -327,7 +323,7 @@ DCase.prototype.applyOperation = function(op) {
 
 DCase.prototype.commit = function(msg, userId) {
 	var tree = this.encode();
-	var r = DCaseAPI.commit(tree, this.commitId, msg, userId);
+	var r = DCaseAPI.commit(tree, msg, this.commitId, userId);
 	this.commitId = r.commitId;
 	this.undoCount = 0;
 	this.opQueue = [];

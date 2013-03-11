@@ -78,7 +78,7 @@ var TimeLine = function($root) {
 			.appendTo($container)
 
 		var info = list[commitId];
-		var time = new Date(info.time * 1000);
+		var time = new Date(info.time);
 		var timefmt = time.getFullYear() + "/" + time.getMonth() + "/" + time.getDay() +
 			" " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
 
@@ -93,7 +93,7 @@ var TimeLine = function($root) {
 			console.log("arguemnt " + commitId);
 			if(selected != $d) {
 				var argId = self.argument.argId;
-				if(self.onArgumentSelected(argId, commitId)) {
+				if(self.onDCaseSelected(argId, commitId)) {
 					if(selected != null) {
 						selected.css("border-color", "");
 						selected = $d;
@@ -154,7 +154,7 @@ var TimeLine = function($root) {
 		}
 
 		var mm = {};
-		var l = DCaseAPI.getCommitList(arg.getArgumentId());
+		var l = DCaseAPI.getCommitList(arg.getArgumentId());//FIXME
 		for(var i=0; i<l.length-1; i++) {
 			var x = mm[l[i].commitId];
 			if(x == null) x = [];
