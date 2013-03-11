@@ -437,7 +437,9 @@ DNodeView.prototype.showNewNode = function(visible) {
 					self.edit_lock = true;
 					self.viewer.$root.one("click", function() {
 						var text = self.$edit.find("textarea").attr("value");
-						self.viewer.getDCase().insertNode(self.node, type_selected, text);
+						if(text != "") {
+							self.viewer.getDCase().insertNode(self.node, type_selected, text);
+						}
 						self.$edit.remove();
 						self.$edit = null;
 					});
