@@ -93,7 +93,7 @@ void searchDCase(Json request) {
 	String text = request.getString("text");
 	Json result = global.model.Search(text);
 	Json res = new Json();
-	res.set("SearchResult", result);
+	res.set("searchResultList", result);
 	Json response = createMessage(res);
 	stdout.print(response);
 }
