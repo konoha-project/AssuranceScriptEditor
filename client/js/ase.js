@@ -264,6 +264,28 @@ var ASE = function(body) {
 			},
 			__proto__: viewer.default_colorTheme
 		},
+		{
+			themeName: "simple",
+			fill: {
+				"Goal"    : "#ffffff",
+				"Context" : "#ffffff",
+				"Subject" : "#ffffff",
+				"Strategy": "#ffffff",
+				"Evidence": "#ffffff",
+				"Solution": "#ffffff",
+				"Rebuttal": "#ffffff",
+			},
+			stroke: {
+				"Goal"    : "#000000",
+				"Context" : "#000000",
+				"Subject" : "#000000",
+				"Strategy": "#000000",
+				"Evidence": "#000000",
+				"Solution": "#000000",
+				"Rebuttal": "#000000",
+			},
+			__proto__: viewer.default_colorTheme
+		},
 	];
 
 	(function() {
