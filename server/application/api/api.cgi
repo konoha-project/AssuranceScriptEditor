@@ -24,7 +24,7 @@ String getMsg() {
 	while ((ln = f.readLine()) != null) {
 		query = query + ln;
 	}
-	return query.replace(/\\n/g,"\n");
+	return query.replace(/\\n/g,"\n").replace(/\\\"/g, "\\\\\\\"");
 }
 
 void main() {
