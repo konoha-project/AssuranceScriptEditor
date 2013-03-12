@@ -66,10 +66,9 @@ body {
 $(function() {
 	var ase = new ASE(document.getElementById("ase"));
 
-	$(".dropdown-toggle").dropdown();
-	$('.dropdown input, .dropdown label').click(function(e) {
-		e.stopPropagation();
-	});
+	//$('.dropdown input, .dropdown label').click(function(e) {
+	//	e.stopPropagation();
+	//});
 	
 	var searchQuery = $('#search-query');
 	searchQuery.popover({
@@ -133,7 +132,7 @@ $(function() {
 			<div class="nav-collapse collapse">
 				<ul class="nav">
 					<li class="dropdown">
-						<a class="dropdown-toggle" date-toggle="dropdown" href="#">DCaseの選択<b class="caret"></b></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#">DCaseの選択<b class="caret"></b></a>
 						<ul class="dropdown-menu" id="menu-dcase">
 						</ul>
 					</li>
@@ -141,7 +140,7 @@ $(function() {
 if(!(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0)) {
 echo <<<EOT
 					<li class="dropdown">
-						<a class="dropdown-toggle" date-toggle="dropdown" href="#">編集<b class="caret"></b></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#">編集<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li><a id="menu-undo" href="#">元に戻す</a></li>
 							<li><a id="menu-redo" href="#">やり直し</a></li>
@@ -150,7 +149,7 @@ echo <<<EOT
 						</ul>
 					</li>
 					<li class="dropdown">
-						<a class="dropdown-toggle" date-toggle="dropdown" href="#">エクスポート<b class="caret"></b></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#">エクスポート<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li><a id="menu-export-json" href="#">JSON</a></li>
 							<li><a id="menu-export-png" href="#">PNG</a></li>
@@ -168,7 +167,7 @@ EOT;
 					</li>
 
 					<li class="dropdown">
-						<a class="dropdown-toggle" date-toggle="dropdown" href="#">設定<b class="caret"></b></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#">設定<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li class="dropdown-submenu">
 								<a href="#">カラーテーマの変更</a>
