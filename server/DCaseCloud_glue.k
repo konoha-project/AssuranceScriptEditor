@@ -33,6 +33,10 @@ class PreparedStatement {
 		return ret;
 	}
 
+	String EscapeSQL(String str) {
+		return str.replace(/'/g, "\\\'");
+	}
+
 	PreparedStatement(Connection con, String sql) {
 		this.con = con;
 		this.queue = [];
@@ -40,11 +44,13 @@ class PreparedStatement {
 	}
 
 	void setSHA2(String param, String value) {
+		value = this.EscapeSQL(value);
 		this.con.query("SET ${param} = SHA2('${value}',256)"); //FIXME
 		this.queue.add(param);
 	}
 
 	void setString(String param, String value) {
+		value = this.EscapeSQL(value);
 		this.con.query("SET ${param} = '${value}'"); //FIXME
 		this.queue.add(param);
 	}

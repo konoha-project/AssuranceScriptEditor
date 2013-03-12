@@ -212,11 +212,12 @@ echo <<<EOT
 
 EOT;
 }else{
+$user_name = h($_COOKIE["userName"]);
 echo <<<EOT
 				<ul class="nav pull-right">
 					<li class="divider-vertical"></li>
 					<li class="dropdown">
-						<a class="dropdown-toggle" href="#" data-toggle="dropdown">{$_COOKIE["userName"]} <strong class="caret"></strong></a>
+						<a class="dropdown-toggle" href="#" data-toggle="dropdown">{$user_name} <strong class="caret"></strong></a>
 						<div class="dropdown-menu" style="padding: 15px; padding-bottom: 0px;">
 							<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/login.php">
 								<input type="submit" class="btn btn-danger" style="margin-bottom: 15px; width: 100%; height: 32px; font-size: 13px;" value="Sign out" onclick="location.href='logout.php'">
