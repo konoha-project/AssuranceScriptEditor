@@ -12,7 +12,8 @@ var ASE = function(body, defaultDCaseId) {
 		$(".ase-edit-menu").css("display", "none");
 	}
 	if(defaultDCaseId == 0) {
-		// disable view menu when non-selected dcase
+		// disable view/edit menu when non-selected dcase
+		$(".ase-edit-menu").css("display", "none");
 		$(".ase-view-menu").css("display", "none");
 	} else {
 		$(".ase-view-menu").css("display", "block");
