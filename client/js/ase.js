@@ -1,4 +1,4 @@
-var ASE = function(body) {
+var ASE = function(body, defaultDCaseId) {
 	var self = this;
 
 	//--------------------------------------------------------
@@ -18,10 +18,10 @@ var ASE = function(body) {
 		timeline.visible();
 	});
 
-	timeline.onDCaseSelected = function(argId, commitId) {
+	timeline.onDCaseSelected = function(dcaseId, commitId) {
 		if(self.checkCommited()) {
-			var dcase = DCaseAPI.getNodeTree(argId, commitId);
-			viewer.setDCase(dcase);
+			var tree = DCaseAPI.getNodeTree(commitId);
+			viewer.setDCase(new DCase(tree, dcaseId, commitId));
 			return true;
 		} else {
 			return false;
@@ -56,7 +56,19 @@ var ASE = function(body) {
 		if(self.checkCommited()) {
 			DNodeEditWindow.open(null, ["Goal"], function(type, desc) {
 				var name = "new DCase";
-				var dcase = DCaseAPI.createDCase(name, desc, userId);
+				var id = 0;
+				var tree = {
+					NodeList: [{
+						ThisNodeId: id,
+						NodeType: "Goal",
+						Description: desc,
+						Children: [],
+					}],
+					TopGoalId: id,
+					NodeCount: 1,
+				};
+				var r = DCaseAPI.createDCase(name, tree, userId);
+				var dcase = new DCase(tree, r.dcaseId, r.commitId);
 				viewer.setDCase(dcase);
 				timeline.repaint(dcase);
 				self.updateDCaseList();
@@ -93,12 +105,6 @@ var ASE = function(body) {
 		}
 	};
 
-	this.listupDCase = function(callback) {
-		$.each(DCaseAPI.getDCaseList(), function(i, arg) {
-			callback(arg);
-		});
-	};
-
 	this.updateDCaseList = function() {
 		var $m = $("#menu-dcase");
 		$m.empty();
@@ -115,14 +121,13 @@ var ASE = function(body) {
 				.appendTo($m);
 		}
 
-		self.listupDCase(function(dcase) {
-			var commitList = DCaseAPI.getCommitList(dcase.dcaseId);
-			var latest = commitList[commitList.length-1];
+		$.each(DCaseAPI.getDCaseList(), function(i, dcase) {
 			$("<li></li>")
 				.html("<a href=\"#\">" + dcase.dcaseName+ "</a>")
 				.click(function() {
 					if(self.checkCommited()) {
-						var dcase0 = DCaseAPI.getNodeTree(dcase.dcaseId, latest.commitId);
+						var r = DCaseAPI.getDCase(dcase.dcaseId);
+						var dcase0 = new DCase(r.tree, dcase.dcaseId, r.commitId);
 						viewer.setDCase(dcase0);
 						timeline.repaint(dcase0);
 					}
@@ -149,6 +154,12 @@ var ASE = function(body) {
 	});
 
 	self.updateDCaseList();
+	if(defaultDCaseId != null && defaultDCaseId != 0) {
+		var r = DCaseAPI.getDCase(defaultDCaseId);
+		var dcase = new DCase(r.tree, defaultDCaseId, r.commitId);
+		viewer.setDCase(dcase);
+		timeline.repaint(dcase);
+	}
 
 	//--------------------------------------------------------
 
@@ -323,6 +334,5 @@ var ASE = function(body) {
 		viewer.showDScriptExecuteWindow(v.node.getDScriptNameInEvidence());
 	});
 
-	viewer.setColorTheme(viewer.colorTheme_TiffanyBlue);
 };
 
