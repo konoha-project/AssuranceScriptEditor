@@ -136,6 +136,7 @@ $(function() {
 			</form>
 			<div class="nav-collapse collapse">
 				<ul class="nav">
+					<li><a href="./">ホーム</a></li>
 					<li class="dropdown ase-edit-menu">
 						<a class="dropdown-toggle" data-toggle="dropdown" href="#">編集<b class="caret"></b></a>
 						<ul class="dropdown-menu">
