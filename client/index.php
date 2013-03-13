@@ -21,7 +21,6 @@ if(isset($_COOKIE["userId"])) {
 <link rel="stylesheet" type="text/css" href="lib/codemirror.css"/>
 <link rel="stylesheet" type="text/css" href="css/dcase-node.css"/>
 <link rel="stylesheet" type="text/css" href="css/viewer.css"/>
-<link rel="stylesheet" type="text/css" href="css/edit.css"/>
 <link rel="stylesheet" type="text/css" href="css/timeline.css"/>
 <style>
 body {
@@ -59,7 +58,6 @@ body {
 <script type="text/javascript" src="js/dscript.js"></script>
 <script type="text/javascript" src="js/gsnshape.js"></script>
 <script type="text/javascript" src="js/handler.js"></script>
-<script type="text/javascript" src="js/edit.js"></script>
 <script type="text/javascript" src="js/timeline.js"></script>
 <script type="text/javascript" src="js/ase.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
@@ -138,11 +136,6 @@ $(function() {
 			</form>
 			<div class="nav-collapse collapse">
 				<ul class="nav">
-					<li class="dropdown">
-						<a class="dropdown-toggle" data-toggle="dropdown" href="#">DCaseの選択<b class="caret"></b></a>
-						<ul class="dropdown-menu" id="menu-dcase">
-						</ul>
-					</li>
 <?php
 if(!(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0)) {
 echo <<<EOT
@@ -242,18 +235,18 @@ EOT;
 <div id="ase" class="container">
 	<img id="ase-logo" src="img/assuranceDS.png">
 	<div id="viewer" style="display: none;"></div>
-	<div id="dcase-manager" class="container-fluid">
+	<div id="dcase-manager" class="container-fluid" style="display: none;">
 		<div class="row-fluid">
 			<div class="span6">
-				<h2>DCase新規作成</h2>
+				<h2>新しいDCaseを作成</h2>
 				<form class="form-horizontal">
-					<div class="control-group">
+					<div class="control-group" id="newdcase-name">
 						<label class="control-label" for="inputDCaseName">DCase名</label>
 						<div class="controls">
 							<input type="text" id="inputDCaseName">
 						</div>
 					</div>
-					<div class="control-group">
+					<div class="control-group" id="newdcase-desc">
 						<label class="control-label" for="inputDesc">TopGoalの説明</label>
 						<div class="controls">
 							<textarea id="inputDesc" rows=5></textarea>
@@ -261,7 +254,7 @@ EOT;
 					</div>
 					<div class="control-group">
 						<div class="controls">
-							<button type="submit" class="btn">作成</button>
+							<button type="button" class="btn" id="dcase-create">作成</button>
 						</div>
 					</div>
 				</form>
@@ -277,12 +270,7 @@ EOT;
 							<th>最終コミット者</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr><td><a href="./?dcaseId=1">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
-						<tr><td><a href="./?dcaseId=2">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
-						<tr><td><a href="./?dcaseId=3">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
-						<tr><td><a href="./?dcaseId=4">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
-						<tr><td><a href="./?dcaseId=5">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
+					<tbody id="dcase-select-table">
 					</tbody>
 				</table>
 			</div>
