@@ -170,7 +170,7 @@ EOT;
 						<a class="dropdown-toggle" data-toggle="dropdown" href="#">設定<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li class="dropdown-submenu">
-								<a href="#">カラーテーマの変更</a>
+								<a href="#">カラーテーマを変更</a>
 								<ul id="menu-change-theme" class="dropdown-menu">
 								</ul>
 							</li>
