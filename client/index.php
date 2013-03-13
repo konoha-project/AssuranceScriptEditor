@@ -136,10 +136,7 @@ $(function() {
 			</form>
 			<div class="nav-collapse collapse">
 				<ul class="nav">
-<?php
-if(!(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0)) {
-echo <<<EOT
-					<li class="dropdown">
+					<li class="dropdown ase-edit-menu">
 						<a class="dropdown-toggle" data-toggle="dropdown" href="#">編集<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li><a id="menu-undo" href="#">元に戻す</a></li>
@@ -148,7 +145,7 @@ echo <<<EOT
 							<li><a id="menu-paste" href="#">貼り付け</a></li>
 						</ul>
 					</li>
-					<li class="dropdown">
+					<li class="dropdown ase-edit-menu ase-view-menu">
 						<a class="dropdown-toggle" data-toggle="dropdown" href="#">エクスポート<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li><a id="menu-export-json" href="#">JSON</a></li>
@@ -157,16 +154,11 @@ echo <<<EOT
 							<li><a id="menu-export-dscript" href="#">D-Script</a></li>
 						</ul>
 					</li>
-					<li><a id="menu-commit" href="#">コミット</a></li>
-
-EOT;
-}
-?>
-					<li class="dropdown">
+					<li class="ase-edit-menu"><a id="menu-commit" href="#">コミット</a></li>
+					<li class="dropdown ase-edit-menu ase-view-menu">
 						<a class="dropdown-toggle" id="menu-history-toggle" href="#">コミット履歴<b class="caret"></b></a>
 					</li>
-
-					<li class="dropdown">
+					<li class="dropdown ase-edit-menu ase-view-menu">
 						<a class="dropdown-toggle" data-toggle="dropdown" href="#">設定<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li class="dropdown-submenu">

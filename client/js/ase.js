@@ -7,6 +7,17 @@ var ASE = function(body, defaultDCaseId) {
 	var matchResult = document.cookie.match(/userId=(\w+);?/);
 	var userId = matchResult ? parseInt(matchResult[1]) : null;
 
+	if(userId == null) {
+		// disable edit menu when non-login
+		$(".ase-edit-menu").css("display", "none");
+	}
+	if(defaultDCaseId == 0) {
+		// disable view menu when non-selected dcase
+		$(".ase-view-menu").css("display", "none");
+	} else {
+		$(".ase-view-menu").css("display", "block");
+	}
+
 	if(defaultDCaseId == 0) {
 		$("#dcase-manager").css("display", "block");
 
@@ -42,10 +53,17 @@ var ASE = function(body, defaultDCaseId) {
 			});
 		} else {
 			$("#dcase-create").addClass("disabled");
+			$("#inputDCaseName").attr("disabled", "");
+			$("#inputDesc").attr("disabled", "");
 		}
 
 		var $tbody = $("#dcase-select-table");
-		$.each(DCaseAPI.getDCaseList(), function(i, dcase) {
+		var dcaseList = DCaseAPI.getDCaseList();
+		if(dcaseList.length == 0) {
+			$("<tr><td><font color=gray>DCaseがありません</font></td><td></td><td></td><td></td></tr>")
+			.appendTo($tbody);
+		}
+		$.each(dcaseList, function(i, dcase) {
 			var id = dcase.dcaseId;
 			var name = dcase.dcaseName;
 			var user = "owner user";
