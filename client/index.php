@@ -63,8 +63,14 @@ body {
 <script type="text/javascript" src="js/animation.js"></script>
 <script type="text/javascript">
 
+function getURLParameter(name) {
+	return decodeURI(
+		(RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+	);
+}
+
 $(function() {
-	var ase = new ASE(document.getElementById("ase"));
+	var ase = new ASE(document.getElementById("ase"),parseInt(getURLParameter("dcaseId")));
 
 	//$('.dropdown input, .dropdown label').click(function(e) {
 	//	e.stopPropagation();
