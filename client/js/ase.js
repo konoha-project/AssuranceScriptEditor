@@ -185,16 +185,12 @@ var ASE = function(body, defaultDCaseId) {
 		});
 	};
 
-	this.searchDCase = function(text) {
-		return [];
-	};
-
 	this.updateSearchResult = function(text) {
 		$('#search-query').popover('show');
 		var $res = $("#search_result_ul");
 		$res.empty();
 		text = text.toLowerCase();
-		var result = this.searchDCase(text);
+		var result = DCaseAPI.searchDCase(text);
 		if(result.length == 0) {
 			$res.append("<li>No Results</li>");
 		} else {
