@@ -158,6 +158,18 @@ class DCaseModel {
 		return ret;
 	}
 
+	@Public Json getDCase(int dcaseId) {
+		PreparedStatement p = this.db.newPreparedStatement("SELECT name,commit.id as commitId,data FROM dcase INNER JOIN commit ON dcase.id=commit.dcase_id WHERE dcase.id=? AND latest_flag=TRUE");
+		p.setInt("@a",dcaseId);
+		ResultSet r = p.execute();
+		r.next();
+		Json json = new Json();
+		json.setInt("commitId",r.getInt("commitId"));
+		json.set("tree", Json.parse(EscapeCR(r.getString("data"))));
+		json.setString("dcaseName",r.getString("name"));
+		return json;
+	}
+
 	@Public Json GetNodeTree(int commit_id) {
 		PreparedStatement p = this.db.newPreparedStatement("SELECT data,date_time,prev_commit_id FROM commit WHERE id=?");
 		p.setInt("@a",commit_id);

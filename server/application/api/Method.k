@@ -79,6 +79,13 @@ void commit (Json request) {
 	stdout.print(response);
 }
 
+void getDCase(Json request) {
+	int dcaseId = request.getInt("dcaseId");
+	Json res = global.model.getDCase(dcaseId);
+	Json response = createMessage(res);
+	stdout.print(response);
+}
+
 void getNodeTree (Json request) {
 	int commitId = request.getInt("commitId");
 	Json tree = global.model.GetNodeTree(commitId);
@@ -131,6 +138,7 @@ class JsonRPCServer {
 
 	void registerFunctions() {
 		this.functions.set("createDCase"  , createDCase);
+		this.functions.set("getDCase"     , getDCase);
 		this.functions.set("searchDCase"  , searchDCase);
 		this.functions.set("commit"       , commit);
 		this.functions.set("getDCaseList" , getDCaseList);
