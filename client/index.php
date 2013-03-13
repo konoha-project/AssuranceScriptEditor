@@ -34,6 +34,9 @@ body {
 	width : 100%;
 	bottom: 0px;
 }
+#dcase-manager {
+	margin-top: 60px;
+}
 #ase-logo {
 	position: absolute;
 	right: 0px;
@@ -237,16 +240,53 @@ EOT;
 </div>
 
 <div id="ase" class="container">
-	<div id="viewer"></div>
 	<img id="ase-logo" src="img/assuranceDS.png">
-
-	<div id="edit" style="display: none;">
-		<h1>Type</h1>
-		<select></select>
-		<h1>Description</h1>
-		<textarea rows=4 cols=40></textarea><br>
-		<input id="edit-ok" type="button" value="OK"></input>
-		<input id="edit-cancel"type="button" value="Cancel"></input>
+	<div id="viewer" style="display: none;"></div>
+	<div id="dcase-manager" class="container-fluid">
+		<div class="row-fluid">
+			<div class="span6">
+				<h2>DCase新規作成</h2>
+				<form class="form-horizontal">
+					<div class="control-group">
+						<label class="control-label" for="inputDCaseName">DCase名</label>
+						<div class="controls">
+							<input type="text" id="inputDCaseName">
+						</div>
+					</div>
+					<div class="control-group">
+						<label class="control-label" for="inputDesc">TopGoalの説明</label>
+						<div class="controls">
+							<textarea id="inputDesc" rows=5></textarea>
+						</div>
+					</div>
+					<div class="control-group">
+						<div class="controls">
+							<button type="submit" class="btn">作成</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="span6">
+				<h2>DCaseを選択</h2>
+				<table class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>DCase名</th>
+							<th>作成者</th>
+							<th>最終コミット日時</th>
+							<th>最終コミット者</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr><td><a href="./?dcaseId=1">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
+						<tr><td><a href="./?dcaseId=2">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
+						<tr><td><a href="./?dcaseId=3">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
+						<tr><td><a href="./?dcaseId=4">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
+						<tr><td><a href="./?dcaseId=5">てすと</a></td><td>user</td><td>1/23</td><td>?</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</div>
 
 	<table id="edit-newnode" style="display: none;">
