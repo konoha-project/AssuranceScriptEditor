@@ -1,4 +1,4 @@
-var ASE = function(body, dcaseId) {
+var ASE = function(body, defaultDCaseId) {
 	var self = this;
 
 	//--------------------------------------------------------
@@ -154,6 +154,12 @@ var ASE = function(body, dcaseId) {
 	});
 
 	self.updateDCaseList();
+	if(defaultDCaseId != null && defaultDCaseId != 0) {
+		var r = DCaseAPI.getDCase(defaultDCaseId);
+		var dcase = new DCase(r.tree, defaultDCaseId, r.commitId);
+		viewer.setDCase(dcase);
+		timeline.repaint(dcase);
+	}
 
 	//--------------------------------------------------------
 
@@ -328,6 +334,5 @@ var ASE = function(body, dcaseId) {
 		viewer.showDScriptExecuteWindow(v.node.getDScriptNameInEvidence());
 	});
 
-	viewer.setColorTheme(viewer.colorTheme_TiffanyBlue);
 };
 
