@@ -70,12 +70,10 @@ function getURLParameter(name) {
 }
 
 $(function() {
-	var ase = new ASE(document.getElementById("ase"),parseInt(getURLParameter("dcaseId")));
+	var dcaseId = parseInt(getURLParameter("dcaseId"));
+	if(isNaN(dcaseId)) dcaseId = 0;
+	var ase = new ASE(document.getElementById("ase"), dcaseId);
 
-	//$('.dropdown input, .dropdown label').click(function(e) {
-	//	e.stopPropagation();
-	//});
-	
 	var searchQuery = $('#search-query');
 	searchQuery.popover({
 		html: true,
@@ -241,6 +239,7 @@ EOT;
 <div id="ase" class="container">
 	<div id="viewer"></div>
 	<img id="ase-logo" src="img/assuranceDS.png">
+
 	<div id="edit" style="display: none;">
 		<h1>Type</h1>
 		<select></select>
