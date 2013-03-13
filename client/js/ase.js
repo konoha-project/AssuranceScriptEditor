@@ -9,36 +9,38 @@ var ASE = function(body, defaultDCaseId) {
 
 	if(defaultDCaseId == 0) {
 		$("#dcase-manager").css("display", "block");
-		$("#dcase-create").click(function() {
-			var name = $("#inputDCaseName").attr("value");
-			var desc = $("#inputDesc").attr("value");
-			var error = false;
-			if(name == "") {
-				$("#newdcase-name").addClass("error");
-				error = true;
-			} else {
-				$("#newdcase-name").removeClass("error");
-			}
-			if(desc == "") {
-				$("#newdcase-desc").addClass("error");
-				error = true;
-			}
-			if(error) return;
-			var id = 0;
-			var tree = {
-				NodeList: [{
-					ThisNodeId: id,
-					NodeType: "Goal",
-					Description: desc,
-					Children: [],
-				}],
-				TopGoalId: id,
-				NodeCount: 1,
-			};
-			var r = DCaseAPI.createDCase(name, tree, userId);
-			location.href = "./?dcaseId=" + r.dcaseId;
-		});
-		if(userId == null) {
+
+		if(userId != null) {
+			$("#dcase-create").click(function() {
+				var name = $("#inputDCaseName").attr("value");
+				var desc = $("#inputDesc").attr("value");
+				var error = false;
+				if(name == "") {
+					$("#newdcase-name").addClass("error");
+					error = true;
+				} else {
+					$("#newdcase-name").removeClass("error");
+				}
+				if(desc == "") {
+					$("#newdcase-desc").addClass("error");
+					error = true;
+				}
+				if(error) return;
+				var id = 0;
+				var tree = {
+					NodeList: [{
+						ThisNodeId: id,
+						NodeType: "Goal",
+						Description: desc,
+						Children: [],
+					}],
+					TopGoalId: id,
+					NodeCount: 1,
+				};
+				var r = DCaseAPI.createDCase(name, tree, userId);
+				location.href = "./?dcaseId=" + r.dcaseId;
+			});
+		} else {
 			$("#dcase-create").addClass("disabled");
 		}
 
@@ -96,7 +98,6 @@ var ASE = function(body, defaultDCaseId) {
 		if(msg != null) {
 			if(viewer.getDCase().commit(msg, userId)) {
 				alert("コミットしました");
-				//self.updateDCaseList();
 				timeline.repaint(viewer.getDCase());
 			}
 		}
@@ -199,15 +200,11 @@ var ASE = function(body, defaultDCaseId) {
 	});
 
 	$("#menu-undo").click(function() {
-		if(viewer.getDCase().undo()) {
-			viewer.structureUpdated();
-		}
+		viewer.getDCase().undo();
 	});
 
 	$("#menu-redo").click(function() {
-		if(viewer.getDCase().redo()) {
-			viewer.structureUpdated();
-		}
+		viewer.getDCase().redo();
 	});
 
 	$("#menu-copy").click(function() {
