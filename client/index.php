@@ -212,7 +212,6 @@ echo <<<EOT
 						<div class="dropdown-menu" style="padding: 15px; padding-bottom: 0px;">
 							<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/logout.php">
 								<input type="submit" class="btn btn-danger" style="margin-bottom: 15px; width: 100%; height: 32px; font-size: 13px;" value="Sign out">
-								<input type="hidden" name="dcaseId" value="{$_GET['dcaseId']}">
 							</form>
 						</div>
 					</li>
