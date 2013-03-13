@@ -64,6 +64,25 @@ CREATE  TABLE IF NOT EXISTS `dcase`.`commit` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Table `dcase`.`node`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `dcase`.`node` (
+  `id` INT NOT NULL AUTO_INCREMENT ,
+  `this_node_id` INT NULL ,
+  `description` TEXT NULL ,
+  `node_type` VARCHAR(45) NULL ,
+  `commit_id` INT NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_node_commit1_idx` (`commit_id` ASC) ,
+  CONSTRAINT `fk_node_commit1`
+    FOREIGN KEY (`commit_id` )
+    REFERENCES `dcase`.`commit` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

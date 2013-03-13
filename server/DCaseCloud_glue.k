@@ -1,5 +1,6 @@
 Import("Type.Json");
 Import("Syntax.CStyleWhile");
+Import("Syntax.CStyleFor");
 Import("Syntax.Null");
 Import("Syntax.GlobalVariable");
 Import("Syntax.StringInterpolation");
@@ -112,6 +113,24 @@ class DCaseModel {
 		p.execute();
 	}
 
+	void insertNode(Json node, int id) {
+		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `node`(`this_node_id`,`description`,`node_type`,`commit_id`) VALUES(?,?,?,?)");
+		p.setInt("@a",node.getInt("ThisNodeId"));
+		p.setString("@b",node.getString("Description"));
+		p.setString("@c",node.getString("NodeType"));
+		p.setInt("@d",id);
+		p.execute();
+	}
+
+	@Public void insertNodeList(Json tree, int id) {
+		Json nodeList = tree.get("NodeList");
+		int i = 0;
+		while(i < nodeList.getSize()) {
+			this.insertNode(nodeList[i],id);
+			i = i + 1;
+		}
+	}
+
 	@Public int Commit(Json tree, int prev_id, int user_id, String message) {
 		int dcase_id = this.getDCaseId(prev_id);
 		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`data`,`date_time`,`prev_commit_id`,`latest_flag`, `dcase_id`, `user_id`, `message`) VALUES(?,?,?,TRUE,?,?,?)");
@@ -123,7 +142,9 @@ class DCaseModel {
 		p.setString("@f", message);
 		p.execute();
 		this.updatePrev(prev_id);
-		return p.getInsertId();
+		int id = p.getInsertId();
+		insertNodeList(tree,id);
+		return id;
 	}
 
 	int _createDcase(int user_id,String dcaseName) {
@@ -235,13 +256,15 @@ class DCaseModel {
 
 	//FIXME
 	@Public Json search(String text) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id FROM commit WHERE latest_flag=TRUE AND data LIKE ?");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id,this_node_id,description FROM node INNER JOIN commit ON node.commit_id=commit.id WHERE latest_flag=TRUE AND description LIKE ?");
 		p.setString("@a","%"+text+"%");
 		ResultSet r = p.execute();
 		Json ret = new Json([]);
 		while(r.next()) {
 			Json json = new Json();
 			json.setInt("dcaseId",r.getInt("dcase_id"));
+			json.setInt("nodeId",r.getInt("this_node_id"));
+			json.setString("description",r.getString("description"));
 			ret.add(json);
 		}
 		return ret;

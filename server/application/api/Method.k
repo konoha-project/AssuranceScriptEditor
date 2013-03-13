@@ -97,7 +97,7 @@ void getNodeTree (Json request, int id) {
 
 void searchDCase(Json request, int id) {
 	String text = request.getString("text");
-	Json result = global.model.Search(text);
+	Json result = global.model.search(text);
 	Json res = new Json();
 	res.set("searchResultList", result);
 	Json response = createMessage(res, id);
