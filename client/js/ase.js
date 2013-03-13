@@ -154,7 +154,7 @@ var ASE = function(body, defaultDCaseId) {
 	});
 
 	self.updateDCaseList();
-	if(defaultDCaseId != null && defaultDCaseId != 0) {
+	if(defaultDCaseId != null && defaultDCaseId != 0 && !isNaN(defaultDCaseId)) {
 		var r = DCaseAPI.getDCase(defaultDCaseId);
 		var dcase = new DCase(r.tree, defaultDCaseId, r.commitId);
 		viewer.setDCase(dcase);

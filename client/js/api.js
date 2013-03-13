@@ -14,7 +14,7 @@ DCaseAPI.call = function(method, params, callback, error_callback) {
 	var cmd = {
 		jsonrpc: "2.0",
 		method: method,
-		version: "1.0",
+		id: 1,
 		params: params
 	};
 	var async = callback != null;
