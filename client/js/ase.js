@@ -266,6 +266,10 @@ var ASE = function(body) {
 		self.exportTree("png");
 	});
 
+	$("#menu-export-pdf").click(function() {
+		self.exportTree("pdf");
+	});
+
 	$("#menu-export-script").click(function() {
 		self.exportTree("dscript");
 	});
