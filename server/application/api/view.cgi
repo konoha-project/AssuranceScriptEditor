@@ -81,10 +81,10 @@ class DotExporter extends Exporter {
         return prefix + thisId;
     }
 
-    String emitEdge(Json from, Json to){
-        String fromName = getDotNodeName(from);
-        String toName = getDotNodeName(no);
-        String type = to.getString("NodeType");
+    String emitEdge(Json fromNode, Json toNode){
+        String fromName = getDotNodeName(fromNode);
+        String toName = getDotNodeName(toNode);
+        String type = toNode.getString("NodeType");
         String suffix = "";
         if (type == "Context" || type == "Rebuttal") {
             suffix = "[arrowhead=onormal, headport=w, tailport=e];{rank=same;${fromName};${toName}}";
