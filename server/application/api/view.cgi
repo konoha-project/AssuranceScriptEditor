@@ -40,9 +40,14 @@ Json FindById(Json NodeList, int Id) {
 
 class DotExporter extends Exporter {
     String string;
+    int clusterID = 0;
     DotExporter() {
         stdout.print("Content-Type: application/json; charset=utf-8\n\n");
         string = "";
+    }
+    int getClusterID(){
+        clusterID = clusterID + 1;
+        return clusterID;
     }
     @Virtual void emit() {
         stdout.println(this.string);
@@ -50,83 +55,129 @@ class DotExporter extends Exporter {
     void println(String string) {
         this.string = this.string + string + "\n";
     }
+
+    String getDotNodeName(Json node){
+        String type = node.getString("NodeType");
+        String prefix = "";
+        if (type == "Goal") {
+            prefix = "G";
+        }
+        else if (type == "Context") {
+            prefix = "C";
+        }
+        else if (type == "Strategy") {
+            prefix = "S";
+        }
+        else if (type == "Evidence") {
+            prefix = "E";
+        }
+        else if (type == "Rebuttal") {
+            prefix = "R";
+        }
+        else if (type == "Solution") {
+            prefix = "S";
+        }
+        int thisId = node.getInt("ThisNodeId");
+        return prefix + thisId;
+    }
+
+    String emitEdge(Json from, Json to){
+        String fromName = getDotNodeName(from);
+        String toName = getDotNodeName(no);
+        String type = to.getString("NodeType");
+        String suffix = "";
+        if (type == "Context" || type == "Rebuttal") {
+            suffix = "[arrowhead=onormal, headport=w, tailport=e];{rank=same;${fromName};${toName}}";
+        }
+        println("${fromName}->${toName}${suffix}");
+    }
+
+    String emitDotNodeDefine(Json node){
+        String prefix = "";
+        String shape = "";
+        String args = "";
+        String goalColor = "#C0C0C0";
+        String contextColor = "#B0B0B0";
+        String rebuttalColor = "#EEAAAA";
+        String color;
+        String type = node.getString("NodeType");
+        boolean hasChildren = (node.get("Children").getSize() > 0);
+ 
+        if (type == "Goal") {
+            prefix = "G";
+            if(hasChildren){
+                shape = "rect";
+            }else{
+                shape = "rect"; // TODO: Use custom shape for undeveloped goal.
+            }
+            color = goalColor;
+        }
+        else if (type == "Context") {
+            prefix = "C";
+            shape = "rect";
+            args = "style=\"filled, rounded\""";
+            color = contextColor;
+        }
+        else if (type == "Strategy") {
+            prefix = "S";
+            shape = "parallelogram";
+            color = contextColor;
+        }
+        else if (type == "Evidence") {
+            prefix = "E";
+            shape = "ellipse";
+            color = goalColor;
+        }
+        else if (type == "Rebuttal") {
+            prefix = "R";
+            shape = "ellipse";
+            color = rebuttalColor;
+        }
+        else if (type == "Solution") {
+            prefix = "S";
+            shape = "ellipse";
+            color = goalColor;
+        }
+        int thisId = node.getInt("ThisNodeId")
+        String desc = node.getString("Description");
+        println("${prefix}${thisId}[shape=${shape}, label=\"${prefix}${thisId}\\n\${desc}\", color=\"${color}\", ${args}]");
+
+    }
+
+    void GenerateGoalCode(Json NodeList, Json node, int level) {
+        Json children = node.get("Children");
+        int childrenNum = children.getSize();
+        int i = 0;
+        if(childrenNum > 1){
+            println("subgraph cluster${getClusterID()} {");
+            println("style=invis");
+        }
+        emitDotNodeDefine(node);
+        for (i=0; i < childrenNum; i = i + 1) {
+            Json child = FindById(NodeList, children.getInt(i));
+            GenerateGoalCode(NodeList, child, level + 1);
+            emitEdge(node, child);
+        }
+        if(childrenNum > 1){
+            println("}");
+        }
+
+    }
+
     @Override void export(Json json) {
         Json tree = json.get("result").get("Tree");
         int RootId = tree.getInt("TopGoalId");
         Json NodeList= tree.get("NodeList");
         println("digraph AssuranceScript {");
-        int i, len = NodeList.getSize();
-        for (i=0; i < len; i = i + 1) {
-            Json node = NodeList.get(i);
-            int thisId = node.getInt("ThisNodeId");
-            String type = node.getString("NodeType");
-            String shape = "rect";
-            String prefix = "";
-            if (type == "Goal") {
-                shape = "rect";
-                prefix = "G";
-            }
-            else if (type == "Context") {
-                shape = "circle";
-                prefix = "C";
-            }
-            else if (type == "Strategy") {
-                shape = "parallelogram";
-                prefix = "S";
-            }
-            else if (type == "Evidence") {
-                shape = "box";
-                prefix = "E";
-            } else {
-                continue;
-            }
-            String desc = node.getString("Description");
-            println("  ${thisId}[hieght=1.0,shape=${shape},label=\"${prefix}${thisId}\\n${desc}\"]");
-        }
+        int i, j, len = NodeList.getSize();
 
-        for (i=0; i < len; i = i + 1) {
-            Json node = NodeList.get(i);
-            int j, thisId = node.getInt("ThisNodeId")
-            Json child = node.get("Children");
-            int[] same = [thisId];
-            int[] down = [];
-            for (j=0; j < child.getSize(); j = j + 1) {
-                int childId = child.getInt(j);
-                println("  " + thisId + " -> " + childId + ";");
-                String type = FindById(NodeList, childId).getString("NodeType");
-                if (type == "Goal") {
-                    down.add(childId);
-                }
-                else if (type == "Context") {
-                    same.add(childId);
-                }
-                else if (type == "Strategy") {
-                    down.add(childId);
-                }
-                else if (type == "Evidence") {
-                    down.add(childId);
-                }
-            }
-            if (same.getSize() >= 2) {
-                println("  {/*same*/");
-                println("    rank = same");
-                for (j=0; j < same.getSize(); j = j + 1) {
-                    println("    ${same.get(j)}");
-                }
-                println("  }");
-            }
-            if (down.getSize() > 1) {
-                println("  {/*down*/");
-                println("    rank = same");
-                for (j=0; j < down.getSize(); j = j + 1) {
-                    println("    ${down.get(j)}");
-                }
-                println("  }");
-            }
-
-        }
+        String indent = EmitIndent(0);
+        Json RootNode = FindById(NodeList,RootId);
+        println("digraph AssuranceScript {");
+        println("node[style=filled, labelloc=t, labeljust=l, fixedsize=true, width=1.7, height=0.8];");
+        println("edge[headport=n, tailport=s, color=\"#C0C0C0\"];");
+        GenerateGoalCode(NodeList, RootNode, 1);
         println("}");
-        emit();
     }
 }
 
@@ -235,7 +286,7 @@ void main () {
     param.setInt("BelongedArgumentId", id);
     json.set("params", param);
 
-    HttpClient client = new CurlHttpClient("http://www.ubicg.ynu.ac.jp/dcase_viewer/cgi/api.cgi");
+    HttpClient client = new CurlHttpClient("http://localhost/dview/server/application/api/api.cgi");
     Json ret = Json.parse(client.post(json.toString()));
     Exporter export = null;
     if (ext == "dot") {
