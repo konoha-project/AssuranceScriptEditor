@@ -40,7 +40,7 @@ var GsnShape = {
 				$svg.createSvg("rect"),
 				$svg.createSvg("polygon"),
 			];
-			$(this.elems[2]).attr("fill", "gray");
+			$(this.elems[2]).attr("fill", "gray").attr("points", "0,0 0,0 0,0 0,0");
 			this.elems[0].appendChild(this.elems[1]);
 			this.elems[0].appendChild(this.elems[2]);
 		};
@@ -65,6 +65,7 @@ var GsnShape = {
 		var N = 20;
 		var Strategy = function($svg) {
 			this.elems = [ $svg.createSvg("polygon") ];
+			$(this.elems[0]).attr("points", "0,0 0,0 0,0 0,0");
 		};
 		Strategy.prototype.animate = function(a, x, y, w, h, scale) {
 			var n = N * scale;
@@ -105,7 +106,7 @@ var GsnShape = {
 				$svg.createSvg("ellipse"),
 				$svg.createSvg("polygon"),
 			];
-			$(this.elems[2]).attr("fill", "gray");
+			$(this.elems[2]).attr("fill", "gray").attr("points", "0,0 0,0 0,0");
 			this.elems[0].appendChild(this.elems[1]);
 			this.elems[0].appendChild(this.elems[2]);
 		};

@@ -399,7 +399,8 @@ DNodeView.prototype.nodeChanged = function() {
 	// undeveloped
 	if(node.isUndeveloped && this.svgUndevel == null) {
 		this.svgUndevel = $(document.createElementNS(SVG_NS, "polygon")).attr({
-			fill: "none", stroke: "gray"
+			fill: "none", stroke: "gray",
+			points: "0,0 0,0 0,0 0,0"
 		}).appendTo(viewer.$svg);
 	} else if(!node.isUndeveloped && this.svgUndevel != null){
 		this.svgUndevel.remove();
