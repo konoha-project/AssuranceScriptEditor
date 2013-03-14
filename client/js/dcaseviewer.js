@@ -183,6 +183,7 @@ DCaseViewer.prototype.setColorTheme = function(theme) {
 	} else {
 		delete this.colorTheme;
 	}
+	this.location_updated = true;
 	this.repaintAll();
 };
 
