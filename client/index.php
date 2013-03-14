@@ -64,40 +64,8 @@ body {
 <script type="text/javascript" src="js/animation.js"></script>
 <script type="text/javascript">
 
-function getURLParameter(name) {
-	return decodeURI(
-		(RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
-	);
-}
-
 $(function() {
-	var dcaseId = parseInt(getURLParameter("dcaseId"));
-	if(isNaN(dcaseId)) dcaseId = 0;
-	var ase = new ASE(document.getElementById("ase"), dcaseId);
-
-	var searchQuery = $('#search-query');
-	searchQuery.popover({
-		html: true,
-		placement: 'bottom',
-		trigger: 'manual',
-		content: function(){
-			var wrapper = $('<div id="search_result_wrapper">');
-			$('<a class="btn btn-link">close</a>').click(function(){
-				searchQuery.popover('hide');
-				return false;
-			}).appendTo(wrapper);
-			wrapper.append('<ul id="search_result_ul" class="unstyled">');
-			wrapper.width(searchQuery.width());
-			return wrapper;
-		},
-	});
-	$('#search-form').submit(function(){
-		var query = searchQuery.val();
-		if(query.length > 0){
-			ase.updateSearchResult(query);
-		}
-		return false;
-	});
+	var ase = new ASE(document.getElementById("ase"));
 
 	var $id    = $('#signup-userid');
 	var $pass1 = $('#signup-pass');

@@ -1,7 +1,15 @@
-var ASE = function(body, defaultDCaseId) {
+var ASE = function(body) {
 	var self = this;
 
 	//--------------------------------------------------------
+
+	function getURLParameter(name) {
+		return decodeURI(
+			(RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+		);
+	}
+	var dcaseId = parseInt(getURLParameter("dcaseId"));
+	if(isNaN(dcaseId)) dcaseId = 0;
 
 	var copiedNode = null;
 	var matchResult = document.cookie.match(/userId=(\w+);?/);
@@ -11,7 +19,7 @@ var ASE = function(body, defaultDCaseId) {
 		// disable edit menu when non-login
 		$(".ase-edit-menu").css("display", "none");
 	}
-	if(defaultDCaseId == 0) {
+	if(dcaseId == 0) {
 		// disable view/edit menu when non-selected dcase
 		$(".ase-edit-menu").css("display", "none");
 		$(".ase-view-menu").css("display", "none");
@@ -19,7 +27,7 @@ var ASE = function(body, defaultDCaseId) {
 		$(".ase-view-menu").css("display", "block");
 	}
 
-	if(defaultDCaseId == 0) {
+	if(dcaseId == 0) {
 		$("#dcase-manager").css("display", "block");
 
 		if(userId != null) {
@@ -158,6 +166,30 @@ var ASE = function(body, defaultDCaseId) {
 	});
 
 	//--------------------------------------------------------
+
+	var searchQuery = $('#search-query');
+	searchQuery.popover({
+		html: true,
+		placement: 'bottom',
+		trigger: 'manual',
+		content: function(){
+			var wrapper = $('<div id="search_result_wrapper">');
+			$('<a class="btn btn-link">close</a>').click(function(){
+				searchQuery.popover('hide');
+				return false;
+			}).appendTo(wrapper);
+			wrapper.append('<ul id="search_result_ul" class="unstyled">');
+			wrapper.width(searchQuery.width());
+			return wrapper;
+		},
+	});
+	$('#search-form').submit(function(){
+		var query = searchQuery.val();
+		if(query.length > 0){
+			ase.updateSearchResult(query);
+		}
+		return false;
+	});
 
 	this.searchNode = function(text, types, beginDate, endDate, callback, callbackOnNoResult) {
 		var dcase = viewer.getDCase();
@@ -306,8 +338,8 @@ var ASE = function(body, defaultDCaseId) {
 		});
 
 		// show DCase
-		var r = DCaseAPI.getDCase(defaultDCaseId);
-		var dcase = new DCase(r.tree, defaultDCaseId, r.commitId);
+		var r = DCaseAPI.getDCase(dcaseId);
+		var dcase = new DCase(r.tree, dcaseId, r.commitId);
 		viewer.setDCase(dcase);
 		timeline.repaint(dcase);
 	}());
