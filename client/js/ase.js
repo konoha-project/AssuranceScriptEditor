@@ -46,7 +46,7 @@ var ASE = function(body) {
 					error = true;
 				}
 				if(error) return;
-				var id = 0;
+				var id = 1;
 				var tree = {
 					NodeList: [{
 						ThisNodeId: id,
