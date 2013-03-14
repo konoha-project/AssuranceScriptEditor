@@ -83,14 +83,6 @@ var ASE = function(body) {
 					lastUser + "</td>";
 			$("<tr></tr>")
 				.html(html)
-				.click(function() {
-					if(self.checkCommited()) {
-						var r = DCaseAPI.getDCase(dcase.dcaseId);
-						var dcase0 = new DCase(r.tree, dcase.dcaseId, r.commitId);
-						viewer.setDCase(dcase0);
-						timeline.repaint(dcase0);
-					}
-				})
 				.appendTo($tbody);
 		});
 		return;
@@ -186,7 +178,7 @@ var ASE = function(body) {
 	$('#search-form').submit(function(){
 		var query = searchQuery.val();
 		if(query.length > 0){
-			ase.updateSearchResult(query);
+			self.updateSearchResult(query);
 		}
 		return false;
 	});
@@ -224,12 +216,10 @@ var ASE = function(body) {
 		} else {
 			for(var i = 0; i < result.length; ++i) {
 				var res = result[i];
+				var id = res.dcaseId;
 				$("<li>")
-				.text(res.dcaseId)
-				.click(function() {
-					viewer.centerize(v, 500);
-				})
-				.appendTo($res);
+					.html("<a href=\"./?dcaseId=" + id + "\">" + id + "</a>")
+					.appendTo($res);
 			}
 		}
 	};
