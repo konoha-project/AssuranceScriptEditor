@@ -176,6 +176,7 @@ var DNodeView_ToolBox = function(self) {
 		if(visible) {
 			if($toolbox != null) return;
 			$toolbox = $("<div></div>")
+				.css("display", self.$divText.css("display"))
 				.appendTo(self.$div);
 	
 			$("<a href=\"#\"></a>").addClass("icon-plus")
