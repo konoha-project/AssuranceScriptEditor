@@ -204,6 +204,7 @@ class DCaseModel {
 			Json json = new Json();
 			json.setInt("dcaseId", r.getInt("id"));
 			json.setString("dcaseName", r.getString("name"));
+			json.set("latestCommit",this.getLatestCommit(r.getInt("id")));
 			ret.add(json);
 		}
 		return ret;
