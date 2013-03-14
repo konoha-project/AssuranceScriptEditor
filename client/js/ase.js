@@ -75,9 +75,11 @@ var ASE = function(body) {
 		$.each(dcaseList, function(i, dcase) {
 			var id = dcase.dcaseId;
 			var name = dcase.dcaseName;
-			var user = "owner user";
-			var lastDate = "?/??";
-			var lastUser = "last user";
+			var user = dcase.userName;
+			var time = new Date(dcase.latestCommit.time);
+			var lastDate = time.getFullYear() + "/" + time.getMonth() + "/" + time.getDay() +
+			" " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+			var lastUser = dcase.latestCommit.userName;
 			var html = "<td><a href=\"./?dcaseId=" + id + "\">" + name + 
 					"</a></td><td>" + user + "</td><td>" + lastDate + "</td><td>" +
 					lastUser + "</td>";
