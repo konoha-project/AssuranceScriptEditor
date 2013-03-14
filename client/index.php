@@ -21,7 +21,6 @@ if(isset($_COOKIE["userId"])) {
 <link rel="stylesheet" type="text/css" href="lib/codemirror.css"/>
 <link rel="stylesheet" type="text/css" href="css/dcase-node.css"/>
 <link rel="stylesheet" type="text/css" href="css/viewer.css"/>
-<link rel="stylesheet" type="text/css" href="css/edit.css"/>
 <link rel="stylesheet" type="text/css" href="css/timeline.css"/>
 <style>
 body {
@@ -33,6 +32,9 @@ body {
 	top : 40px;
 	width : 100%;
 	bottom: 0px;
+}
+#dcase-manager {
+	margin-top: 60px;
 }
 #ase-logo {
 	position: absolute;
@@ -56,20 +58,23 @@ body {
 <script type="text/javascript" src="js/dscript.js"></script>
 <script type="text/javascript" src="js/gsnshape.js"></script>
 <script type="text/javascript" src="js/handler.js"></script>
-<script type="text/javascript" src="js/edit.js"></script>
 <script type="text/javascript" src="js/timeline.js"></script>
 <script type="text/javascript" src="js/ase.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
 <script type="text/javascript" src="js/animation.js"></script>
 <script type="text/javascript">
 
-$(function() {
-	var ase = new ASE(document.getElementById("ase"));
+function getURLParameter(name) {
+	return decodeURI(
+		(RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+	);
+}
 
-	//$('.dropdown input, .dropdown label').click(function(e) {
-	//	e.stopPropagation();
-	//});
-	
+$(function() {
+	var dcaseId = parseInt(getURLParameter("dcaseId"));
+	if(isNaN(dcaseId)) dcaseId = 0;
+	var ase = new ASE(document.getElementById("ase"), dcaseId);
+
 	var searchQuery = $('#search-query');
 	searchQuery.popover({
 		html: true,
@@ -131,15 +136,8 @@ $(function() {
 			</form>
 			<div class="nav-collapse collapse">
 				<ul class="nav">
-					<li class="dropdown">
-						<a class="dropdown-toggle" data-toggle="dropdown" href="#">DCaseの選択<b class="caret"></b></a>
-						<ul class="dropdown-menu" id="menu-dcase">
-						</ul>
-					</li>
-<?php
-if(!(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0)) {
-echo <<<EOT
-					<li class="dropdown">
+					<li><a href="./">ホーム</a></li>
+					<li class="dropdown ase-edit-menu">
 						<a class="dropdown-toggle" data-toggle="dropdown" href="#">編集<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li><a id="menu-undo" href="#">元に戻す</a></li>
@@ -148,7 +146,7 @@ echo <<<EOT
 							<li><a id="menu-paste" href="#">貼り付け</a></li>
 						</ul>
 					</li>
-					<li class="dropdown">
+					<li class="dropdown ase-edit-menu ase-view-menu">
 						<a class="dropdown-toggle" data-toggle="dropdown" href="#">エクスポート<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li><a id="menu-export-json" href="#">JSON</a></li>
@@ -157,20 +155,15 @@ echo <<<EOT
 							<li><a id="menu-export-dscript" href="#">D-Script</a></li>
 						</ul>
 					</li>
-					<li><a id="menu-commit" href="#">コミット</a></li>
-
-EOT;
-}
-?>
-					<li class="dropdown">
+					<li class="ase-edit-menu"><a id="menu-commit" href="#">コミット</a></li>
+					<li class="dropdown ase-edit-menu ase-view-menu">
 						<a class="dropdown-toggle" id="menu-history-toggle" href="#">コミット履歴<b class="caret"></b></a>
 					</li>
-
-					<li class="dropdown">
+					<li class="dropdown ase-edit-menu ase-view-menu">
 						<a class="dropdown-toggle" data-toggle="dropdown" href="#">設定<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li class="dropdown-submenu">
-								<a href="#">カラーテーマの変更</a>
+								<a href="#">カラーテーマを変更</a>
 								<ul id="menu-change-theme" class="dropdown-menu">
 								</ul>
 							</li>
@@ -200,6 +193,7 @@ echo <<<EOT
 							<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/login.php">
 								<input class="span2" type="text" placeholder="username" name="username" style="margin-bottom: 15px;">
 								<input class="span2" type="password" placeholder="password" name="password" style="margin-bottom: 15px;">
+								<input type="hidden" name="dcaseId" value="{$_GET['dcaseId']}">
 								<input id="user_remember_me" style="float: left; margin-right: 10px;" type="checkbox" name="user[remember_me]" value="1" />
 								<label class="string optional" for="user_remember_me"> Remember me</label>
    
@@ -208,7 +202,6 @@ echo <<<EOT
 						</div>
 					</li>
 				</ul>
-
 EOT;
 }else{
 $user_name = h($_COOKIE["userName"]);
@@ -218,8 +211,8 @@ echo <<<EOT
 					<li class="dropdown">
 						<a class="dropdown-toggle" href="#" data-toggle="dropdown">{$user_name} <strong class="caret"></strong></a>
 						<div class="dropdown-menu" style="padding: 15px; padding-bottom: 0px;">
-							<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/login.php">
-								<input type="submit" class="btn btn-danger" style="margin-bottom: 15px; width: 100%; height: 32px; font-size: 13px;" value="Sign out" onclick="location.href='logout.php'">
+							<form id="sign-in-form" class="navbar-form pull-right" method="post" action="action/logout.php">
+								<input type="submit" class="btn btn-danger" style="margin-bottom: 15px; width: 100%; height: 32px; font-size: 13px;" value="Sign out">
 							</form>
 						</div>
 					</li>
@@ -233,15 +226,48 @@ EOT;
 </div>
 
 <div id="ase" class="container">
-	<div id="viewer"></div>
 	<img id="ase-logo" src="img/assuranceDS.png">
-	<div id="edit" style="display: none;">
-		<h1>Type</h1>
-		<select></select>
-		<h1>Description</h1>
-		<textarea rows=4 cols=40></textarea><br>
-		<input id="edit-ok" type="button" value="OK"></input>
-		<input id="edit-cancel"type="button" value="Cancel"></input>
+	<div id="viewer" style="display: none;"></div>
+	<div id="dcase-manager" class="container-fluid" style="display: none;">
+		<div class="row-fluid">
+			<div class="span6">
+				<h2>新しいDCaseを作成</h2>
+				<form class="form-horizontal">
+					<div class="control-group" id="newdcase-name">
+						<label class="control-label" for="inputDCaseName">DCase名</label>
+						<div class="controls">
+							<input type="text" id="inputDCaseName">
+						</div>
+					</div>
+					<div class="control-group" id="newdcase-desc">
+						<label class="control-label" for="inputDesc">TopGoalの説明</label>
+						<div class="controls">
+							<textarea id="inputDesc" rows=5></textarea>
+						</div>
+					</div>
+					<div class="control-group">
+						<div class="controls">
+							<button type="button" class="btn" id="dcase-create">作成</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="span6">
+				<h2>DCaseを選択</h2>
+				<table class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>DCase名</th>
+							<th>作成者</th>
+							<th>最終コミット日時</th>
+							<th>最終コミット者</th>
+						</tr>
+					</thead>
+					<tbody id="dcase-select-table">
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</div>
 
 	<table id="edit-newnode" style="display: none;">

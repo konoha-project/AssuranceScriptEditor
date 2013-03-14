@@ -14,7 +14,7 @@ DCaseAPI.call = function(method, params, callback, error_callback) {
 	var cmd = {
 		jsonrpc: "2.0",
 		method: method,
-		version: "1.0",
+		id: 1,
 		params: params
 	};
 	var async = callback != null;
@@ -46,22 +46,10 @@ DCaseAPI.getDCaseList = function(callback, error) {
 	}
 };
 
-DCaseAPI.createDCase = function(name, desc, userId, callback, error) {
-	var id = 0;
-	var tree = {
-		NodeList: [{
-			ThisNodeId: id,
-			NodeType: "Goal",
-			Description: desc,
-			Children: [],
-		}],
-		TopGoalId: id,
-		NodeCount: 1,
-	};
-	var r = this.call("createDCase", {
+DCaseAPI.createDCase = function(name, tree, userId, callback, error) {
+	return this.call("createDCase", {
 		dcaseName: name, tree: tree, userId: userId
 	}, callback, error);
-	return new DCase(tree, r.dcaseId, r.commitId);
 };
 
 DCaseAPI.getCommitList = function(dcaseId, callback, error) {
@@ -77,9 +65,23 @@ DCaseAPI.commit = function(tree, msg, commitId, userId, callback, error) {
 	}, callback, error).commitId;
 };
 
-DCaseAPI.getNodeTree = function(dcaseId, commitId, callback, error) {
-	var r = this.call("getNodeTree", { commitId: commitId }, callback, error);
-	return new DCase(r.tree, dcaseId, commitId);
+DCaseAPI.getDCase = function(dcaseId, callback, error) {
+	return this.call("getDCase", { dcaseId: dcaseId }, callback, error);
+};
+
+DCaseAPI.renameDCase = function(dcaseId, name, callback, error) {
+	return this.call("renameDCase", {
+		dcaseId: dcaseId,
+		newDCaseName: name
+	}, callback, error);
+};
+
+DCaseAPI.removeDCase = function(dcaseId, callback, error) {
+	return this.call("removeDCase", { dcaseId: dcaseId }, callback, error);
+};
+
+DCaseAPI.getNodeTree = function(commitId, callback, error) {
+	return this.call("getNodeTree", { commitId: commitId }, callback, error).tree;
 };
 
 DCaseAPI.searchDCase = function(text, callback, error) {

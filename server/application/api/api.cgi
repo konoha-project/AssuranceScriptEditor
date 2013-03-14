@@ -32,7 +32,7 @@ void main() {
 	JsonRPCServer api = new JsonRPCServer();
 	api.registerFunctions();
 	stdout.print("Content-Type: application/json; charset=utf-8\n\n");
-	api.dispatch(j.getString("method"),j.get("params"));
+	api.dispatch(j.getString("method"),j.get("params"),j.getInt("id"));
 }
 
 main();

@@ -1,4 +1,4 @@
-var ASE = function(body) {
+var ASE = function(body, defaultDCaseId) {
 	var self = this;
 
 	//--------------------------------------------------------
@@ -7,6 +7,88 @@ var ASE = function(body) {
 	var matchResult = document.cookie.match(/userId=(\w+);?/);
 	var userId = matchResult ? parseInt(matchResult[1]) : null;
 
+	if(userId == null) {
+		// disable edit menu when non-login
+		$(".ase-edit-menu").css("display", "none");
+	}
+	if(defaultDCaseId == 0) {
+		// disable view/edit menu when non-selected dcase
+		$(".ase-edit-menu").css("display", "none");
+		$(".ase-view-menu").css("display", "none");
+	} else {
+		$(".ase-view-menu").css("display", "block");
+	}
+
+	if(defaultDCaseId == 0) {
+		$("#dcase-manager").css("display", "block");
+
+		if(userId != null) {
+			$("#dcase-create").click(function() {
+				var name = $("#inputDCaseName").attr("value");
+				var desc = $("#inputDesc").attr("value");
+				var error = false;
+				if(name == "") {
+					$("#newdcase-name").addClass("error");
+					error = true;
+				} else {
+					$("#newdcase-name").removeClass("error");
+				}
+				if(desc == "") {
+					$("#newdcase-desc").addClass("error");
+					error = true;
+				}
+				if(error) return;
+				var id = 0;
+				var tree = {
+					NodeList: [{
+						ThisNodeId: id,
+						NodeType: "Goal",
+						Description: desc,
+						Children: [],
+					}],
+					TopGoalId: id,
+					NodeCount: 1,
+				};
+				var r = DCaseAPI.createDCase(name, tree, userId);
+				location.href = "./?dcaseId=" + r.dcaseId;
+			});
+		} else {
+			$("#dcase-create").addClass("disabled");
+			$("#inputDCaseName").attr("disabled", "");
+			$("#inputDesc").attr("disabled", "");
+		}
+
+		var $tbody = $("#dcase-select-table");
+		var dcaseList = DCaseAPI.getDCaseList();
+		if(dcaseList.length == 0) {
+			$("<tr><td><font color=gray>DCaseがありません</font></td><td></td><td></td><td></td></tr>")
+			.appendTo($tbody);
+		}
+		$.each(dcaseList, function(i, dcase) {
+			var id = dcase.dcaseId;
+			var name = dcase.dcaseName;
+			var user = "owner user";
+			var lastDate = "?/??";
+			var lastUser = "last user";
+			var html = "<td><a href=\"./?dcaseId=" + id + "\">" + name + 
+					"</a></td><td>" + user + "</td><td>" + lastDate + "</td><td>" +
+					lastUser + "</td>";
+			$("<tr></tr>")
+				.html(html)
+				.click(function() {
+					if(self.checkCommited()) {
+						var r = DCaseAPI.getDCase(dcase.dcaseId);
+						var dcase0 = new DCase(r.tree, dcase.dcaseId, r.commitId);
+						viewer.setDCase(dcase0);
+						timeline.repaint(dcase0);
+					}
+				})
+				.appendTo($tbody);
+		});
+		return;
+	}
+
+	$("#viewer").css("display", "block");
 	var $body = this.$body = $(body);
 	var viewer = this.viewer = new DCaseViewer(document.getElementById("viewer"),
 			null, userId != null);
@@ -18,10 +100,10 @@ var ASE = function(body) {
 		timeline.visible();
 	});
 
-	timeline.onDCaseSelected = function(argId, commitId) {
+	timeline.onDCaseSelected = function(dcaseId, commitId) {
 		if(self.checkCommited()) {
-			var dcase = DCaseAPI.getNodeTree(argId, commitId);
-			viewer.setDCase(dcase);
+			var tree = DCaseAPI.getNodeTree(commitId);
+			viewer.setDCase(new DCase(tree, dcaseId, commitId));
 			return true;
 		} else {
 			return false;
@@ -30,46 +112,11 @@ var ASE = function(body) {
 
 	//--------------------------------------------------------
 
-	this.insertToSelectedNode = function() {
-		var view = viewer.getSelectedNode();
-		if(view != null) {
-			var sel = DCaseNode.SELECTABLE_TYPES[view.node.type];
-			DNodeEditWindow.open(null, sel, function(type, desc) {
-				viewer.getDCase().insertNode(view.node, type, desc);
-			});
-		}
-	};
-
-	this.removeSelectedNode = function() {
-		var view = viewer.getSelectedNode();
-		if(view != null) {
-			var parents = view.node.parents;
-			if(parents.length > 0) {
-				if(confirm("ノードを削除しますか？")) {
-					viewer.getDCase().removeNode(view.node);
-				}
-			}
-		}
-	};
-
-	this.createNewDCase = function() {
-		if(self.checkCommited()) {
-			DNodeEditWindow.open(null, ["Goal"], function(type, desc) {
-				var name = "new DCase";
-				var dcase = DCaseAPI.createDCase(name, desc, userId);
-				viewer.setDCase(dcase);
-				timeline.repaint(dcase);
-				self.updateDCaseList();
-			});
-		}
-	};
-
 	this.commit = function() {
 		var msg = prompt("コミットメッセージを入力して下さい");
 		if(msg != null) {
 			if(viewer.getDCase().commit(msg, userId)) {
 				alert("コミットしました");
-				self.updateDCaseList();
 				timeline.repaint(viewer.getDCase());
 			}
 		}
@@ -93,44 +140,6 @@ var ASE = function(body) {
 		}
 	};
 
-	this.listupDCase = function(callback) {
-		$.each(DCaseAPI.getDCaseList(), function(i, arg) {
-			callback(arg);
-		});
-	};
-
-	this.updateDCaseList = function() {
-		var $m = $("#menu-dcase");
-		$m.empty();
-
-		if(userId != null) {
-			$("<li></li>")
-				.html("<a href=\"#\">新規</a>")
-				.click(function() {
-					self.createNewDCase();
-				})
-				.appendTo($m);
-			$("<li></li>")
-				.addClass("divider")
-				.appendTo($m);
-		}
-
-		self.listupDCase(function(dcase) {
-			var commitList = DCaseAPI.getCommitList(dcase.dcaseId);
-			var latest = commitList[commitList.length-1];
-			$("<li></li>")
-				.html("<a href=\"#\">" + dcase.dcaseName+ "</a>")
-				.click(function() {
-					if(self.checkCommited()) {
-						var dcase0 = DCaseAPI.getNodeTree(dcase.dcaseId, latest.commitId);
-						viewer.setDCase(dcase0);
-						timeline.repaint(dcase0);
-					}
-				})
-				.appendTo($m);
-		});
-	};
-
 	this.checkCommited = function() {
 		var dcase = viewer.getDCase();
 		if(dcase != null && dcase.isChanged()) {
@@ -147,8 +156,6 @@ var ASE = function(body) {
 			return "未コミットの変更があります";
 		}
 	});
-
-	self.updateDCaseList();
 
 	//--------------------------------------------------------
 
@@ -174,16 +181,12 @@ var ASE = function(body) {
 		});
 	};
 
-	this.searchDCase = function(text) {
-		return [];
-	};
-
 	this.updateSearchResult = function(text) {
 		$('#search-query').popover('show');
 		var $res = $("#search_result_ul");
 		$res.empty();
 		text = text.toLowerCase();
-		var result = this.searchDCase(text);
+		var result = DCaseAPI.searchDCase(text);
 		if(result.length == 0) {
 			$res.append("<li>No Results</li>");
 		} else {
@@ -216,15 +219,11 @@ var ASE = function(body) {
 	});
 
 	$("#menu-undo").click(function() {
-		if(viewer.getDCase().undo()) {
-			viewer.structureUpdated();
-		}
+		viewer.getDCase().undo();
 	});
 
 	$("#menu-redo").click(function() {
-		if(viewer.getDCase().redo()) {
-			viewer.structureUpdated();
-		}
+		viewer.getDCase().redo();
 	});
 
 	$("#menu-copy").click(function() {
@@ -288,7 +287,10 @@ var ASE = function(body) {
 		},
 	];
 
+	//--------------------------------------------------------
+
 	(function() {
+		// update color theme
 		var $ul = $("#menu-change-theme");
 		$.each(colorThemes, function(i, theme) {
 			var sample = "";
@@ -302,27 +304,13 @@ var ASE = function(body) {
 				viewer.setColorTheme(theme);
 			});
 		});
+
+		// show DCase
+		var r = DCaseAPI.getDCase(defaultDCaseId);
+		var dcase = new DCase(r.tree, defaultDCaseId, r.commitId);
+		viewer.setDCase(dcase);
+		timeline.repaint(dcase);
 	}());
 
-	//--------------------------------------------------------
-
-	$(".tool-new").click(function() {
-		self.insertToSelectedNode();
-	});
-
-	$(".tool-edit").click(function() {
-		self.editSelectedNode();
-	});
-
-	$(".tool-remove").click(function() {
-		self.removeSelectedNode();
-	});
-
-	$(".tool-play").click(function() {
-		var v = viewer.getSelectedNode();
-		viewer.showDScriptExecuteWindow(v.node.getDScriptNameInEvidence());
-	});
-
-	viewer.setColorTheme(viewer.colorTheme_TiffanyBlue);
 };
 

@@ -14,10 +14,10 @@
 ---
 
 #データ構造
-* DCase = { dcaseId: dcaseId, dcaseName: String }
+* DCase = { dcaseId: dcaseId, dcaseName: String , lastCommit: Commit}
 * Tree = Json
 * Commit = { commitId: commitId, userId: userId, userName: String, commitMessage: String, time: int }
-* SearchResult = { dcaseId: dcaseId, nodeId: nodeId }
+* SearchResult = { dcaseId: dcaseId, nodeId: nodeId , type: String, description: String}
 
 API
 ================
@@ -25,6 +25,10 @@ API
 ## DCase管理
 * getDCaseList() return dcaseList: Array[DCase]
 * createDCase(dcaseName: String, userId: int, tree: Tree) return { commitId, dcaseId }
+* getDCase(dcaseId: dcaseId) return { commitId: commitId, dcaseName:String, tree: Tree }
+###未実装
+* renameDCase(dcaseId: dcaseId, newDCaseName: String)
+* removeDCase(dcaseId: dcaseId)
 
 ## コミット管理
 * getCommitList(dcaseId: dcaseId) return commitList: Array[Commit]
@@ -37,11 +41,8 @@ API
 * login(userName: String, password: String)
 * register(userName: String, password: String)
 
-## 検索(暫定)
-* searchDCase(text: String) return searchResultList: Array[SearchResult]
-
-###Search系の改正案
-* ノードの種類
+## 検索(暫定), 各D-Caseの最新のコミット内を検索する
+* searchDCase(text: String, type: Array[String]) return searchResultList: Array[SearchResult]
 
 ## Usage
 test/ ディレクトリ参照<br>
