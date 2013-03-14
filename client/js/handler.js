@@ -13,11 +13,11 @@ DCaseViewer.prototype.setDragHandler = function() {
 		x0 = x;
 		y0 = y;
 		flag = true;
-		var size = self.rootview.updateLocation(0, 0);
+		var size = self.treeSize();
 		bounds = {
-			l : 20 - size.x * self.scale - self.shiftX,
+			l : 20 - size.w * self.scale - self.shiftX,
 			r : self.$root.width() - 20 - self.shiftX,
-			t : 20 - size.y * self.scale - self.shiftY,
+			t : 20 - size.h * self.scale - self.shiftY,
 			b : self.$root.height() - 20 - self.shiftY
 		};
 		self.repaintAll(0);
@@ -88,6 +88,7 @@ DCaseViewer.prototype.setMouseDragHandler = function() {
 			self.shiftX = x1 - (x1 - self.shiftX) * b;
 			self.shiftY = y1 - (y1 - self.shiftY) * b;
 		}
+		self.location_updated = true;
 		self.repaintAll(0);
 	});
 }
@@ -137,6 +138,7 @@ DCaseViewer.prototype.setTouchHandler = function() {
 			var a = dist(touches[0].pageX - touches[1].pageX, 
 					touches[0].pageY - touches[1].pageY);
 			self.scale = Math.min(Math.max(scale0 * (a / d), SCALE_MIN), SCALE_MAX);
+			self.location_updated = true;
 			if(self.scale != SCALE_MIN && self.scale != SCALE_MAX) {
 				var x1 = (touches[0].pageX + touches[1].pageX) / 2 - r.left;
 				var y1 = (touches[0].pageY + touches[1].pageY) / 2 - r.top;

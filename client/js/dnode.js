@@ -61,6 +61,7 @@ DCaseNode.prototype.deepCopy = function() {//FIXME id
 
 DCaseNode.prototype.insertChild = function(node, index) {
 	if(!node.isContext) {
+		if(index == null) index = this.children.length;
 		this.children.splice(index, 0, node);
 	} else {
 		this.context = node;
@@ -237,13 +238,13 @@ DCase.prototype.getTopGoal = function() {
 //-----------------------------------------------------------------------------
 
 DCase.prototype.createNode = function(id, type, desc) {
-	var name = DCaseNode.NAME_PREFIX[type] + (this.typeCount[type]++);
+	var name = DCaseNode.NAME_PREFIX[type] + id;
 	return new DCaseNode(id, name, type, desc);
 };
 
 DCase.prototype.copyNode = function(node) {
 	var self = this;
-	var newNode = self.createNode(this.nodeCount++, node.type, node.desc);
+	var newNode = self.createNode(++this.nodeCount, node.type, node.desc);
 	node.eachNode(function(child) {
 		newNode.insertChild(self.copyNode(child));
 	});
@@ -255,7 +256,7 @@ DCase.prototype.insertNode = function(parent, type, desc, index) {
 	if(index == null) {
 		index = parent.children.length;
 	}
-	var id = this.nodeCount++;
+	var id = ++this.nodeCount;
 	var node = this.createNode(id, type, desc);
 	this.applyOperation({
 		redo: function() {

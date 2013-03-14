@@ -131,8 +131,10 @@ class DCaseModel {
 		}
 	}
 
-	@Public int Commit(Json tree, int prev_id, int user_id, String message) {
-		int dcase_id = this.getDCaseId(prev_id);
+	@Public int Commit(Json tree, int prev_id, int user_id, String message, int dcase_id) {
+		if(dcase_id == 0) {
+			dcase_id = this.getDCaseId(prev_id);
+		}
 		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`data`,`date_time`,`prev_commit_id`,`latest_flag`, `dcase_id`, `user_id`, `message`) VALUES(?,?,?,TRUE,?,?,?)");
 		p.setString("@a",tree.toString());
 		p.setInt("@b"   , new Date().getTime());
@@ -141,7 +143,9 @@ class DCaseModel {
 		p.setInt("@e"   , user_id);
 		p.setString("@f", message);
 		p.execute();
-		this.updatePrev(prev_id);
+		if(prev_id!=0) {
+			this.updatePrev(prev_id);
+		}
 		int id = p.getInsertId();
 		insertNodeList(tree,id);
 		return id;
@@ -165,14 +169,7 @@ class DCaseModel {
 
 	@Public Json createDCase(Json tree, String dcaseName, int user_id) {
 		int dcase_id = this._createDcase(user_id, dcaseName);
-		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`data`,`date_time`,`prev_commit_id`,`latest_flag`, `message`, `dcase_id`, `user_id`) VALUES(?,?,0,TRUE,?,?,?)");
-		p.setString("@a",tree.toString());
-		p.setInt("@b", new Date().getTime());
-		p.setString("@c","Initial Commit");
-		p.setInt("@d", dcase_id);
-		p.setInt("@e", user_id);
-		p.execute();
-		int commit_id = p.getInsertId();
+		int commit_id = this.Commit(tree,0,user_id,"Initial Commit",dcase_id);
 		Json ret = new Json();
 		ret.setInt("dcaseId",dcase_id);
 		ret.setInt("commitId",commit_id);
@@ -200,13 +197,15 @@ class DCaseModel {
 	}
 
 	@Public Json getDCaseList() {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT id,name FROM dcase");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase.id,name,user_name FROM dcase INNER JOIN user ON dcase.user_id=user.id WHERE delete_flag=FALSE");
 		ResultSet r = p.execute();
 		Json ret = new Json([]);
 		while(r.next()) {
 			Json json = new Json();
 			json.setInt("dcaseId", r.getInt("id"));
 			json.setString("dcaseName", r.getString("name"));
+			json.setString("userName", r.getString("user_name"));
+			json.set("latestCommit",this.getLatestCommit(r.getInt("id")));
 			ret.add(json);
 		}
 		return ret;

@@ -20,6 +20,7 @@ var DCaseViewer = function(root, dcase, editable) {
 		position: "absolute", left: 0, top: 0, width: "100%", height: "100%"
 	}).appendTo(this.$root);
 	this.$svg = $(document.createElementNS(SVG_NS, "g"))
+		.attr("transform", "translate(0, 0)")
 		.appendTo($svgroot);
 	this.$dom = $("<div></div>").css({
 		position: "absolute", left: 0, top: 0, width: "100%", height: "100%"
@@ -35,6 +36,7 @@ var DCaseViewer = function(root, dcase, editable) {
 	this.dragX = 0;
 	this.dragY = 0;
 	this.scale = 1.0;
+	this.location_updated = false;
 	this.drag_flag = true;
 	this.selectedNode = null;
 	this.rootview = null;
@@ -138,6 +140,7 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 		self.rootview.updateLocation(0, 0);
 		self.shiftX = (self.$root.width() - self.treeSize().w * self.scale)/2;
 		self.shiftY = 60;
+		self.location_updated = true;
 		self.repaintAll();
 	}, 100);
 };
@@ -198,7 +201,7 @@ DCaseViewer.prototype.nodeInserted = function(parent, node, index) {
 	parentView.nodeChanged();
 
 	setTimeout(function() {
-		self.rootview.updateLocation(0, 0);
+		self.location_updated = true;
 		self.repaintAll();
 	}, 100);
 };
@@ -213,7 +216,7 @@ DCaseViewer.prototype.nodeRemoved = function(parent, node, index) {
 	parentView.nodeChanged();
 
 	setTimeout(function() {
-		self.rootview.updateLocation(0, 0);
+		self.location_updated = true;
 		self.repaintAll();
 	}, 100);
 };
@@ -229,7 +232,7 @@ DCaseViewer.prototype.nodeChanged = function(node) {
 			v.bounds.h = b.h;
 		}
 		f(view);
-		self.rootview.updateLocation(0, 0);
+		self.location_updated = true;
 		self.repaintAll();
 	}, 100);
 };
@@ -239,7 +242,6 @@ DCaseViewer.prototype.nodeChanged = function(node) {
 DCaseViewer.prototype.centerize = function(view, ms) {
 	if(this.rootview == null) return;
 	this.selectedNode = view;
-	this.rootview.updateLocation(0, 0);
 	var b = view.bounds;
 	this.shiftX = -b.x * this.scale + (this.$root.width() - b.w * this.scale) / 2;
 	this.shiftY = -b.y * this.scale + this.$root.height() / 5 * this.scale;
@@ -254,12 +256,21 @@ DCaseViewer.prototype.repaintAll = function(ms) {
 	var dy = Math.floor(self.shiftY + self.dragY);
 
 	var a = new Animation();
-	self.rootview.updateLocation(dx / self.scale, dy / self.scale);
-	self.rootview.animeStart(a);
+
+	a.moves(self.$svg[0].transform.baseVal.getItem(0).matrix, { e: dx, f: dy });
+	a.moves(self.$dom, { left: dx, top: dy });
+
 	if(ms == 0 || ms == null) {
+		if(self.location_updated) {
+			self.rootview.updateLocation(0, 0);
+			self.location_updated = false;
+			self.rootview.animeStart(a);
+		}
 		a.animeFinish();
 		return;
 	}
+	self.rootview.updateLocation(0, 0);
+	self.rootview.animeStart(a);
 	self.moving = true;
 	var begin = new Date();
 	var id = setInterval(function() {
@@ -277,13 +288,13 @@ DCaseViewer.prototype.repaintAll = function(ms) {
 
 DCaseViewer.prototype.expandBranch = function(view, b) {
 	if(b == undefined || b != view.childVisible) {
-		this.rootview.updateLocation(0, 0);
 		var b0 = view.bounds;
 		view.setChildVisible(!view.childVisible);
 		this.rootview.updateLocation(0, 0);
 		var b1 = view.bounds;
 		this.shiftX -= (b1.x-b0.x) * this.scale;
 		this.shiftY -= (b1.y-b0.y) * this.scale;
+		this.location_updated = true;
 		this.repaintAll(ANIME_MSEC);
 	}
 };

@@ -72,7 +72,7 @@ void commit (Json request, int id) {
 	int prev_id = request.getInt("commitId");
 	int userId = request.getInt("userId");
 	String message = request.getString("commitMessage");
-	int commitId = global.model.Commit(tree,prev_id,userId,message);
+	int commitId = global.model.Commit(tree,prev_id,userId,message,0);
 	Json res = new Json();
 	res.setInt("commitId",commitId);
 	Json response = createMessage(res, id);

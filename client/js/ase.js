@@ -1,7 +1,15 @@
-var ASE = function(body, defaultDCaseId) {
+var ASE = function(body) {
 	var self = this;
 
 	//--------------------------------------------------------
+
+	function getURLParameter(name) {
+		return decodeURI(
+			(RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+		);
+	}
+	var dcaseId = parseInt(getURLParameter("dcaseId"));
+	if(isNaN(dcaseId)) dcaseId = 0;
 
 	var copiedNode = null;
 	var matchResult = document.cookie.match(/userId=(\w+);?/);
@@ -11,7 +19,7 @@ var ASE = function(body, defaultDCaseId) {
 		// disable edit menu when non-login
 		$(".ase-edit-menu").css("display", "none");
 	}
-	if(defaultDCaseId == 0) {
+	if(dcaseId == 0) {
 		// disable view/edit menu when non-selected dcase
 		$(".ase-edit-menu").css("display", "none");
 		$(".ase-view-menu").css("display", "none");
@@ -19,7 +27,7 @@ var ASE = function(body, defaultDCaseId) {
 		$(".ase-view-menu").css("display", "block");
 	}
 
-	if(defaultDCaseId == 0) {
+	if(dcaseId == 0) {
 		$("#dcase-manager").css("display", "block");
 
 		if(userId != null) {
@@ -38,7 +46,7 @@ var ASE = function(body, defaultDCaseId) {
 					error = true;
 				}
 				if(error) return;
-				var id = 0;
+				var id = 1;
 				var tree = {
 					NodeList: [{
 						ThisNodeId: id,
@@ -67,22 +75,16 @@ var ASE = function(body, defaultDCaseId) {
 		$.each(dcaseList, function(i, dcase) {
 			var id = dcase.dcaseId;
 			var name = dcase.dcaseName;
-			var user = "owner user";
-			var lastDate = "?/??";
-			var lastUser = "last user";
+			var user = dcase.userName;
+			var time = new Date(dcase.latestCommit.time);
+			var lastDate = time.getFullYear() + "/" + time.getMonth() + "/" + time.getDay() +
+			" " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+			var lastUser = dcase.latestCommit.userName;
 			var html = "<td><a href=\"./?dcaseId=" + id + "\">" + name + 
 					"</a></td><td>" + user + "</td><td>" + lastDate + "</td><td>" +
 					lastUser + "</td>";
 			$("<tr></tr>")
 				.html(html)
-				.click(function() {
-					if(self.checkCommited()) {
-						var r = DCaseAPI.getDCase(dcase.dcaseId);
-						var dcase0 = new DCase(r.tree, dcase.dcaseId, r.commitId);
-						viewer.setDCase(dcase0);
-						timeline.repaint(dcase0);
-					}
-				})
 				.appendTo($tbody);
 		});
 		return;
@@ -159,6 +161,30 @@ var ASE = function(body, defaultDCaseId) {
 
 	//--------------------------------------------------------
 
+	var searchQuery = $('#search-query');
+	searchQuery.popover({
+		html: true,
+		placement: 'bottom',
+		trigger: 'manual',
+		content: function(){
+			var wrapper = $('<div id="search_result_wrapper">');
+			$('<a class="btn btn-link">close</a>').click(function(){
+				searchQuery.popover('hide');
+				return false;
+			}).appendTo(wrapper);
+			wrapper.append('<ul id="search_result_ul" class="unstyled">');
+			wrapper.width(searchQuery.width());
+			return wrapper;
+		},
+	});
+	$('#search-form').submit(function(){
+		var query = searchQuery.val();
+		if(query.length > 0){
+			self.updateSearchResult(query);
+		}
+		return false;
+	});
+
 	this.searchNode = function(text, types, beginDate, endDate, callback, callbackOnNoResult) {
 		var dcase = viewer.getDCase();
 		var root = dcase ? dcase.getTopGoal() : undefined;
@@ -192,12 +218,10 @@ var ASE = function(body, defaultDCaseId) {
 		} else {
 			for(var i = 0; i < result.length; ++i) {
 				var res = result[i];
+				var id = res.dcaseId;
 				$("<li>")
-				.text(res.dcaseId)
-				.click(function() {
-					viewer.centerize(v, 500);
-				})
-				.appendTo($res);
+					.html("<a href=\"./?dcaseId=" + id + "\">" + id + "</a>")
+					.appendTo($res);
 			}
 		}
 	};
@@ -306,8 +330,8 @@ var ASE = function(body, defaultDCaseId) {
 		});
 
 		// show DCase
-		var r = DCaseAPI.getDCase(defaultDCaseId);
-		var dcase = new DCase(r.tree, defaultDCaseId, r.commitId);
+		var r = DCaseAPI.getDCase(dcaseId);
+		var dcase = new DCase(r.tree, dcaseId, r.commitId);
 		viewer.setDCase(dcase);
 		timeline.repaint(dcase);
 	}());
