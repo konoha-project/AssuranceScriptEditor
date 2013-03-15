@@ -16,15 +16,15 @@ var DCaseViewer = function(root, dcase, editable) {
 	this.$root = $(root);
 	root.className = "viewer-root";
 
-	var $svgroot = $(document.createElementNS(SVG_NS, "svg")).css({
-		position: "absolute", left: 0, top: 0, width: "100%", height: "100%"
-	}).appendTo(this.$root);
+	var $svgroot = $(document.createElementNS(SVG_NS, "svg"))
+		.attr({ width: "100%", height: "100%" })
+		.appendTo(this.$root);
 	this.$svg = $(document.createElementNS(SVG_NS, "g"))
 		.attr("transform", "translate(0, 0)")
 		.appendTo($svgroot);
-	this.$dom = $("<div></div>").css({
-		position: "absolute", left: 0, top: 0, width: "100%", height: "100%"
-	}).appendTo(this.$root);
+	this.$dom = $("<div></div>")
+		.css("position", "absolute")
+		.appendTo(this.$root);
 
 	//------------------------------------
 
@@ -98,22 +98,18 @@ DCaseViewer.prototype.getDCase = function() {
 
 DCaseViewer.prototype.setDCase = function(dcase) {
 	var self = this;
-	
 	if(this.dcase != null) {
 		this.dcase.removeListener(self);
 	}
 	if(dcase != null) {
 		dcase.addListener(self);
 	}
-
 	this.dcase = dcase;
 	this.nodeViewMap = {};
-
 	this.$svg.empty();
 	this.$dom.empty();
 
 	if(dcase == null) {
-		//TODO show new_dcase button
 		return;
 	}
 
@@ -240,9 +236,10 @@ DCaseViewer.prototype.nodeChanged = function(node) {
 
 //-----------------------------------------------------------------------------
 
-DCaseViewer.prototype.centerize = function(view, ms) {
+DCaseViewer.prototype.centerize = function(node, ms) {
 	if(this.rootview == null) return;
-	this.selectedNode = view;
+	var view = this.getNodeView(node);
+	this.setSelectedNode(view);
 	var b = view.bounds;
 	this.shiftX = -b.x * this.scale + (this.$root.width() - b.w * this.scale) / 2;
 	this.shiftY = -b.y * this.scale + this.$root.height() / 5 * this.scale;
@@ -257,7 +254,6 @@ DCaseViewer.prototype.repaintAll = function(ms) {
 	var dy = Math.floor(self.shiftY + self.dragY);
 
 	var a = new Animation();
-
 	a.moves(self.$svg[0].transform.baseVal.getItem(0).matrix, { e: dx, f: dy });
 	a.moves(self.$dom, { left: dx, top: dy });
 

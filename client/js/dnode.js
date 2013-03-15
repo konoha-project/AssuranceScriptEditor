@@ -30,23 +30,23 @@ DCaseNode.prototype.getNodeCount = function() {
 };
 
 DCaseNode.prototype.eachNode = function(f) {
+	if(this.context != null) {
+		f(this.context);
+	}
 	$.each(this.children, function(i, node) {
 		f(node);
 	});
-	if(this.context != null) {
-		f(this.context);
-	}
 };
 
 DCaseNode.prototype.traverse = function(f, parent, index) {
-	f(this, parent, index);
 	var self = this;
-	$.each(this.children, function(i, node) {
-		node.traverse(f, self, i);
-	});
+	f(this, parent, index);
 	if(this.context != null) {
 		f(this.context);
 	}
+	$.each(this.children, function(i, node) {
+		node.traverse(f, self, i);
+	});
 };
 
 DCaseNode.prototype.deepCopy = function() {//FIXME id

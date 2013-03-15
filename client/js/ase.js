@@ -196,7 +196,7 @@ var ASE = function(body) {
 		}
 		root.traverse(function(node) {
 			var name = node.name;
-			var desc = node.text;
+			var desc = node.desc;
 			var d_index = desc.toLowerCase().indexOf(text);
 			var n_index = name.toLowerCase().indexOf(text);
 			if(d_index != -1 || n_index != -1) {
@@ -224,6 +224,15 @@ var ASE = function(body) {
 					.appendTo($res);
 			}
 		}
+		$res.append("<hr>");
+		self.searchNode(text, [], null, null, function(node) {
+			$("<li>")
+				.html("<a href=\"#\">" + node.name + "</a>")
+				.click(function() {
+					viewer.centerize(node, 500);
+				})
+				.appendTo($res);
+		});
 	};
 
 	//--------------------------------------------------------
