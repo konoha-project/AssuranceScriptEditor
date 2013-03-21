@@ -6,11 +6,13 @@ Import("Syntax.CStyleFor");
 Import("Syntax.CStyleWhile");
 Import("Syntax.Null");
 Import("Type.File");
+Import("Type.Float");
 Import("Type.Json");
 Import("Type.Bytes");
 Import("Java.String");
 Import("MiniKonoha.Map");
 Import("JavaScript.Array");
+Import("JavaScript.String");
 Import("posix.process");
 Import("Lib.Curl");
 Import("dscript.subproc");
@@ -142,6 +144,32 @@ String DotExporter.getDotNodeName(Json node){
     return prefix + thisId;
 }
 
+String DotExporter.wrap(String str){
+	String br = "\\l";
+	String wrapped = "";
+	String rest = str;
+	int maxLength = 20;
+	int length = 0;
+	int pos = 0;
+	while(pos < rest.length){
+		int code = rest.charCodeAt(pos);
+		if(code < 128){
+			length = length + 1;
+		}else{
+			length = length + 2;
+		}
+		if(length > maxLength || rest.charAt(pos) == "\n"){
+			wrapped = wrapped + rest.substr(0, pos) + br;
+			rest = rest.substr(pos, rest.length - pos);
+			pos = -1;
+			length = 0;
+		}
+		pos = pos + 1;
+	}
+	wrapped = wrapped + rest + br;
+	return wrapped;
+}
+
 String DotExporter.emitEdge(Json fromNode, Json toNode){
     String fromName = getDotNodeName(fromNode);
     String toName = getDotNodeName(toNode);
@@ -153,11 +181,17 @@ String DotExporter.emitEdge(Json fromNode, Json toNode){
     addLine("${fromName}->${toName}${suffix};");
 }
 
+float calcHeight(String desc){
+	int lines = desc.split("\\l").length;
+	float height = 0.8 + (lines-3)*0.12;
+	return height; 
+}
+
 String DotExporter.emitDotNodeDefine(Json node){
     String prefix = "UN";
     String shape = "point";
     String args = "";
-    String goalColor = "#C0C0C0";
+    String goalColor = "#E0E0E0";
     String contextColor = "#B0B0B0";
     String rebuttalColor = "#EEAAAA";
     String color = "#FFFFFF";
@@ -176,12 +210,12 @@ String DotExporter.emitDotNodeDefine(Json node){
     else if (type == "Context") {
         prefix = "C";
         shape = "rect";
-        args = "style=\"filled, rounded\"";
+        args = ", style=\"filled, rounded\"";
         color = contextColor;
     }
     else if (type == "Strategy") {
         prefix = "S";
-        shape = "parallelogram";
+        shape = "polygon, skew=0.1";
         color = contextColor;
     }
     else if (type == "Evidence") {
@@ -199,9 +233,9 @@ String DotExporter.emitDotNodeDefine(Json node){
         shape = "ellipse";
         color = goalColor;
     }
-    int thisId = node.getInt("ThisNodeId")
-    String desc = node.getString("Description").replace("\n", "\\n");
-    addLine("${prefix}${thisId}[shape=${shape}, label=\"${prefix}${thisId}\\n${desc}\", color=\"${color}\", ${args}];");
+    int thisId = node.getInt("ThisNodeId");
+    String desc = wrap(node.getString("Description"));
+   addLine("${prefix}${thisId}[shape=${shape}, label=\"${prefix}${thisId}\\l${desc}\", color=\"${color}\", height=${calcHeight(desc)} ${args}];");
 
 }
 
@@ -231,7 +265,7 @@ void DotExporter.GenerateGoalCode(Json NodeList, Json node, int level) {
     Json NodeList= tree.get("NodeList");
     Json RootNode = FindById(NodeList,RootId);
     addLine("digraph AssuranceScript {");
-    addLine("node[style=filled, labelloc=t, labeljust=l, fixedsize=true, width=1.7, height=0.8];");
+    addLine("node[style=filled, labelloc=t, labeljust=l, fixedsize=false, width=1.7, height=0.8 fontsize=7];");
     addLine("edge[headport=n, tailport=s, color=\"#808080\"];");
     addLine("subgraph cluster${getClusterID()} {");
     addLine("style=dashed;");
