@@ -253,9 +253,8 @@ class DCaseModel {
 		return reverse;
 	}
 
-	//FIXME
 	@Public Json search(String text) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id,this_node_id,description FROM node INNER JOIN commit ON node.commit_id=commit.id WHERE latest_flag=TRUE AND description LIKE ?");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase_id,this_node_id,description,dcase.name FROM node INNER JOIN commit ON node.commit_id=commit.id INNER JOIN dcase ON commit.dcase_id=dcase.id WHERE latest_flag=TRUE AND description LIKE ?");
 		p.setString("@a","%"+text+"%");
 		ResultSet r = p.execute();
 		Json ret = new Json([]);
@@ -263,6 +262,7 @@ class DCaseModel {
 			Json json = new Json();
 			json.setInt("dcaseId",r.getInt("dcase_id"));
 			json.setInt("nodeId",r.getInt("this_node_id"));
+			json.setString("dcaseName",EscapeCR(r.getString("name")));
 			json.setString("description",EscapeCR(r.getString("description")));
 			ret.add(json);
 		}
