@@ -6,13 +6,13 @@ var DCaseNode = function(id, name, type, desc) {
 	this.type = type;
 	this.desc = desc;
 	this.children = [];
-	this.context = null;
+	this.contexts = [];
 	this.parents = [];
 
 	this.updateFlags();
 	if(type == "Solution") {
 		this.isDScript = true;
-	}
+	} else
 	if(type == "Context" || type == "Subject" || type == "Rebuttal") {
 		this.isContext = true;
 	}
@@ -26,13 +26,13 @@ DCaseNode.prototype.isDScript = false;
 //-----------------------------------------------------------------------------
 
 DCaseNode.prototype.getNodeCount = function() {
-	return this.children.length + (this.context != null ? 1 : 0);
+	return this.children.length + this.contexts.length;
 };
 
 DCaseNode.prototype.eachNode = function(f) {
-	if(this.context != null) {
-		f(this.context);
-	}
+	$.each(this.contexts, function(i, node) {
+		f(node);
+	});
 	$.each(this.children, function(i, node) {
 		f(node);
 	});
@@ -41,9 +41,10 @@ DCaseNode.prototype.eachNode = function(f) {
 DCaseNode.prototype.traverse = function(f, parent, index) {
 	var self = this;
 	f(this, parent, index);
-	if(this.context != null) {
-		f(this.context);
-	}
+
+	$.each(this.contexts, function(i, node) {
+		node.traverse(f, self, i);
+	});
 	$.each(this.children, function(i, node) {
 		node.traverse(f, self, i);
 	});
@@ -60,30 +61,26 @@ DCaseNode.prototype.deepCopy = function() {//FIXME id
 //-----------------------------------------------------------------------------
 
 DCaseNode.prototype.insertChild = function(node, index) {
-	if(!node.isContext) {
-		if(index == null) index = this.children.length;
-		this.children.splice(index, 0, node);
-	} else {
-		this.context = node;
-	}
+	var a = node.isContext ? this.contexts : this.children;
+	if(index == null) index = a.length;
+	a.splice(index, 0, node);
+
 	node.parents.push(this);
 	this.updateFlags();
 };
 
 DCaseNode.prototype.removeChild = function(node) {
-	if(this.context == node) {
-		this.context = null;
-	} else {
-		var i = this.children.indexOf(node);
-		this.children.splice(i, 1);
-	}
+	var a = node.isContext ? this.contexts : this.children;
+	var i = a.indexOf(node);
+	a.splice(i, 1);
+
 	node.parents.splice(node.parents.indexOf(this), 1);
 	this.updateFlags();
 };
 
 DCaseNode.prototype.updateFlags = function() {
 	if(this.type == "Goal") {
-		this.isArgument = this.context != null;
+		this.isArgument = this.contexts.length != 0;
 		this.isUndeveloped = this.children.length == 0;
 	}
 };
@@ -273,7 +270,7 @@ DCase.prototype.insertNode = function(parent, type, desc, index) {
 DCase.prototype.pasteNode = function(parent, old_node, index) {
 	var self = this;
 	if(index == null) {
-		index = parent.children.length;
+		index = parent.children.length;//FIXME
 	}
 	var node = self.copyNode(old_node);
 

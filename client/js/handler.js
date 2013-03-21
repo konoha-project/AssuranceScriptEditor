@@ -80,16 +80,15 @@ DCaseViewer.prototype.setMouseDragHandler = function() {
 		e.stopPropagation();
 		if(self.moving) return;
 		var b = 1.0 + delta * 0.04;
-		self.scale = Math.min(Math.max(self.scale * b, SCALE_MIN), SCALE_MAX);
-		if(self.scale != SCALE_MIN && self.scale != SCALE_MAX) {
+		var scale = Math.min(Math.max(self.scale * b, SCALE_MIN), SCALE_MAX);
+		if(scale != SCALE_MIN && scale != SCALE_MAX) {
 			var r = root[0].getBoundingClientRect();
 			var x1 = self.drag_flag ? e.pageX - r.left : $(root).width()/2;
 			var y1 = self.drag_flag ? e.pageY - r.top  : $(root).height()/2;
-			self.shiftX = x1 - (x1 - self.shiftX) * b;
-			self.shiftY = y1 - (y1 - self.shiftY) * b;
+			var x = x1 - (x1 - self.shiftX) * b;
+			var y = y1 - (y1 - self.shiftY) * b;
+			self.setLocation(x, y, scale);
 		}
-		self.location_updated = true;
-		self.repaintAll(0);
 	});
 }
 

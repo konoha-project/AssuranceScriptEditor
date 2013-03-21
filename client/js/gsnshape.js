@@ -2,10 +2,11 @@ var GsnShape = {
 	"Goal": (function() {
 		var N = 10;
 		var Goal = function($svg) {
-			this.elems = [ $svg.createSvg("rect") ];
+			this[0] = document.createElementNS(SVG_NS, "rect");
+			$svg.append(this[0]);
 		};
-		Goal.prototype.animate = function(a, x, y, w, h, scale) {
-			a.moves(this.elems[0], {
+		Goal.prototype.animate = function(a, x, y, w, h) {
+			a.moves(this[0], {
 				x: x, y: y, width : w, height: h,
 			});
 			return { x: N, y: N };//offset
@@ -18,12 +19,12 @@ var GsnShape = {
 	"Context": (function() {
 		var N = 20;
 		var Context = function($svg) {
-			this.elems = [ $svg.createSvg("rect") ];
+			this[0] = document.createElementNS(SVG_NS, "rect");
+			$svg.append(this[0]);
 		};
-		Context.prototype.animate = function(a, x, y, w, h, scale) {
-			var n = N * scale;
-			a.moves(this.elems[0], {
-				rx: n, ry: n, x: x, y: y, width: w, height: h
+		Context.prototype.animate = function(a, x, y, w, h) {
+			a.moves(this[0], {
+				rx: N, ry: N, x: x, y: y, width: w, height: h
 			});
 			return { x: N/2, y: N/2};
 		};
@@ -35,24 +36,22 @@ var GsnShape = {
 	"Subject": (function() {
 		var N = 20;
 		var Subject = function($svg) {
-			this.elems = [
-				$svg.createSvg("g"),
-				$svg.createSvg("rect"),
-				$svg.createSvg("polygon"),
-			];
-			$(this.elems[2]).attr("fill", "gray").attr("points", "0,0 0,0 0,0 0,0");
-			this.elems[0].appendChild(this.elems[1]);
-			this.elems[0].appendChild(this.elems[2]);
+			this[0] = document.createElementNS(SVG_NS, "g");
+			this[1] = document.createElementNS(SVG_NS, "rect");
+			this[2] = document.createElementNS(SVG_NS, "polygon");
+			$svg.append(this[0]);
+			$(this[2]).attr("fill", "gray").attr("points", "0,0 0,0 0,0 0,0");
+			this[0].appendChild(this[1]);
+			this[0].appendChild(this[2]);
 		};
-		Subject.prototype.animate = function(a, x, y, w, h, scale) {
-			var n = N * scale;
-			a.moves(this.elems[1], {
-				rx: n, ry: n, x : x, y : y, width : w, height: h
+		Subject.prototype.animate = function(a, x, y, w, h) {
+			a.moves(this[1], {
+				rx: N, ry: N, x : x, y : y, width : w, height: h
 			});
-			a.movePolygon(this.elems[2], [
-				{ x: x+w*5/8, y:y-n },
-				{ x: x+w*5/8, y:y+n },
-				{ x: x+w*5/8+n*2, y:y },
+			a.movePolygon(this[2], [
+				{ x: x+w*5/8, y:y-N },
+				{ x: x+w*5/8, y:y+N },
+				{ x: x+w*5/8+N*2, y:y },
 			]);
 			return  { x: N/2, y: N/2 };
 		};
@@ -64,15 +63,15 @@ var GsnShape = {
 	"Strategy": (function() {
 		var N = 20;
 		var Strategy = function($svg) {
-			this.elems = [ $svg.createSvg("polygon") ];
-			$(this.elems[0]).attr("points", "0,0 0,0 0,0 0,0");
+			this[0] = document.createElementNS(SVG_NS, "polygon");
+			$(this[0]).attr("points", "0,0 0,0 0,0 0,0");
+			$svg.append(this[0]);
 		};
-		Strategy.prototype.animate = function(a, x, y, w, h, scale) {
-			var n = N * scale;
-			a.movePolygon(this.elems[0], [
-				{ x: x+n, y: y },
+		Strategy.prototype.animate = function(a, x, y, w, h) {
+			a.movePolygon(this[0], [
+				{ x: x+N, y: y },
 				{ x: x+w, y: y },
-				{ x: x+w-n, y: y+h },
+				{ x: x+w-N, y: y+h },
 				{ x: x, y: y+h }
 			]);
 			return { x: N * 1.5, y: N / 2 };
@@ -84,14 +83,15 @@ var GsnShape = {
 	}()),
 	"Evidence": (function() {
 		var Evidence = function($svg) {
-			this.elems = [ $svg.createSvg("ellipse") ];
+			this[0] = document.createElementNS(SVG_NS, "ellipse");
+			$svg.append(this[0]);
 		};
-		Evidence.prototype.animate = function(a, x, y, w, h, scale) {
-			a.moves(this.elems[0], {
+		Evidence.prototype.animate = function(a, x, y, w, h) {
+			a.moves(this[0], {
 				cx: x + w/2, cy: y + h/2,
 				rx: w/2, ry: h/2,
 			});
-			return { x: w/6/scale, y: h/6/scale };
+			return { x: w/6, y: h/6 };
 		};
 		Evidence.prototype.outer = function(w, h) {
 			return { w: w*8/6, h: h*8/6 };
@@ -101,27 +101,25 @@ var GsnShape = {
 	"Solution": (function() {
 		var N = 20;
 		var Solution = function($svg) {
-			this.elems = [
-				$svg.createSvg("g"),
-				$svg.createSvg("ellipse"),
-				$svg.createSvg("polygon"),
-			];
-			$(this.elems[2]).attr("fill", "gray").attr("points", "0,0 0,0 0,0");
-			this.elems[0].appendChild(this.elems[1]);
-			this.elems[0].appendChild(this.elems[2]);
+			this[0] = document.createElementNS(SVG_NS, "g");
+			this[1] = document.createElementNS(SVG_NS, "ellipse");
+			this[2] = document.createElementNS(SVG_NS, "polygon");
+			$svg.append(this[0]);
+			$(this[2]).attr("fill", "gray").attr("points", "0,0 0,0 0,0");
+			this[0].appendChild(this[1]);
+			this[0].appendChild(this[2]);
 		};
-		Solution.prototype.animate = function(a, x, y, w, h, scale) {
-			a.moves(this.elems[1], {
+		Solution.prototype.animate = function(a, x, y, w, h) {
+			a.moves(this[1], {
 				cx: x + w/2, cy: y + h/2,
 				rx: w/2, ry: h/2,
 			});
-			var n = N * scale;
-			a.movePolygon(this.elems[2], [
-				{ x: x+w*5/8, y:y-n },
-				{ x: x+w*5/8, y:y+n },
-				{ x: x+w*5/8+n*2, y:y },
+			a.movePolygon(this[2], [
+				{ x: x+w*5/8, y:y-N },
+				{ x: x+w*5/8, y:y+N },
+				{ x: x+w*5/8+N*2, y:y },
 			]);
-			return { x: w/6/scale, y: h/6/scale };
+			return { x: w/6, y: h/6 };
 		};
 		Solution.prototype.outer = function(w, h) {
 			return { w: w*8/6, h: h*8/6 };

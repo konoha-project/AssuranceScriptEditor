@@ -153,6 +153,10 @@ var DNodeView_ToolBox = function(self) {
 					.focus()
 					.one("keydown", function() { edit_activate(); });
 
+				$edit.ready(function() {
+					$("textarea").css("height", $ul.height());
+				});
+
 				edit_lock = false;
 				edit_hover = false;
 				edit_active = false;

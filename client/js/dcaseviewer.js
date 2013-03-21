@@ -143,6 +143,21 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 
 //-----------------------------------------------------------------------------
 
+DCaseViewer.prototype.setLocation = function(x, y, scale) {
+	this.shiftX = x;
+	this.shiftY = y;
+	if(scale != null) {
+		this.scale = scale;
+		this.$svg.attr("transform", "scale(" + scale + ")");
+		this.$dom.css("transform", "scale(" + scale + ")");
+		this.$dom.css("-moz-transform", "scale(" + scale + ")");
+		this.$dom.css("-webkit-transform", "scale(" + scale + ")");
+	}
+	this.repaintAll();
+};
+
+//-----------------------------------------------------------------------------
+
 DCaseViewer.prototype.getNodeView = function(node) {
 	return this.nodeViewMap[node.id];
 };
@@ -165,12 +180,6 @@ DCaseViewer.prototype.getSelectedNode = function() {
 
 DCaseViewer.prototype.treeSize = function() {
 	return this.rootview.getTreeBounds();
-};
-
-DCaseViewer.prototype.createSvg = function(name) {
-	var obj = document.createElementNS(SVG_NS, name);
-	this.$svg.append(obj);
-	return obj;
 };
 
 DCaseViewer.prototype.setColorTheme = function(theme) {
@@ -221,6 +230,7 @@ DCaseViewer.prototype.nodeRemoved = function(parent, node, index) {
 DCaseViewer.prototype.nodeChanged = function(node) {
 	var self = this;
 	var view = this.getNodeView(node);
+
 	view.nodeChanged();
 	setTimeout(function() {
 		function f(v) {//FIXME
@@ -241,9 +251,9 @@ DCaseViewer.prototype.centerize = function(node, ms) {
 	var view = this.getNodeView(node);
 	this.setSelectedNode(view);
 	var b = view.bounds;
-	this.shiftX = -b.x * this.scale + (this.$root.width() - b.w * this.scale) / 2;
-	this.shiftY = -b.y * this.scale + this.$root.height() / 5 * this.scale;
-	this.repaintAll(ms);
+	var x = -b.x * this.scale + (this.$root.width() - b.w * this.scale) / 2;
+	var y = -b.y * this.scale + this.$root.height() / 5 * this.scale;
+	this.setLocation(x, y);
 };
 
 DCaseViewer.prototype.repaintAll = function(ms) {
@@ -296,31 +306,46 @@ DCaseViewer.prototype.expandBranch = function(view, b) {
 	}
 };
 
-DCaseViewer.prototype.fit = function(ms) {
-	if(this.rootview == null) return;
-	var size = this.rootview.treeSize();
-	this.scale = Math.min(
-		this.root.width()  * 0.98 / size.x,
-		this.root.height() * 0.98 / size.y);
-	var b = this.rootview.bounds;
-	this.shiftX = -b.x * this.scale + (this.$root.width() - b.w * this.scale) / 2;
-	this.shiftY = -b.y * this.scale + (this.$root.height() - size.y * this.scale) / 2;
-	this.repaintAll(ms);
-};
+//DCaseViewer.prototype.fit = function(ms) {
+//	if(this.rootview == null) return;
+//	var size = this.rootview.treeSize();
+//	this.scale = Math.min(
+//		this.root.width()  * 0.98 / size.x,
+//		this.root.height() * 0.98 / size.y);
+//	var b = this.rootview.bounds;
+//	this.shiftX = -b.x * this.scale + (this.$root.width() - b.w * this.scale) / 2;
+//	this.shiftY = -b.y * this.scale + (this.$root.height() - size.y * this.scale) / 2;
+//	this.repaintAll(ms);
+//};
 
 //-----------------------------------------------------------------------------
 
 var DNodeView = function(viewer, node, parentView) {
 	var self = this;
+
+	var $root, $rootsvg;
+	//if(parentView != null) {
+	//	$root = parentView.$subtree;
+	//	$rootsvg = parentView.$subtreeSvg;
+	//} else {
+		$root = viewer.$dom;
+		$rootsvg = viewer.$svg;
+	//}
+	this.$rootsvg = $rootsvg;
+	
+	this.$subtree = $("<div></div>").appendTo($root);
+	this.$subtreeSvg = $(document.createElementNS(SVG_NS, "g")).appendTo($rootsvg);
+	this.parentView = parentView;
+
 	this.viewer = viewer;
 	this.node = node;
-	this.svg = new GsnShape[node.type](viewer);
+	this.svg = new GsnShape[node.type]($rootsvg);
 	this.$div = $("<div></div>")
 			.addClass("node-container")
 			.width(DEF_WIDTH)
 			.css("left", $(document).width())//FIXME
 			.css("fontSize", FONT_SIZE)
-			.appendTo(viewer.$dom);
+			.appendTo($root);
 
 	this.svgUndevel = null;
 	this.argumentBorder = null;
@@ -336,7 +361,7 @@ var DNodeView = function(viewer, node, parentView) {
 		.appendTo(this.$div);
 
 	this.children = [];
-	this.context = null;
+	this.contexts = [];
 	this.line = null;
 	this.bounds = { x: 0, y: 0, w: DEF_WIDTH, h: 100 };
 	this.argumentBounds = {};
@@ -350,24 +375,25 @@ var DNodeView = function(viewer, node, parentView) {
 
 	if(parentView != null) {
 		if(node.isContext) {
-			this.line = viewer.createSvg("line");
+			this.line = document.createElementNS(SVG_NS, "line");
 			$(this.line).attr({
 				fill: "none",
 				stroke: "#404040",
 				x1: 0, y1: 0, x2: 0, y2: 0,
 				"marker-end": "url(#Triangle-white)",
-			});
-			parentView.context = this;
+			}).appendTo(this.$rootsvg);
+			parentView.contexts.push(this);
 		} else {
-			this.line = this.viewer.createSvg("path");
+			this.line = document.createElementNS(SVG_NS, "path");
 			$(this.line).attr({
 				fill: "none",
 				stroke: "#404040",
 				d: "M0,0 C0,0 0,0 0,0",
 				"marker-end": "url(#Triangle-black)",
-			});
+			}).appendTo(this.$rootsvg);
 			parentView.children.push(this);
 		}
+		this.$rootsvg.append(this.line);
 	}
 
 	this.$div.mouseup(function(e) {
@@ -398,7 +424,7 @@ DNodeView.prototype.nodeChanged = function() {
 		this.svgUndevel = $(document.createElementNS(SVG_NS, "polygon")).attr({
 			fill: "none", stroke: "gray",
 			points: "0,0 0,0 0,0 0,0"
-		}).appendTo(viewer.$svg);
+		}).appendTo(this.$rootsvg);
 	} else if(!node.isUndeveloped && this.svgUndevel != null){
 		this.svgUndevel.remove();
 		this.svgUndevel = null;
@@ -410,7 +436,7 @@ DNodeView.prototype.nodeChanged = function() {
 			stroke: "#8080D0",
 			fill: "none",
 			"stroke-dasharray": 3,
-		}).appendTo(viewer.$svg);
+		}).appendTo(this.$rootsvg);
 	} else if(!node.isArgument && this.argumentBorder != null) {
 		this.argumentBorder.remove();
 		this.argumentBorder = null;
@@ -438,8 +464,8 @@ DNodeView.prototype.updateColor = function() {
 		stroke = this.viewer.colorTheme.stroke[this.node.type];
 	}
 	var fill = this.viewer.colorTheme.fill[this.node.type];
-	this.svg.elems[0].setAttribute("stroke", stroke);
-	this.svg.elems[0].setAttribute("fill", fill);
+	this.svg[0].setAttribute("stroke", stroke);
+	this.svg[0].setAttribute("fill", fill);
 };
 
 DNodeView.prototype.getTreeBounds = function() {
@@ -447,31 +473,32 @@ DNodeView.prototype.getTreeBounds = function() {
 };
 
 DNodeView.prototype.remove = function(parentView) {
-	var self = this;
-	this.forEachNode(function(view) {
-		view.remove(self);
-	});
-	$(this.svg.elems[0]).remove();
+	while(this.contexts.length != 0) {
+		this.contexts[0].remove(this);
+	}
+	while(this.children.length != 0) {
+		this.children[0].remove(this);
+	}
+	$(this.svg[0]).remove();
 	this.$div.remove();
 	if(this.svgUndevel != null) $(this.svgUndevel).remove();
 	if(this.argumentBorder != null) $(this.argumentBorder).remove();
 	if(this.line != null) $(this.line).remove();
 
 	if(this.node.isContext) {
-		parentView.context = null;
+		parentView.contexts.splice(parentView.contexts.indexOf(this), 1);
 	} else {
 		parentView.children.splice(parentView.children.indexOf(this), 1);
 	}
 };
 
 DNodeView.prototype.forEachNode = function(f) {
-	if(this.context != null) {
-		f(this.context);
-	}
-	var children = this.children;
-	for(var i=0; i<children.length; i++) {
-		f(children[i]);
-	}
+	$.each(this.contexts, function(i, view) {
+		f(view);
+	});
+	$.each(this.children, function(i, view) {
+		f(view);
+	});
 }
 
 DNodeView.prototype.setChildVisible = function(b) {
@@ -528,8 +555,8 @@ DNodeView.prototype.updateLocation = function(x, y) {
 	// calc context height
 	var contextHeight = 0;
 	var childrenY = y0 + h + Y_MARGIN;
-	if(this.context != null) {
-		var cy = this.context.updateLocation(x, y).y;
+	if(this.contexts.length > 0) {
+		var cy = this.contexts[0].updateLocation(x, y).y;
 		contextHeight = cy-y0;
 		childrenY = Math.max(childrenY, cy + X_MARGIN);
 	}
@@ -556,10 +583,10 @@ DNodeView.prototype.updateLocation = function(x, y) {
 	};
 
 	// update context location
-	if(this.context != null) {
+	if(this.contexts.length > 0) {
 		x = this.bounds.x + w + Y_MARGIN;
 		y = y0 + Math.max((h - contextHeight) / 2, 0);
-		var p = this.context.updateLocation(x, y);
+		var p = this.contexts[0].updateLocation(x, y);
 		maxWidth = Math.max(maxWidth, p.x - x0);
 	}
 	if(this.node.isUndeveloped) {
@@ -578,26 +605,25 @@ DNodeView.prototype.updateLocation = function(x, y) {
 	};
 }
 
-DNodeView.prototype.animeStart = function(a, parent) {
+DNodeView.prototype.animeStart = function(a) {
 	var self = this;
-	var scale = this.viewer.scale;
+	var parent = this.parentView;
 	var b = this.bounds;
-	a.show(this.svg.elems[0], this.visible);
+	a.show(this.svg[0], this.visible);
 	a.show(this.$div, this.visible);
 	a.show(this.$divNodes, !this.childVisible);
 	this.updateColor();
 
-	var offset = this.svg.animate(a, b.x * scale, b.y * scale,
-			b.w * scale, b.h * scale, scale);
+	var offset = this.svg.animate(a, b.x, b.y,
+			b.w, b.h);
 	a.moves(this.$div, {
-		left  : (b.x + offset.x) * scale,
-		top   : (b.y + offset.y) * scale,
-		width : (b.w - offset.x*2) * scale,
-		height: (b.h - offset.y*2) * scale,
+		left  : (b.x + offset.x),
+		top   : (b.y + offset.y),
+		width : (b.w - offset.x*2),
+		height: (b.h - offset.y*2),
 	});
-	this.$div.css("fontSize", Math.floor(FONT_SIZE * scale));
 
-	if(scale < MIN_DISP_SCALE) {
+	if(self.viewer.scale < MIN_DISP_SCALE) {
 		a.show(this.$divText, false);
 		a.show(this.$divName, false);
 		if(this.divNodesText != null) {
@@ -617,10 +643,10 @@ DNodeView.prototype.animeStart = function(a, parent) {
 		if(!this.node.isContext) {
 			var start = l.pathSegList.getItem(0); // SVG_PATHSEG_MOVETO_ABS(M)
 			var curve = l.pathSegList.getItem(1); // SVG_PATHSEG_CURVETO_CUBIC_ABS(C)
-			var x1 = (pb.x + pb.w/2) * scale;
-			var y1 = (pb.y + pb.h  ) * scale;
-			var x2 = (b.x + b.w/2) * scale;
-			var y2 = (b.y) * scale;
+			var x1 = pb.x + pb.w/2;
+			var y1 = pb.y + pb.h;
+			var x2 = b.x + b.w/2;
+			var y2 = b.y;
 			a.show(l, parent.childVisible);
 			a.moves(start, {
 				x: x1,
@@ -637,17 +663,17 @@ DNodeView.prototype.animeStart = function(a, parent) {
 		} else {
 			var n = parent.node.type == "Strategy" ? 10 : 0;
 			a.moves(l, {
-				x1: (pb.x + pb.w - n) * scale,
-				y1: (pb.y + pb.h/2) * scale,
-				x2: (b.x) * scale,
-				y2: (b.y + b.h/2) * scale,
+				x1: pb.x + pb.w - n,
+				y1: pb.y + pb.h/2,
+				x2: b.x,
+				y2: b.y + b.h/2,
 			}).show(l, parent.childVisible);
 		}
 	}
 	if(this.svgUndevel != null) {
-		var sx = (b.x + b.w/2) * scale;
-		var sy = (b.y + b.h) * scale;
-		var n = 20 * scale;
+		var sx = b.x + b.w/2;
+		var sy = b.y + b.h;
+		var n = 20;
 		a.show(this.svgUndevel[0], this.visible);
 		a.movePolygon(this.svgUndevel[0], [
 			{ x: sx, y: sy },
@@ -660,15 +686,15 @@ DNodeView.prototype.animeStart = function(a, parent) {
 		var n = 10;
 		var b = this.argumentBounds;
 		a.moves(this.argumentBorder[0], {
-			x     : b.x * scale,
-			y     : b.y * scale,
-			width : b.w * scale,
-			height: b.h * scale,
+			x     : b.x,
+			y     : b.y,
+			width : b.w,
+			height: b.h,
 		});
 		a.show(this.argumentBorder[0], this.visible);
 	}
 	this.forEachNode(function(e) {
-		e.animeStart(a, self);
+		e.animeStart(a);
 	});
 }
 
