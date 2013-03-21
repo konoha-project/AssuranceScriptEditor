@@ -96,6 +96,10 @@ class DataBase {
 
 }
 
+@Public String EscapeDq(String str) {
+	return str.replace(/\"/g,"\\\\\\\"");
+}
+
 @Public String EscapeCR(String str) {
 	return str.replace(/\n/g, "\\n");
 }
@@ -215,7 +219,7 @@ class DCaseModel {
 		Json json = new Json();
 		json.setInt("commitId",r.getInt("id"));
 		json.setInt("time",r.getInt("date_time"));
-		json.setString("commitMessage",r.getString("message"));
+		json.setString("commitMessage",EscapeDq(r.getString("message")));
 		json.setInt("userId",r.getInt("user_id")); //FIXME
 		json.setString("userName",r.getString("user_name"));
 		return json;
