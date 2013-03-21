@@ -73,9 +73,7 @@ var TimeLine = function($root) {
 			.appendTo($container)
 
 		var info = list[commitId];
-		var time = new Date(info.time);
-		var timefmt = time.getFullYear() + "/" + time.getMonth() + "/" + time.getDay() +
-			" " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+		var timefmt = new DateFormatter(info.time).format();
 
 		$d.popover({
 			placement: "bottom",

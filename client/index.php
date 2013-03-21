@@ -59,6 +59,7 @@ body {
 <script type="text/javascript" src="js/gsnshape.js"></script>
 <script type="text/javascript" src="js/handler.js"></script>
 <script type="text/javascript" src="js/timeline.js"></script>
+<script type="text/javascript" src="js/dateformatter.js"></script>
 <script type="text/javascript" src="js/ase.js"></script>
 <script type="text/javascript" src="js/api.js"></script>
 <script type="text/javascript" src="js/animation.js"></script>
