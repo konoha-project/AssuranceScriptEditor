@@ -263,7 +263,7 @@ class DCaseModel {
 			Json json = new Json();
 			json.setInt("dcaseId",r.getInt("dcase_id"));
 			json.setInt("nodeId",r.getInt("this_node_id"));
-			json.setString("description",r.getString("description"));
+			json.setString("description",EscapeCR(r.getString("description")));
 			ret.add(json);
 		}
 		return ret;
