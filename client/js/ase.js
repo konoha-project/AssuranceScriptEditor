@@ -1,5 +1,6 @@
 var ASE = function(body) {
 	var self = this;
+	var TITLE_SUFFIX = " - AssuranceScriptEditor";
 
 	//--------------------------------------------------------
 
@@ -345,6 +346,7 @@ var ASE = function(body) {
 		var dcase = new DCase(r.tree, dcaseId, r.commitId);
 		viewer.setDCase(dcase);
 		timeline.repaint(dcase);
+		document.title = r.dcaseName + TITLE_SUFFIX;
 	}());
 
 };
