@@ -46,6 +46,7 @@ var DNodeView_InplaceEdit = function(self) {
 				.appendTo(self.$div)
 				.focus()
 				.mousedown(function(e) { e.stopPropagation(); })
+				.mousewheel(function(e) { e.stopPropagation(); })
 				.dblclick(function(e) {
 					if(cc >= 2) e.stopPropagation();
 					cc = 0;
@@ -156,6 +157,7 @@ var DNodeView_ToolBox = function(self) {
 				$edit.find("textarea")
 					.focus()
 					.mousedown(function(e) { e.stopPropagation(); })
+					.mousewheel(function(e) { e.stopPropagation(); })
 					.dblclick(function(e) { e.stopPropagation(); })
 					.one("keydown", function() { edit_activate(); });
 
