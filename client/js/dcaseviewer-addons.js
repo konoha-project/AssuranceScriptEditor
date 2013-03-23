@@ -37,6 +37,7 @@ var DNodeView_InplaceEdit = function(self) {
 		if($edit == null) {
 			var cc = 0;
 			self.$divText.css("display", "none");
+			self.viewer.$root.css("-moz-user-select", "text");
 
 			$edit = $("<textarea></textarea>")
 				.addClass("node-inplace")
@@ -45,14 +46,11 @@ var DNodeView_InplaceEdit = function(self) {
 				.appendTo(self.$div)
 				.focus()
 				.mousedown(function(e) { e.stopPropagation(); })
-				.mouseup(function(e) { e.stopPropagation(); })
-				.mousemove(function(e) { e.stopPropagation(); })
 				.dblclick(function(e) {
 					if(cc >= 2) e.stopPropagation();
 					cc = 0;
 				})
 				.click(function(e) { cc++; e.stopPropagation(); })
-				.mousewheel(function(e) { e.stopPropagation(); })
 				.blur(function() {
 					var newDesc = $edit.attr("value");
 					var node = self.node;
@@ -69,6 +67,7 @@ var DNodeView_InplaceEdit = function(self) {
 			$edit.remove();
 			$edit = null;
 			self.$divText.css("display", "block");
+			self.viewer.$root.css("-moz-user-select", "none");
 		}
 	}
 
@@ -92,29 +91,34 @@ var DNodeView_ToolBox = function(self) {
 
 	function showNewNode(visible) {
 		var type_selected = null;
+		function edit_close() {
+			$edit.remove();
+			$edit = null;
+			self.viewer.$root.css("-moz-user-select", "text");
+		}
+		function edit_activate() {
+			if(!edit_active) {
+				edit_active = true;
+				edit_lock = true;
+				$edit.css("opacity", 0.95);
+				self.viewer.$root.css("-moz-user-select", "text");
+				self.viewer.$root.one("click", function() {
+					var text = $edit.find("textarea").attr("value");
+					if(text != "") {
+						self.viewer.getDCase().insertNode(self.node, type_selected, text);
+					}
+					edit_close();
+				});
+			}
+		}
+		function clear_timeout() {
+			if(timeout != null) {
+				clearTimeout(timeout);
+				timeout = null;
+			}
+		}
 		if(visible) {
 			if($edit == null && self.node.appendableTypes().length > 0) {
-				function edit_activate() {
-					if(!edit_active) {
-						edit_active = true;
-						edit_lock = true;
-						$edit.css("opacity", 0.95);
-						self.viewer.$root.one("click", function() {
-							var text = $edit.find("textarea").attr("value");
-							if(text != "") {
-								self.viewer.getDCase().insertNode(self.node, type_selected, text);
-							}
-							$edit.remove();
-							$edit = null;
-						});
-					}
-				}
-				function clear_timeout() {
-					if(timeout != null) {
-						clearTimeout(timeout);
-						timeout = null;
-					}
-				}
 				// create
 				$edit = $("#edit-newnode").clone()
 				.css({
@@ -151,6 +155,8 @@ var DNodeView_ToolBox = function(self) {
 				});
 				$edit.find("textarea")
 					.focus()
+					.mousedown(function(e) { e.stopPropagation(); })
+					.dblclick(function(e) { e.stopPropagation(); })
 					.one("keydown", function() { edit_activate(); });
 
 				$edit.ready(function() {
@@ -166,8 +172,7 @@ var DNodeView_ToolBox = function(self) {
 			if(!edit_lock && !edit_hover) {
 				if(timeout == null) {
 					timeout = setTimeout(function() {
-						$edit.remove();
-						$edit = null;
+						edit_close();
 					}, 100);
 				}
 			}
