@@ -139,7 +139,14 @@ var DNodeView_ToolBox = function(self) {
 				.appendTo(self.$div);
 	
 				var $ul = $edit.find("ul");
-				$.each(self.node.appendableTypes(), function(i, type) {
+				var types = self.node.appendableTypes();
+				if(self.node.contexts.length > 0) {
+					types = types.slice(0);//clone
+					for(var i=0; i<self.node.contexts.length; i++) {
+						types.splice(types.indexOf(self.node.contexts[i].type), 1);
+					}
+				}
+				$.each(types, function(i, type) {
 					var $li = $("<li></li>")
 						.html("<a href=\"#\">" + type + "</a>")
 						.click(function() {
