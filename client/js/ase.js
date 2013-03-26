@@ -123,24 +123,6 @@ var ASE = function(body) {
 		}
 	};
 
-	this.copySelectedNode = function() {
-		var view = viewer.getSelectedNode();
-		if(view != null) {
-			copiedNode = view.node.deepCopy();
-		}
-	};
-
-	this.pasteToSelectedNode = function() {
-		var view = viewer.getSelectedNode();
-		if(view != null) {
-			if(view.node.appendableTypes().indexOf(copiedNode.type) != -1) {
-				viewer.getDCase().pasteNode(view.node, copiedNode);
-			} else {
-				alert("そのタイプは貼付けられません");
-			}
-		}
-	};
-
 	this.checkCommited = function() {
 		var dcase = viewer.getDCase();
 		if(dcase != null && dcase.isChanged()) {
@@ -256,14 +238,6 @@ var ASE = function(body) {
 
 	$("#menu-redo").click(function() {
 		viewer.getDCase().redo();
-	});
-
-	$("#menu-copy").click(function() {
-		self.copySelectedNode();
-	});
-
-	$("#menu-paste").click(function() {
-		self.pasteToSelectedNode();
 	});
 
 	$("#menu-export-json").click(function() {

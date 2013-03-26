@@ -199,14 +199,49 @@ var DNodeView_ToolBox = function(self) {
 				})
 				.appendTo($toolbox);
 	
-			$("<a href=\"#\"></a>").addClass("icon-trash")
-				.css({ position: "absolute",bottom: 4, left: 24, })
-				.click(function(e) {
+			var $menu = $("#edit-menulist").clone()
+				.css({ position: "absolute",bottom: 4, left: 24, display: "block" })
+				.appendTo($toolbox);
+
+			$menu.find("#ml-copy").click(function() {
+				self.viewer.clipboard = self.node.deepCopy();
+				console.log("copied");
+			});
+
+			$menu.find("#ml-paste").click(function() {
+				var node = self.viewer.clipboard;
+				if(node != null) {
+					if(self.node.appendableTypes().indexOf(node.type) != -1) {
+						self.viewer.getDCase().pasteNode(self.node, node);
+						console.log("pasted");
+					} else {
+						alert("そのタイプは貼付けられません");
+					}
+				}
+			});
+
+			if(self.node.parents.length != 0) {
+				$menu.find("#ml-delete").click(function() {
 					if(confirm("ノードを削除しますか？")) {
 						self.viewer.getDCase().removeNode(self.node);
 					}
-				})
-				.appendTo($toolbox);
+				});
+			} else {
+				$menu.find("#ml-delete").parent("li").addClass("disabled");
+			}
+
+			$menu.find("#ml-export").click(function() {
+				//TODO
+			});
+
+			$menu.find("#ml-openall").click(function() {
+				//TODO
+			});
+
+			$menu.find("#ml-closeall").click(function() {
+				//TODO
+			});
+
 		} else {
 			$toolbox.remove();
 			$toolbox = null;

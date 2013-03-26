@@ -40,6 +40,7 @@ var DCaseViewer = function(root, dcase, editable) {
 	this.drag_flag = true;
 	this.selectedNode = null;
 	this.rootview = null;
+	this.clipboard = null;
 
 	this.viewer_addons = [
 
