@@ -294,17 +294,21 @@ DCaseViewer.prototype.repaintAll = function(ms) {
 	}, 1000/60);
 };
 
-DCaseViewer.prototype.expandBranch = function(view, b) {
-	if(b == undefined || b != view.childVisible) {
-		var b0 = view.bounds;
-		view.setChildVisible(!view.childVisible);
-		this.rootview.updateLocation(0, 0);
-		var b1 = view.bounds;
-		this.shiftX -= (b1.x-b0.x) * this.scale;
-		this.shiftY -= (b1.y-b0.y) * this.scale;
-		this.location_updated = true;
-		this.repaintAll(ANIME_MSEC);
+DCaseViewer.prototype.expandBranch = function(view, b, isAll) {
+	if(b == null) b = !view.childVisible;
+
+	var b0 = view.bounds;
+	if(isAll != null && isAll) {
+		view.setChildVisibleAll(b);
+	} else {
+		view.setChildVisible(b);
 	}
+	this.rootview.updateLocation(0, 0);
+	var b1 = view.bounds;
+	this.shiftX -= (b1.x-b0.x) * this.scale;
+	this.shiftY -= (b1.y-b0.y) * this.scale;
+	this.location_updated = true;
+	this.repaintAll(ANIME_MSEC);
 };
 
 //DCaseViewer.prototype.fit = function(ms) {
@@ -368,7 +372,6 @@ var DNodeView = function(viewer, node, parentView) {
 	this.argumentBounds = {};
 	this.visible = true;
 	this.childVisible = true;
-	this.childOpen = true;
 	this.divNodesText = null;
 
 	this.selected = false;
@@ -500,28 +503,21 @@ DNodeView.prototype.forEachNode = function(f) {
 	$.each(this.children, function(i, view) {
 		f(view);
 	});
-}
+};
 
 DNodeView.prototype.setChildVisible = function(b) {
+	if(this.node.getNodeCount() == 0) b = true;
 	this.childVisible = b;
-	this.childOpen = b;
-	this.forEachNode(function(e) {
-		e.setVisible(b);
-	});
-}
+};
 
-DNodeView.prototype.setVisible = function(b) {
-	this.visible = b;
-	if(b) {
-		b = this.childOpen;
-	}
-	this.childVisible = b;
-	this.forEachNode(function(e) {
-		e.setVisible(b);
+DNodeView.prototype.setChildVisibleAll = function(b) {
+	this.setChildVisible(b);
+	this.forEachNode(function(view) {
+		view.setChildVisibleAll(b);
 	});
-}
+};
 
-DNodeView.prototype.updateLocation = function(x, y) {
+DNodeView.prototype.updateLocation = function(x, y, visible) {
 	var ARG_MARGIN = this.node.isArgument ? 5 : 0;
 	x += ARG_MARGIN;
 	y += ARG_MARGIN;
@@ -529,12 +525,15 @@ DNodeView.prototype.updateLocation = function(x, y) {
 	var y0 = y;
 	var w = this.bounds.w;
 	var h = this.bounds.h;
-	if(!this.visible || !this.childVisible) {
+	if(visible == null) visible = true;
+	this.visible = visible;
+	var childVisible = visible && this.childVisible;
+	if(!visible || !this.childVisible) {
 		this.forEachNode(function(e) {
-			e.updateLocation(x, y);
+			e.updateLocation(x, y, childVisible);
 		});
 		this.bounds = { x: x, y: y, w: w, h: h };
-		if(this.visible && this.node.isUndeveloped) {
+		if(visible && this.node.isUndeveloped) {
 			h += 40;
 		}
 		if(this.node.isArgument) {
@@ -547,7 +546,7 @@ DNodeView.prototype.updateLocation = function(x, y) {
 			w += ARG_MARGIN;
 			h += ARG_MARGIN;
 		}
-		if(this.visible) {
+		if(visible) {
 			return { x: x+w, cx: x+w, y: y+h };
 		} else {
 			return { x: x, cx: x, y: y };
@@ -557,7 +556,7 @@ DNodeView.prototype.updateLocation = function(x, y) {
 	var contextHeight = 0;
 	var childrenY = y0 + h + Y_MARGIN;
 	if(this.contexts.length > 0) {
-		var cy = this.contexts[0].updateLocation(x, y).y;
+		var cy = this.contexts[0].updateLocation(x, y, childVisible).y;
 		contextHeight = cy-y0;
 		childrenY = Math.max(childrenY, cy + X_MARGIN);
 	}
@@ -567,7 +566,7 @@ DNodeView.prototype.updateLocation = function(x, y) {
 	var cx = x;
 	$.each(this.children, function(i, e) {
 		if(i != 0) x += X_MARGIN;
-		var size = e.updateLocation(x, childrenY);
+		var size = e.updateLocation(x, childrenY, childVisible);
 		x = size.x;
 		cx = size.cx;
 		maxHeight = Math.max(maxHeight, size.y - y0);
@@ -587,7 +586,7 @@ DNodeView.prototype.updateLocation = function(x, y) {
 	if(this.contexts.length > 0) {
 		x = this.bounds.x + w + Y_MARGIN;
 		y = y0 + Math.max((h - contextHeight) / 2, 0);
-		var p = this.contexts[0].updateLocation(x, y);
+		var p = this.contexts[0].updateLocation(x, y, childVisible);
 		maxWidth = Math.max(maxWidth, p.x - x0);
 	}
 	if(this.node.isUndeveloped) {
@@ -648,7 +647,7 @@ DNodeView.prototype.animeStart = function(a) {
 			var y1 = pb.y + pb.h;
 			var x2 = b.x + b.w/2;
 			var y2 = b.y;
-			a.show(l, parent.childVisible);
+			a.show(l, this.visible);
 			a.moves(start, {
 				x: x1,
 				y: y1,
@@ -668,7 +667,8 @@ DNodeView.prototype.animeStart = function(a) {
 				y1: pb.y + pb.h/2,
 				x2: b.x,
 				y2: b.y + b.h/2,
-			}).show(l, parent.childVisible);
+			});
+			a.show(l, this.visible);
 		}
 	}
 	if(this.svgUndevel != null) {

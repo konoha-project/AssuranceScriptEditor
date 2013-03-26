@@ -62,7 +62,7 @@ var DNodeView_InplaceEdit = function(self) {
 				});
 		}
 	}
-		
+
 	function closeInplace() {
 		if($edit != null) {
 			$edit.remove();
@@ -235,11 +235,11 @@ var DNodeView_ToolBox = function(self) {
 			});
 
 			$menu.find("#ml-openall").click(function() {
-				//TODO
+				self.viewer.expandBranch(self, true, true);
 			});
 
 			$menu.find("#ml-closeall").click(function() {
-				//TODO
+				self.viewer.expandBranch(self, false, true);
 			});
 
 		} else {
