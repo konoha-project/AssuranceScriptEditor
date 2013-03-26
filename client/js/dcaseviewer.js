@@ -127,7 +127,7 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 	setTimeout(function() {
 		function f(v) {//FIXME
 			var b = v.svg.outer(200, v.$divText.height() + 60);
-			v.bounds.w = b.w;
+			//v.bounds.w = b.w;
 			v.bounds.h = b.h;
 			v.forEachNode(function(e) {
 				f(e);
@@ -236,7 +236,7 @@ DCaseViewer.prototype.nodeChanged = function(node) {
 	setTimeout(function() {
 		function f(v) {//FIXME
 			var b = v.svg.outer(200, v.$divText.height() + 60);
-			v.bounds.w = b.w;
+			//v.bounds.w = b.w;
 			v.bounds.h = b.h;
 		}
 		f(view);
