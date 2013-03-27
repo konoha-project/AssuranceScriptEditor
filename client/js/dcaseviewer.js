@@ -58,7 +58,6 @@ var DCaseViewer = function(root, dcase, editable) {
 };
 
 DCaseViewer.prototype.default_colorTheme = {
-	themeName: "default",
 	stroke: {
 		"Goal"    : "none",
 		"Context" : "none",
@@ -202,8 +201,16 @@ DCaseViewer.prototype.structureUpdated = function(ms) {
 DCaseViewer.prototype.nodeInserted = function(parent, node, index) {
 	var self = this;
 	var parentView = this.getNodeView(parent);
-	var view = new DNodeView(this, node, parentView);
-	self.nodeViewMap[node.id] = view;
+
+	function create(node, parent) {
+		var view = new DNodeView(self, node, parent);
+		self.nodeViewMap[node.id] = view;
+		node.eachNode(function(child) {
+			create(child, view);
+		});
+		return view;
+	}
+	var view = create(node, parentView);
 
 	parentView.nodeChanged();
 

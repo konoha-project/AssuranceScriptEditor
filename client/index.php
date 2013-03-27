@@ -11,7 +11,7 @@ if(isset($_COOKIE["userId"])) {
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>D-CASE VIEWER</title>
+<title>AssuranceScriptEditor</title>
 <link rel="stylesheet" type="text/css" href="lib/jquery.svg.css"/>
 <link rel="stylesheet" type="text/css" href="lib/jquery.ui.autocomplete.css"/>
 <link rel="stylesheet" type="text/css" href="lib/jquery.colorPicker.css"/>
@@ -240,12 +240,15 @@ EOT;
 	<div class="dropdown" id="edit-menulist" style="display: none;">
 		<a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-list"></i></a>
 		<ul class="dropdown-menu">
+			<li><a id="ml-cut" href="#">切り取り</a></li>
 			<li><a id="ml-copy" href="#">コピー</a></li>
-			<li><a id="ml-paste" href="#">ペースト</a></li>
+			<li><a id="ml-paste" href="#">貼り付け</a></li>
 			<li><a id="ml-delete" href="#">削除</a></li>
-			<li><a id="ml-export" href="#">エクスポート</a></li>
+			<li class="divider"></li>
 			<li><a id="ml-openall" href="#">全て開く</a></li>
 			<li><a id="ml-closeall" href="#">全て折り畳む</a></li>
+			<li class="divider"></li>
+			<li><a id="ml-export" href="#">エクスポート</a></li>
 		</ul>
 	</div>
 

@@ -210,6 +210,12 @@ var DNodeView_ToolBox = function(self) {
 				.css({ position: "absolute",bottom: 4, left: 24, display: "block" })
 				.appendTo($toolbox);
 
+			$menu.find("#ml-cut").click(function() {
+				self.viewer.clipboard = self.node.deepCopy();
+				self.viewer.getDCase().removeNode(self.node);
+				console.log("cut");
+			});
+
 			$menu.find("#ml-copy").click(function() {
 				self.viewer.clipboard = self.node.deepCopy();
 				console.log("copied");
@@ -229,12 +235,11 @@ var DNodeView_ToolBox = function(self) {
 
 			if(self.node.parents.length != 0) {
 				$menu.find("#ml-delete").click(function() {
-					if(confirm("ノードを削除しますか？")) {
-						self.viewer.getDCase().removeNode(self.node);
-					}
+					self.viewer.getDCase().removeNode(self.node);
 				});
 			} else {
 				$menu.find("#ml-delete").parent("li").addClass("disabled");
+				$menu.find("#ml-cut").parent("li").addClass("disabled");
 			}
 
 			$menu.find("#ml-export").click(function() {
@@ -280,6 +285,7 @@ var DNodeView_ToolBox_uneditable = function(self) {
 				console.log("copied");
 			});
 
+			$menu.find("#ml-cut").remove();
 			$menu.find("#ml-paste").remove();
 			$menu.find("#ml-delete").remove();
 
