@@ -5,8 +5,7 @@ var X_MARGIN = 30;
 var Y_MARGIN = 100;
 var SCALE_MIN = 0.1;
 var SCALE_MAX = 6.0;
-var FONT_SIZE = 13;
-var MIN_DISP_SCALE = 4 / FONT_SIZE;
+var MIN_DISP_SCALE = 0.25;
 var DEF_WIDTH = 200;
 
 //-----------------------------------------------------------------------------
@@ -124,10 +123,9 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 	}
 	this.rootview = create(dcase.getTopGoal(), null);
 
-	setTimeout(function() {
+	this.$dom.ready(function() {
 		function f(v) {//FIXME
-			var b = v.svg.outer(200, v.$divText.height() + 60);
-			//v.bounds.w = b.w;
+			var b = v.svg.outer(DEF_WIDTH, v.$divText.height() + 60);
 			v.bounds.h = b.h;
 			v.forEachNode(function(e) {
 				f(e);
@@ -139,7 +137,7 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 		self.shiftY = 60;
 		self.location_updated = true;
 		self.repaintAll();
-	}, 100);
+	});
 };
 
 //-----------------------------------------------------------------------------
@@ -207,10 +205,15 @@ DCaseViewer.prototype.nodeInserted = function(parent, node, index) {
 
 	parentView.nodeChanged();
 
-	setTimeout(function() {
+	self.$dom.ready(function() {
+		function f(v) {//FIXME
+			var b = v.svg.outer(200, v.$divText.height() + 60);
+			v.bounds.h = b.h;
+		}
+		f(view);
 		self.location_updated = true;
 		self.repaintAll();
-	}, 100);
+	});
 };
 
 DCaseViewer.prototype.nodeRemoved = function(parent, node, index) {
@@ -222,10 +225,10 @@ DCaseViewer.prototype.nodeRemoved = function(parent, node, index) {
 
 	parentView.nodeChanged();
 
-	setTimeout(function() {
+	self.$dom.ready(function() {
 		self.location_updated = true;
 		self.repaintAll();
-	}, 100);
+	});
 };
 
 DCaseViewer.prototype.nodeChanged = function(node) {
@@ -233,16 +236,15 @@ DCaseViewer.prototype.nodeChanged = function(node) {
 	var view = this.getNodeView(node);
 
 	view.nodeChanged();
-	setTimeout(function() {
+	self.$dom.ready(function() {
 		function f(v) {//FIXME
 			var b = v.svg.outer(200, v.$divText.height() + 60);
-			//v.bounds.w = b.w;
 			v.bounds.h = b.h;
 		}
 		f(view);
 		self.location_updated = true;
 		self.repaintAll();
-	}, 100);
+	});
 };
 
 //-----------------------------------------------------------------------------
@@ -348,8 +350,7 @@ var DNodeView = function(viewer, node, parentView) {
 	this.$div = $("<div></div>")
 			.addClass("node-container")
 			.width(DEF_WIDTH)
-			.css("left", $(document).width())//FIXME
-			.css("fontSize", FONT_SIZE)
+			.css("left", $(document).width() / viewer.scale)//FIXME
 			.appendTo($root);
 
 	this.svgUndevel = null;
