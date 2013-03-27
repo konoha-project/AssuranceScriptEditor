@@ -101,9 +101,10 @@ var ASE = function(body) {
 		timeline.visible();
 	});
 
-	timeline.onDCaseSelected = function(dcaseId, commitId) {
+	timeline.onDCaseSelected = function(dcaseId, commitId, isLatest) {
 		if(self.checkCommited()) {
 			var tree = DCaseAPI.getNodeTree(commitId);
+			viewer.editable = isLatest;//FIXME
 			viewer.setDCase(new DCase(tree, dcaseId, commitId));
 			return true;
 		} else {
@@ -114,11 +115,17 @@ var ASE = function(body) {
 	//--------------------------------------------------------
 
 	this.commit = function() {
-		var msg = prompt("コミットメッセージを入力して下さい");
-		if(msg != null) {
-			if(viewer.getDCase().commit(msg, userId)) {
-				alert("コミットしました");
-				timeline.repaint(viewer.getDCase());
+		if(viewer.editable) {
+			if(!viewer.getDCase().isChanged()) {
+				alert("変更されていません");
+			} else {
+				var msg = prompt("コミットメッセージを入力して下さい");
+				if(msg != null) {
+					if(viewer.getDCase().commit(msg, userId)) {
+						alert("コミットしました");
+						timeline.repaint(viewer.getDCase());
+					}
+				}
 			}
 		}
 	};

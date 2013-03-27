@@ -119,7 +119,14 @@ var DNodeView_ToolBox = function(self) {
 			}
 		}
 		if(visible) {
-			if($edit == null && self.node.appendableTypes().length > 0) {
+		var types = self.node.appendableTypes();
+		if(self.node.contexts.length > 0) {
+			types = types.slice(0);//clone
+			for(var i=0; i<self.node.contexts.length; i++) {
+				types.splice(types.indexOf(self.node.contexts[i].type), 1);
+			}
+		}
+			if($edit == null && types.length > 0) {
 				// create
 				$edit = $("#edit-newnode").clone()
 				.css({
@@ -139,13 +146,6 @@ var DNodeView_ToolBox = function(self) {
 				.appendTo(self.$div);
 	
 				var $ul = $edit.find("ul");
-				var types = self.node.appendableTypes();
-				if(self.node.contexts.length > 0) {
-					types = types.slice(0);//clone
-					for(var i=0; i<self.node.contexts.length; i++) {
-						types.splice(types.indexOf(self.node.contexts[i].type), 1);
-					}
-				}
 				$.each(types, function(i, type) {
 					var $li = $("<li></li>")
 						.html("<a href=\"#\">" + type + "</a>")
@@ -260,5 +260,52 @@ var DNodeView_ToolBox = function(self) {
 	}, function() {
 		showToolbox(false);
 	});
+};
+
+var DNodeView_ToolBox_uneditable = function(self) {
+	var $toolbox = null;
+	
+	function showToolbox(visible) {
+		if(visible) {
+			if($toolbox != null) return;
+			$toolbox = $("<div></div>")
+				.css("display", self.$divText.css("display"))
+				.appendTo(self.$div);
+			var $menu = $("#edit-menulist").clone()
+				.css({ position: "absolute",bottom: 4, left: 4, display: "block" })
+				.appendTo($toolbox);
+
+			$menu.find("#ml-copy").click(function() {
+				self.viewer.clipboard = self.node.deepCopy();
+				console.log("copied");
+			});
+
+			$menu.find("#ml-paste").remove();
+			$menu.find("#ml-delete").remove();
+
+			$menu.find("#ml-export").click(function() {
+				//TODO
+			});
+
+			$menu.find("#ml-openall").click(function() {
+				self.viewer.expandBranch(self, true, true);
+			});
+
+			$menu.find("#ml-closeall").click(function() {
+				self.viewer.expandBranch(self, false, true);
+			});
+
+		} else {
+			$toolbox.remove();
+			$toolbox = null;
+		}
+	};
+
+	self.$div.hover(function() {
+		showToolbox(true);
+	}, function() {
+		showToolbox(false);
+	});
+
 };
 

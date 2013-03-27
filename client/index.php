@@ -251,7 +251,7 @@ EOT;
 
 	<table id="edit-newnode" style="display: none;">
 		<tr><td width="80">
-			<ul class="nav nav-list">
+			<ul class="nav nav-list" style="min-height: 100px;">
 			</ul>
 		</td><td width="200">
 			<textarea style="margin: 0px; padding: 0px; width: 100%; height: 100%;"></textarea>

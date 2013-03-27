@@ -86,7 +86,7 @@ var TimeLine = function($root) {
 			console.log("arguemnt " + commitId);
 			if(selected != $d) {
 				var argId = self.argument.argId;
-				if(self.onDCaseSelected(argId, commitId)) {
+				if(self.onDCaseSelected(argId, commitId, info.latest)) {
 					if(selected != null) {
 						selected.css("border-color", "");
 						selected = $d;
@@ -152,7 +152,9 @@ var TimeLine = function($root) {
 			if(x == null) x = [];
 			if(x.indexOf(l[i+1].commitId) == -1) x.push(l[i + 1].commitId);
 			mm[l[i].commitId] = x;
+		l[i].latest = false;
 		}
+		l[l.length-1].latest = true;
 
 		var ci = {};
 		for(var i=0; i<l.length; i++) {

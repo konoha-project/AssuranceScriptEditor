@@ -40,7 +40,7 @@ var GsnShape = {
 			this[1] = document.createElementNS(SVG_NS, "rect");
 			this[2] = document.createElementNS(SVG_NS, "polygon");
 			$svg.append(this[0]);
-			$(this[2]).attr("fill", "gray").attr("points", "0,0 0,0 0,0 0,0");
+			$(this[2]).attr("fill", "gray").attr("points", "0,0 0,0 0,0");
 			this[0].appendChild(this[1]);
 			this[0].appendChild(this[2]);
 		};
