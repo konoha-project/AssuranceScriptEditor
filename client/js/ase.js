@@ -226,31 +226,39 @@ var ASE = function(body) {
 	//--------------------------------------------------------
 
 	var URL_EXPORT = "cgi/view.cgi";
+	var URL_EXPORT_SVG = "cgi/svg.cgi";
 
-	this.splitTextByLength = function(str, max){
+	this.foreachLine = function(str, max, callback){
+		if(!callback) return;
 		var rest = str;
-		var wrappedLines = [];
 		var maxLength = max || 20;
 		maxLength = maxLength < 1 ? 1 : maxLength;
 		var length = 0;
+		var i = 0;
 		for(var pos = 0; pos < rest.length; ++pos){
 			var code = rest.charCodeAt(pos);
 			length += code < 128 ? 1 : 2;
 			if(length > maxLength || rest.charAt(pos) == "\n"){
-				wrappedLines.push(rest.substr(0, pos));
+				callback(rest.substr(0, pos), i);
 				if(rest.charAt(pos) == "\n"){
 					pos++;
 				}
 				rest = rest.substr(pos, rest.length - pos);
 				pos = -1;
 				length = 0;
+				i++;
 			}
 		}
-		wrappedLines.push(rest);
-		return wrappedLines;
+		callback(rest, i);
 	};
+	
+	this.splitTextByLength = function(str, max){
+		var arr = [];
+		foreachLine(str, max, function(s){ arr.push(s); });
+		return arr;
+	}
 
-	this.exportViaSVG = function(type) {
+	this.createSVGDocument = function() {
 		var viewer = this.viewer;
 		var nodeViewMap = viewer.nodeViewMap;
 		var dcase = viewer.getDCase();
@@ -258,55 +266,81 @@ var ASE = function(body) {
 		if(!root) {
 			return;
 		}
-		var doc = window.open("about:blank", "_blank").document;
-		var target = $('<svg width="100%" height="100%">')
-		target.append($("svg defs").clone(false));
+		var $target = $('<svg width="100%" height="100%" version="1.1" xmlns="'+SVG_NS+'">')
+		$target.append($("svg defs").clone(false));
 
-		var splitTextByLength = this.splitTextByLength;
+		var foreachLine = this.foreachLine;
 		root.traverse(function(node) {
 			var nodeView = nodeViewMap[node.id];
 			if(nodeView.visible == false) return;
 			var svg  = nodeView.svg[0];
+			var div  = nodeView.$div[0];
 			var arg  = nodeView.argumentBorder;
 			var undev= nodeView.svgUndevel;
-			var line = nodeView.line;
-			var name = node.name;
-			var desc = node.desc;
-			var div  = nodeView.$div[0];
-			if(line){
-				target.append($(line).clone(false));
-			}
-			if(arg){
-				target.append($(arg).clone(false));
-			}
-			if(undev){
-				target.append($(undev).clone(false));
-			}
-			target.append($(svg).clone(false));
-			var svgtext  = $(document.createElementNS(SVG_NS, "text"));
-			svgtext.attr({x : div.offsetLeft, y : div.offsetTop + 10});
-			var nodename = $(document.createElementNS(SVG_NS, "tspan"));
-			nodename.text(name).attr("font-weight", "bold").appendTo(svgtext);
-			var lines = splitTextByLength(desc, 1+~~(div.offsetWidth * 2 / 13));
-			for(var i = 0; i < lines.length; ++i){
-				var line = $(document.createElementNS(SVG_NS, "tspan"));
-				line.text(lines[i])
+			var connector = nodeView.line;
+			
+			jQuery.each([arg, connector, undev], function(i, v){
+				if(v) $target.append($(v).clone(false));
+			});
+			$target.append($(svg).clone(false));
+
+			var $svgtext = $(document.createElementNS(SVG_NS, "text"))
+				.attr({x : div.offsetLeft, y : div.offsetTop + 10});
+			
+			$(document.createElementNS(SVG_NS, "tspan"))
+				.text(node.name).attr("font-weight", "bold").appendTo($svgtext);
+
+			foreachLine(node.desc, 1+~~(div.offsetWidth * 2 / 13), function(linetext) {
+				$(document.createElementNS(SVG_NS, "tspan"))
+					.text(linetext)
 					.attr({x : div.offsetLeft, dy : 15, "font-size" : "13px"})
-					.appendTo(svgtext);
-			}
-			target.append(svgtext);
+					.appendTo($svgtext);
+			});
+
+			$target.append($svgtext);
 		});
-		target.appendTo($(doc).find("body"));
+
+		var $dummydiv = $("<div>").append($target);
+		var header = '<?xml version="1.0" standalone="no"?>\n' + 
+			'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n';
+		var doc = header + $dummydiv.html();
+		$target.empty().remove();
+		return doc;
 	};
 
+	this.executePost = function(action, data) {
+		var $body = $(document.body);
+		var $form = $("<form>").attr({
+			"action" : action,
+			"method" : "post",
+			"target" : "_blank",
+		}).hide().appendTo($body);
+		
+		if (data !== undefined) {
+			for (var paramName in data) {
+				$('<input type="hidden">').attr({
+					'name' : paramName,
+					'value' : data[paramName],
+				}).appendTo($form);
+			}
+		}
+		$form.submit();
+		//$form.empty().remove();
+	}
+	
+	this.exportViaSVG = function(type) {
+		var svg = this.createSVGDocument();
+		this.executePost(URL_EXPORT_SVG, {"type" : type, "svg" : svg});
+	}
+
 	this.exportTree = function(type) {
-		if(type == "png"){
+		if(type == "png" || type == "pdf" || type == "svg"){
 			this.exportViaSVG(type);
 			return;
 		}
 		var commitId = viewer.getDCase().commitId;
 		var url = URL_EXPORT + "?" + commitId + "." + type;
-		window.open(url, "_black");
+		window.open(url, "_blank");
 	};
 
 	//--------------------------------------------------------

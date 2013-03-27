@@ -19,55 +19,55 @@ Import("dscript.subproc");
 
 // you should rewrite to correct URI
 String uri_to_api_cgi(){
-	return "http://localhost/dview/client/cgi/api.cgi";
+    return "http://localhost/dview/client/cgi/api.cgi";
 }
 
 class HttpClient {
-	String url = "";
-	@Virtual String perform() { return ""; }
-	@Virtual String post(String params) { return ""}
-	@Virtual String get(Map[String] fields)  { return ""}
+    String url = "";
+    @Virtual String perform() { return ""; }
+    @Virtual String post(String params) { return ""}
+    @Virtual String get(Map[String] fields)  { return ""}
 }
 
 class CurlHttpClient extends HttpClient {
-	Curl curl;
-	CurlHttpClient(String url) {
-		this.url = url;
-		this.curl = new Curl();
-		this.curl.setOpt(CURLOPT_URL, url);
-	}
-	String perform() {
-		return curl.receiveString();
-	}
-	String CreateParam(Map[String] map) {
-		int i = 0;
-		String[] keys = map.keys();
-		String param = "";
-		while (i < keys.getSize()) {
-			if (i != 0) {
-				param = param + "&";
-			}
-			String key = keys[i];
-			/* FIXME Escaping key and value */
-			param = param + "${key}=${map.get(key)}";
-			i = i + 1;
-		}
-		return param;
-	}
-	String post(String params) {
-		curl.setOpt(CURLOPT_POST, true);
-		//String param = CreateParam(fields);
-		curl.setOpt(CURLOPT_POSTFIELDS, params);
-		return perform();
-	}
+    Curl curl;
+    CurlHttpClient(String url) {
+        this.url = url;
+        this.curl = new Curl();
+        this.curl.setOpt(CURLOPT_URL, url);
+    }
+    String perform() {
+        return curl.receiveString();
+    }
+    String CreateParam(Map[String] map) {
+        int i = 0;
+        String[] keys = map.keys();
+        String param = "";
+        while (i < keys.getSize()) {
+            if (i != 0) {
+                param = param + "&";
+            }
+            String key = keys[i];
+            /* FIXME Escaping key and value */
+            param = param + "${key}=${map.get(key)}";
+            i = i + 1;
+        }
+        return param;
+    }
+    String post(String params) {
+        curl.setOpt(CURLOPT_POST, true);
+        //String param = CreateParam(fields);
+        curl.setOpt(CURLOPT_POSTFIELDS, params);
+        return perform();
+    }
 
-	String get(Map[String] fields) {
-		curl.setOpt(CURLOPT_GET, true);
-		if (fields.getSize() > 0) {
-			String param = CreateParam(fields);
-			curl.setOpt(CURLOPT_URL, url+"?"+param);
-		}
-	}
+    String get(Map[String] fields) {
+        curl.setOpt(CURLOPT_GET, true);
+        if (fields.getSize() > 0) {
+            String param = CreateParam(fields);
+            curl.setOpt(CURLOPT_URL, url+"?"+param);
+        }
+    }
 }
 
 class Exporter {
@@ -112,11 +112,11 @@ int DotExporter.getClusterID(){
 }
 
 @Virtual void DotExporter.emit(){
-	stdout.println(this.string);
+    stdout.println(this.string);
 }
 
 void DotExporter.addLine(String str){
-	this.string = this.string + str + "\n";
+    this.string = this.string + str + "\n";
 }
 
 String DotExporter.getDotNodeName(Json node){
@@ -145,29 +145,32 @@ String DotExporter.getDotNodeName(Json node){
 }
 
 String DotExporter.wrap(String str){
-	String br = "\\l";
-	String wrapped = "";
-	String rest = str;
-	int maxLength = 20;
-	int length = 0;
-	int pos = 0;
-	while(pos < rest.length){
-		int code = rest.charCodeAt(pos);
-		if(code < 128){
-			length = length + 1;
-		}else{
-			length = length + 2;
-		}
-		if(length > maxLength || rest.charAt(pos) == "\n"){
-			wrapped = wrapped + rest.substr(0, pos) + br;
-			rest = rest.substr(pos, rest.length - pos);
-			pos = -1;
-			length = 0;
-		}
-		pos = pos + 1;
-	}
-	wrapped = wrapped + rest + br;
-	return wrapped;
+    String br = "\\l";
+    String wrapped = "";
+    String rest = str;
+    int maxLength = 20;
+    int length = 0;
+    int pos = 0;
+    while(pos < rest.length){
+        int code = rest.charCodeAt(pos);
+        if(code < 128){
+            length = length + 1;
+        }else{
+            length = length + 2;
+        }
+        if(length > maxLength || rest.charAt(pos) == "\n"){
+            wrapped = wrapped + rest.substr(0, pos) + br;
+            if(rest.charAt(pos) == "\n"){
+                pos = pos + 1;
+            }
+            rest = rest.substr(pos, rest.length - pos);
+            pos = -1;
+            length = 0;
+        }
+        pos = pos + 1;
+    }
+    wrapped = wrapped + rest + br;
+    return wrapped;
 }
 
 String DotExporter.emitEdge(Json fromNode, Json toNode){
@@ -182,9 +185,9 @@ String DotExporter.emitEdge(Json fromNode, Json toNode){
 }
 
 float calcHeight(String desc){
-	int lines = desc.split("\\l").length;
-	float height = 0.8 + (lines-3)*0.12;
-	return height; 
+    int lines = desc.split("\\l").length;
+    float height = 0.8 + (lines-3)*0.12;
+    return height; 
 }
 
 String DotExporter.emitDotNodeDefine(Json node){
@@ -259,7 +262,7 @@ void DotExporter.GenerateGoalCode(Json NodeList, Json node, int level) {
 }
 
 @Override void DotExporter.export(Json json) {
-	// DO NOT REMOVE THIS COMMENT OR NOT WORKS. 
+    // DO NOT REMOVE THIS COMMENT OR NOT WORKS. 
     Json tree = json.get("result").get("tree");
     int RootId = tree.getInt("TopGoalId");
     Json NodeList= tree.get("NodeList");
@@ -272,42 +275,42 @@ void DotExporter.GenerateGoalCode(Json NodeList, Json node, int level) {
     GenerateGoalCode(NodeList, RootNode, 1);
     addLine("}");
     addLine("}");
-	emit();
+    emit();
 }
 
 String makeTemp(){
-	SubProc sp = new SubProc("/bin/mktemp");
-	sp.setArgumentList(["-q", "/tmp/dot.XXXXXX"]);
-	sp.fg();
-	return sp.communicate("")[0].trim();
+    SubProc sp = new SubProc("/bin/mktemp");
+    sp.setArgumentList(["-q", "/tmp/dot.XXXXXX"]);
+    sp.fg();
+    return sp.communicate("")[0].trim();
 }
 
 int getFileSize(String filename){
-	SubProc sp = new SubProc("wc");
-	sp.setArgumentList(["-c", filename]);
-	sp.fg();
-	return sp.communicate("")[0].trim().split(" ")[0] to int;
+    SubProc sp = new SubProc("wc");
+    sp.setArgumentList(["-c", filename]);
+    sp.fg();
+    return sp.communicate("")[0].trim().split(" ")[0] to int;
 }
 
 String graphviz(String dot, String format){
-	String filename = makeTemp();
-	String outfilename = filename + "." + format;
-	FILE tmp = new FILE(filename, "w");
-	tmp.print(dot);
-	tmp.flush();
-	tmp.close();
-	SubProc dot = new SubProc("dot");
-	dot.setArgumentList(["-T" + format, filename, "-o"+outfilename]);
-	dot.fg();
-	return outfilename;
+    String filename = makeTemp();
+    String outfilename = filename + "." + format;
+    FILE tmp = new FILE(filename, "w");
+    tmp.print(dot);
+    tmp.flush();
+    tmp.close();
+    SubProc dot = new SubProc("dot");
+    dot.setArgumentList(["-T" + format, filename, "-o"+outfilename]);
+    dot.fg();
+    return outfilename;
 }
 
 Bytes getBytesFromFile(String filename){
-	FILE file = new FILE(filename, "r");
-	Bytes buf = new Bytes(getFileSize(filename));
-	file.read(buf);
-	file.close();
-	return buf;
+    FILE file = new FILE(filename, "r");
+    Bytes buf = new Bytes(getFileSize(filename));
+    file.read(buf);
+    file.close();
+    return buf;
 }
 
 class PngExporter extends DotExporter {
@@ -318,9 +321,9 @@ class PngExporter extends DotExporter {
 }
 
 void PngExporter.emit(){
-	String pngfilename = graphviz(this.string, "png");
-	stdout.write(getBytesFromFile(pngfilename));
-	stdout.flush();
+    String pngfilename = graphviz(this.string, "png");
+    stdout.write(getBytesFromFile(pngfilename));
+    stdout.flush();
 }
 
 class PdfExporter extends DotExporter {
@@ -331,9 +334,9 @@ class PdfExporter extends DotExporter {
 }
 
 void PdfExporter.emit(){
-	String pdffilename = graphviz(this.string, "pdf");
-	stdout.write(getBytesFromFile(pdffilename));
-	stdout.flush();
+    String pdffilename = graphviz(this.string, "pdf");
+    stdout.write(getBytesFromFile(pdffilename));
+    stdout.flush();
 }
 
 class DScriptExporter extends Exporter {
@@ -425,14 +428,7 @@ class DScriptExporter extends Exporter {
     }
 }
 
-void main () {
-    String file = System.getenv("QUERY_STRING");
-    if(file == "") {
-        file = "1.json";
-    }
-    String[] a = file.split(".");
-    String ext = a.pop();
-    int id = a[0] to int;
+Json fetchDCaseJSON(int id){
     Json json = new Json();
     json.setString("jsonrpc", "2.0");
     json.setString("version", "1.0");
@@ -441,8 +437,20 @@ void main () {
     param.setInt("commitId", id);
     json.set("params", param);
     HttpClient client = new CurlHttpClient(uri_to_api_cgi());
-    Json ret = Json.parse(client.post(json.toString()));
+    return Json.parse(client.post(json.toString()));
+}
+
+void main () {
+    String file = System.getenv("QUERY_STRING");
+    if(file == "") {
+        file = "1.json";
+    }
+    String[] a = file.split(".");
+    String ext = a[1];
+    int id = a[0] to int;
+    Json fetchDCaseJSON(id);
     Exporter export = null;
+
     if (ext == "png") {
         export = new PngExporter();
     } else if (ext == "pdf") {
