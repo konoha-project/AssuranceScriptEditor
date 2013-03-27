@@ -323,6 +323,7 @@ var ASE = function(body) {
 	
 	this.exportViaSVG = function(type) {
 		var svg = this.createSVGDocument();
+		svg = svg.replace("</svg></svg>", "</svg>"); // for IE10 Bug
 		this.executePost(URL_EXPORT_SVG, {"type" : type, "svg" : svg});
 	}
 
