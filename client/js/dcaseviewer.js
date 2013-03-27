@@ -369,7 +369,8 @@ var DNodeView = function(viewer, node, parentView) {
 		.appendTo(this.$div);
 
 	this.children = [];
-	this.contexts = [];
+	this.context = null;
+	this.subject = null;
 	this.line = null;
 	this.bounds = { x: 0, y: 0, w: DEF_WIDTH, h: 100 };
 	this.argumentBounds = {};
@@ -389,7 +390,8 @@ var DNodeView = function(viewer, node, parentView) {
 				x1: 0, y1: 0, x2: 0, y2: 0,
 				"marker-end": "url(#Triangle-white)",
 			}).appendTo(this.$rootsvg);
-			parentView.contexts.push(this);
+			if(this.node.type == "Subject") parentView.subject = this;
+			else parentView.context = this;
 		} else {
 			this.line = document.createElementNS(SVG_NS, "path");
 			$(this.line).attr({
@@ -480,8 +482,11 @@ DNodeView.prototype.getTreeBounds = function() {
 };
 
 DNodeView.prototype.remove = function(parentView) {
-	while(this.contexts.length != 0) {
-		this.contexts[0].remove(this);
+	if(this.context != null) {
+		this.context.remove(this);
+	}
+	if(this.subject != null) {
+		this.subject.remove(this);
 	}
 	while(this.children.length != 0) {
 		this.children[0].remove(this);
@@ -493,16 +498,16 @@ DNodeView.prototype.remove = function(parentView) {
 	if(this.line != null) $(this.line).remove();
 
 	if(this.node.isContext) {
-		parentView.contexts.splice(parentView.contexts.indexOf(this), 1);
+		if(this.node.type == "Subject") parentView.subject = null;
+		else parentView.context = null;
 	} else {
 		parentView.children.splice(parentView.children.indexOf(this), 1);
 	}
 };
 
 DNodeView.prototype.forEachNode = function(f) {
-	$.each(this.contexts, function(i, view) {
-		f(view);
-	});
+	if(this.context != null) f(this.context);
+	if(this.subject != null) f(this.subject);
 	$.each(this.children, function(i, view) {
 		f(view);
 	});
@@ -557,10 +562,17 @@ DNodeView.prototype.updateLocation = function(x, y, visible) {
 	}
 	// calc context height
 	var contextHeight = 0;
+	var subjectWidth = 0;
 	var childrenY = y0 + h + Y_MARGIN;
-	if(this.contexts.length > 0) {
-		var cy = this.contexts[0].updateLocation(x, y, childVisible).y;
-		contextHeight = cy-y0;
+	if(this.subject != null) {
+		var r = this.subject.updateLocation(x, y, childVisible);
+		contextHeight = Math.max(contextHeight, r.y-y0);
+		childrenY = Math.max(childrenY, r.y + X_MARGIN);
+		subjectWidth = r.x - x0 + Y_MARGIN;
+	}
+	if(this.context != null) {
+		var cy = this.context.updateLocation(x, y, childVisible).y;
+		contextHeight = Math.max(contextHeight, cy-y0);
 		childrenY = Math.max(childrenY, cy + X_MARGIN);
 	}
 	var maxHeight = Math.max(contextHeight, h);
@@ -577,19 +589,27 @@ DNodeView.prototype.updateLocation = function(x, y, visible) {
 	var maxWidth = Math.max(w, x - x0);
 	var maxCWidth = Math.max(w, cx - x0);
 
+	subjectWidth = Math.max(subjectWidth, (maxCWidth-w)/2);
 	// update this location
 	this.bounds = {
-		x: x0 + (maxCWidth-w)/2,
+		x: x0 + subjectWidth,// + (maxCWidth-w)/2,
 		y: y0 + Math.max((contextHeight-h)/2, 0),
 		w: w,
 		h: h
 	};
 
 	// update context location
-	if(this.contexts.length > 0) {
+	if(this.subject != null) {
+		//x = x0;
+		x = this.bounds.x - subjectWidth;
+		y = y0;// + Math.max((h - contextHeight) / 2, 0);
+		var p = this.subject.updateLocation(x, y, childVisible);
+		console.log("subject " + x + ", " + y);
+	}
+	if(this.context != null) {
 		x = this.bounds.x + w + Y_MARGIN;
 		y = y0 + Math.max((h - contextHeight) / 2, 0);
-		var p = this.contexts[0].updateLocation(x, y, childVisible);
+		var p = this.context.updateLocation(x, y, childVisible);
 		maxWidth = Math.max(maxWidth, p.x - x0);
 	}
 	if(this.node.isUndeveloped) {
@@ -665,12 +685,21 @@ DNodeView.prototype.animeStart = function(a) {
 			});
 		} else {
 			var n = parent.node.type == "Strategy" ? 10 : 0;
-			a.moves(l, {
-				x1: pb.x + pb.w - n,
-				y1: pb.y + pb.h/2,
-				x2: b.x,
-				y2: b.y + b.h/2,
-			});
+			if(this.node.type != "Subject") {
+				a.moves(l, {
+					x1: pb.x + pb.w - n,
+					y1: pb.y + pb.h/2,
+					x2: b.x,
+					y2: b.y + b.h/2,
+				});
+			} else {
+				a.moves(l, {
+					x1: pb.x,
+					y1: pb.y + pb.h/2,
+					x2: b.x + b.w - n,
+					y2: b.y + b.h/2,
+				});
+			}
 			a.show(l, this.visible);
 		}
 	}

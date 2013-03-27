@@ -119,7 +119,14 @@ var DNodeView_ToolBox = function(self) {
 			}
 		}
 		if(visible) {
-			if($edit == null && self.node.appendableTypes().length > 0) {
+		var types = self.node.appendableTypes();
+		if(self.node.contexts.length > 0) {
+			types = types.slice(0);//clone
+			for(var i=0; i<self.node.contexts.length; i++) {
+				types.splice(types.indexOf(self.node.contexts[i].type), 1);
+			}
+		}
+			if($edit == null && types.length > 0) {
 				// create
 				$edit = $("#edit-newnode").clone()
 				.css({
@@ -139,13 +146,6 @@ var DNodeView_ToolBox = function(self) {
 				.appendTo(self.$div);
 	
 				var $ul = $edit.find("ul");
-				var types = self.node.appendableTypes();
-				if(self.node.contexts.length > 0) {
-					types = types.slice(0);//clone
-					for(var i=0; i<self.node.contexts.length; i++) {
-						types.splice(types.indexOf(self.node.contexts[i].type), 1);
-					}
-				}
 				$.each(types, function(i, type) {
 					var $li = $("<li></li>")
 						.html("<a href=\"#\">" + type + "</a>")
