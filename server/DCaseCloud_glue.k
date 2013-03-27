@@ -201,7 +201,7 @@ class DCaseModel {
 	}
 
 	@Public Json getDCaseList() {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase.id,name,user_name FROM dcase INNER JOIN user ON dcase.user_id=user.id WHERE delete_flag=FALSE");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT dcase.id,name,user_name FROM dcase INNER JOIN user ON dcase.user_id=user.id INNER JOIN commit ON dcase.id=commit.dcase_id WHERE delete_flag=FALSE AND latest_flag=TRUE ORDER BY commit.date_time DESC");
 		ResultSet r = p.execute();
 		Json ret = new Json([]);
 		while(r.next()) {
