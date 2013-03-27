@@ -262,3 +262,50 @@ var DNodeView_ToolBox = function(self) {
 	});
 };
 
+var DNodeView_ToolBox_uneditable = function(self) {
+	var $toolbox = null;
+	
+	function showToolbox(visible) {
+		if(visible) {
+			if($toolbox != null) return;
+			$toolbox = $("<div></div>")
+				.css("display", self.$divText.css("display"))
+				.appendTo(self.$div);
+			var $menu = $("#edit-menulist").clone()
+				.css({ position: "absolute",bottom: 4, left: 4, display: "block" })
+				.appendTo($toolbox);
+
+			$menu.find("#ml-copy").click(function() {
+				self.viewer.clipboard = self.node.deepCopy();
+				console.log("copied");
+			});
+
+			$menu.find("#ml-paste").remove();
+			$menu.find("#ml-delete").remove();
+
+			$menu.find("#ml-export").click(function() {
+				//TODO
+			});
+
+			$menu.find("#ml-openall").click(function() {
+				self.viewer.expandBranch(self, true, true);
+			});
+
+			$menu.find("#ml-closeall").click(function() {
+				self.viewer.expandBranch(self, false, true);
+			});
+
+		} else {
+			$toolbox.remove();
+			$toolbox = null;
+		}
+	};
+
+	self.$div.hover(function() {
+		showToolbox(true);
+	}, function() {
+		showToolbox(false);
+	});
+
+};
+

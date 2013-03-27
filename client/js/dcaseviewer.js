@@ -40,17 +40,10 @@ var DCaseViewer = function(root, dcase, editable) {
 	this.selectedNode = null;
 	this.rootview = null;
 	this.clipboard = null;
+	this.editable = editable;
 
-	this.viewer_addons = [
-
-	];
-	this.nodeview_addons = [
-		DNodeView_ExpandBranch,
-	];
-	if(editable) {
-		this.nodeview_addons.push(DNodeView_InplaceEdit);
-		this.nodeview_addons.push(DNodeView_ToolBox);
-	}
+	this.viewer_addons = [];
+	this.nodeview_addons = [];
 
 	//------------------------------------
 
@@ -111,6 +104,15 @@ DCaseViewer.prototype.setDCase = function(dcase) {
 
 	if(dcase == null) {
 		return;
+	}
+
+	this.nodeview_addons = [];
+	this.nodeview_addons.push(DNodeView_ExpandBranch);
+	if(this.editable) {
+		this.nodeview_addons.push(DNodeView_InplaceEdit);
+		this.nodeview_addons.push(DNodeView_ToolBox);
+	} else {
+		this.nodeview_addons.push(DNodeView_ToolBox_uneditable);
 	}
 
 	function create(node, parent) {
