@@ -220,7 +220,83 @@ var ASE = function(body) {
 
 	var URL_EXPORT = "cgi/view.cgi";
 
+	this.splitTextByLength = function(str, max){
+		var rest = str;
+		var wrappedLines = [];
+		var maxLength = max || 20;
+		maxLength = maxLength < 1 ? 1 : maxLength;
+		var length = 0;
+		for(var pos = 0; pos < rest.length; ++pos){
+			var code = rest.charCodeAt(pos);
+			length += code < 128 ? 1 : 2;
+			if(length > maxLength || rest.charAt(pos) == "\n"){
+				wrappedLines.push(rest.substr(0, pos));
+				if(rest.charAt(pos) == "\n"){
+					pos++;
+				}
+				rest = rest.substr(pos, rest.length - pos);
+				pos = -1;
+				length = 0;
+			}
+		}
+		wrappedLines.push(rest);
+		return wrappedLines;
+	};
+
+	this.exportViaSVG = function(type) {
+		var viewer = this.viewer;
+		var nodeViewMap = viewer.nodeViewMap;
+		var dcase = viewer.getDCase();
+		var root = dcase ? dcase.getTopGoal() : null;
+		if(!root) {
+			return;
+		}
+		var doc = window.open("about:blank", "_blank").document;
+		var target = $('<svg width="100%" height="100%">')
+		target.append($("svg defs").clone(false));
+
+		var splitTextByLength = this.splitTextByLength;
+		root.traverse(function(node) {
+			var nodeView = nodeViewMap[node.id];
+			if(nodeView.visible == false) return;
+			var svg  = nodeView.svg[0];
+			var arg  = nodeView.argumentBorder;
+			var undev= nodeView.svgUndevel;
+			var line = nodeView.line;
+			var name = node.name;
+			var desc = node.desc;
+			var div  = nodeView.$div[0];
+			if(line){
+				target.append($(line).clone(false));
+			}
+			if(arg){
+				target.append($(arg).clone(false));
+			}
+			if(undev){
+				target.append($(undev).clone(false));
+			}
+			target.append($(svg).clone(false));
+			var svgtext  = $(document.createElementNS(SVG_NS, "text"));
+			svgtext.attr({x : div.offsetLeft, y : div.offsetTop + 10});
+			var nodename = $(document.createElementNS(SVG_NS, "tspan"));
+			nodename.text(name).attr("font-weight", "bold").appendTo(svgtext);
+			var lines = splitTextByLength(desc, 1+~~(div.offsetWidth * 2 / 13));
+			for(var i = 0; i < lines.length; ++i){
+				var line = $(document.createElementNS(SVG_NS, "tspan"));
+				line.text(lines[i])
+					.attr({x : div.offsetLeft, dy : 15, "font-size" : "13px"})
+					.appendTo(svgtext);
+			}
+			target.append(svgtext);
+		});
+		target.appendTo($(doc).find("body"));
+	};
+
 	this.exportTree = function(type) {
+		if(type == "png"){
+			this.exportViaSVG(type);
+			return;
+		}
 		var commitId = viewer.getDCase().commitId;
 		var url = URL_EXPORT + "?" + commitId + "." + type;
 		window.open(url, "_black");
