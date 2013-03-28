@@ -6,11 +6,11 @@
 
 ##必要なライブラリ
 * libMySQLclient
+* librsvg (for pdf/png export)
 
 ##必要なソフトウェア
 * Apache
 * MySQL
-
 ---
 
 #データ構造
