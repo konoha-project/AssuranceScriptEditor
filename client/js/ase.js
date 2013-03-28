@@ -341,10 +341,10 @@ var ASE = function(body) {
 
 	//--------------------------------------------------------
 
-	var colorThemes = [
-		viewer.default_colorTheme,
-		{
-			themeName: "TiffanyBlue",
+	var colorThemes = {
+		"default": 
+			viewer.default_colorTheme,
+		"TiffanyBlue": {
 			fill: {
 				"Goal"    : "#b4d8df",
 				"Context" : "#dbf5f3",
@@ -356,8 +356,7 @@ var ASE = function(body) {
 			},
 			__proto__: viewer.default_colorTheme
 		},
-		{
-			themeName: "simple",
+		"simple": {
 			fill: {
 				"Goal"    : "#ffffff",
 				"Context" : "#ffffff",
@@ -378,23 +377,24 @@ var ASE = function(body) {
 			},
 			__proto__: viewer.default_colorTheme
 		},
-	];
+	};
 
 	//--------------------------------------------------------
 
 	(function() {
-		// update color theme
+		// update color theme menu
 		var $ul = $("#menu-change-theme");
-		$.each(colorThemes, function(i, theme) {
+		$.each(colorThemes, function(name, theme) {
 			var sample = "";
 			$.each(DCaseNode.TYPES, function(i, type) {
 				sample += "<span style=\"color: " + theme.fill[type] + ";\">■</span>";
 			});
 			var $li = $("<li></li>")
-				.html("<a href=\"#\">" + sample + theme.themeName + "</a>")
+				.html("<a href=\"#\">" + sample + name + "</a>")
 				.appendTo($ul);
 			$li.click(function() {
 				viewer.setColorTheme(theme);
+				document.cookie="colorTheme=" + name;
 			});
 		});
 
@@ -404,6 +404,12 @@ var ASE = function(body) {
 		viewer.setDCase(dcase);
 		timeline.repaint(dcase);
 		document.title = r.dcaseName + TITLE_SUFFIX;
+
+		// change color theme
+		var name = document.cookie.match(/colorTheme=(\w+);?/);
+		if(name != null) {
+			viewer.setColorTheme(colorThemes[name[1]]);
+		}
 	}());
 
 };

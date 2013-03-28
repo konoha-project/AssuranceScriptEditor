@@ -58,7 +58,6 @@ var DCaseViewer = function(root, dcase, editable) {
 };
 
 DCaseViewer.prototype.default_colorTheme = {
-	themeName: "default",
 	stroke: {
 		"Goal"    : "none",
 		"Context" : "none",
