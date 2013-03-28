@@ -106,7 +106,7 @@ var ASE = function(body) {
 		if(dcase != null && dcase.isChanged()) {
 			dcase_latest = dcase;
 		}
-		viewer.editable = isLatest;//FIXME
+		viewer.editable = isLatest && userId != null;//FIXME
 		if(isLatest && dcase_latest != null) {
 			viewer.setDCase(dcase_latest);
 		} else {
