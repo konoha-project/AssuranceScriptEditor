@@ -239,6 +239,7 @@ var DNodeView_ToolBox = function(self) {
 				});
 			} else {
 				$menu.find("#ml-delete").parent("li").addClass("disabled");
+				$menu.find("#ml-cut").parent("li").addClass("disabled");
 			}
 
 			$menu.find("#ml-export").click(function() {
