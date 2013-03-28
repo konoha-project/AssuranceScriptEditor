@@ -12,7 +12,6 @@ var ASE = function(body) {
 	var dcaseId = parseInt(getURLParameter("dcaseId"));
 	if(isNaN(dcaseId)) dcaseId = 0;
 
-	var copiedNode = null;
 	var matchResult = document.cookie.match(/userId=(\w+);?/);
 	var userId = matchResult ? parseInt(matchResult[1]) : null;
 
@@ -94,6 +93,7 @@ var ASE = function(body) {
 	var viewer = this.viewer = new DCaseViewer(document.getElementById("viewer"),
 			null, userId != null);
 	var timeline = this.timeline = new TimeLine($body);
+	var dcase_latest = null;
 
 	//--------------------------------------------------------
 
@@ -102,14 +102,18 @@ var ASE = function(body) {
 	});
 
 	timeline.onDCaseSelected = function(dcaseId, commitId, isLatest) {
-		if(self.checkCommited()) {
-			var tree = DCaseAPI.getNodeTree(commitId);
-			viewer.editable = isLatest;//FIXME
-			viewer.setDCase(new DCase(tree, dcaseId, commitId));
-			return true;
-		} else {
-			return false;
+		var dcase = viewer.getDCase();
+		if(dcase != null && dcase.isChanged()) {
+			dcase_latest = dcase;
 		}
+		viewer.editable = isLatest;//FIXME
+		if(isLatest && dcase_latest != null) {
+			viewer.setDCase(dcase_latest);
+		} else {
+			var tree = DCaseAPI.getNodeTree(commitId);
+			viewer.setDCase(new DCase(tree, dcaseId, commitId));
+		}
+		return true;
 	};
 
 	//--------------------------------------------------------
@@ -130,19 +134,8 @@ var ASE = function(body) {
 		}
 	};
 
-	this.checkCommited = function() {
-		var dcase = viewer.getDCase();
-		if(dcase != null && dcase.isChanged()) {
-			if(!confirm("未コミットの変更がありますが，破棄しますか?")) {
-				return false;
-			}
-		}
-		return true;
-	};
-
 	$(window).bind("beforeunload", function(e) {
-		var dcase = viewer.getDCase();
-		if(dcase != null && dcase.isChanged()) {
+		if(dcase_latest != null && dcase_latest.isChanged()) {
 			return "未コミットの変更があります";
 		}
 	});
@@ -403,6 +396,7 @@ var ASE = function(body) {
 		var dcase = new DCase(r.tree, dcaseId, r.commitId);
 		viewer.setDCase(dcase);
 		timeline.repaint(dcase);
+		dcase_latest = dcase;
 		document.title = r.dcaseName + TITLE_SUFFIX;
 
 		// change color theme
