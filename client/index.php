@@ -248,7 +248,16 @@ EOT;
 			<li><a id="ml-openall" href="#">全て開く</a></li>
 			<li><a id="ml-closeall" href="#">全て折り畳む</a></li>
 			<li class="divider"></li>
-			<li><a id="ml-export" href="#">エクスポート</a></li>
+
+			<li class="dropdown-submenu">
+				<a tabindex="-1" href="#">エクスポート</a>
+				<ul class="dropdown-menu">
+					<li><a id="ml-export-json" href="#">JSON</a></li>
+					<li><a id="ml-export-png" href="#">PNG</a></li>
+					<li><a id="ml-export-pdf" href="#">PDF</a></li>
+					<li><a id="ml-export-dscript" href="#">D-Script</a></li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 

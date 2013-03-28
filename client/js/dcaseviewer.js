@@ -55,6 +55,10 @@ var DCaseViewer = function(root, dcase, editable) {
 	}());
 };
 
+DCaseViewer.prototype.exportSubtree = function(view, type) {
+	alert("");
+};
+
 DCaseViewer.prototype.default_colorTheme = {
 	stroke: {
 		"Goal"    : "none",

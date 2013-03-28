@@ -251,16 +251,24 @@ var ASE = function(body) {
 		return arr;
 	}
 
-	this.createSVGDocument = function() {
-		var viewer = this.viewer;
+	this.createSVGDocument = function(viewer, root) {
 		var nodeViewMap = viewer.nodeViewMap;
 		var dcase = viewer.getDCase();
-		var root = dcase ? dcase.getTopGoal() : null;
+		if(root == null) {
+			root = viewer.getDCase().getTopGoal();
+		}
 		if(!root) {
 			return;
 		}
-		var $target = $('<svg width="100%" height="100%" version="1.1" xmlns="'+SVG_NS+'">')
-		$target.append($("svg defs").clone(false));
+
+		var rootview = nodeViewMap[root.id];
+		var shiftX = -rootview.bounds.x - rootview.subtreeBounds.x;
+		var shiftY = -rootview.bounds.y - rootview.subtreeBounds.y;
+		var $svg = $('<svg width="100%" height="100%" version="1.1" xmlns="'+SVG_NS+'">');
+		var $target = $(document.createElementNS(SVG_NS, "g"))
+			.attr("transform", "translate(" + shiftX + ", " + shiftY + ")")
+			.appendTo($svg);
+		$svg.append($("svg defs").clone(false));
 
 		var foreachLine = this.foreachLine;
 		root.traverse(function(node) {
@@ -270,7 +278,7 @@ var ASE = function(body) {
 			var div  = nodeView.$div[0];
 			var arg  = nodeView.argumentBorder;
 			var undev= nodeView.svgUndevel;
-			var connector = nodeView.line;
+			var connector = node != root ? nodeView.line : null;
 			
 			jQuery.each([arg, connector, undev], function(i, v){
 				if(v) $target.append($(v).clone(false));
@@ -293,11 +301,11 @@ var ASE = function(body) {
 			$target.append($svgtext);
 		});
 
-		var $dummydiv = $("<div>").append($target);
+		var $dummydiv = $("<div>").append($svg);
 		var header = '<?xml version="1.0" standalone="no"?>\n' + 
 			'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n';
 		var doc = header + $dummydiv.html();
-		$target.empty().remove();
+		$svg.empty().remove();
 		return doc;
 	};
 
@@ -321,20 +329,24 @@ var ASE = function(body) {
 		$form.empty().remove();
 	}
 	
-	this.exportViaSVG = function(type) {
-		var svg = this.createSVGDocument();
+	this.exportViaSVG = function(type, root) {
+		var svg = this.createSVGDocument(self.viewer, root);
 		svg = svg.replace("</svg></svg>", "</svg>"); // for IE10 Bug
 		this.executePost(URL_EXPORT_SVG, {"type" : type, "svg" : svg});
 	}
 
-	this.exportTree = function(type) {
+	this.exportTree = function(type, root) {
 		if(type == "png" || type == "pdf" || type == "svg"){
-			this.exportViaSVG(type);
+			this.exportViaSVG(type, root);
 			return;
 		}
 		var commitId = viewer.getDCase().commitId;
 		var url = URL_EXPORT + "?" + commitId + "." + type;
 		window.open(url, "_blank");
+	};
+
+	this.viewer.exportSubtree = function(type, root) {
+		self.exportTree(type, root);
 	};
 
 	//--------------------------------------------------------
