@@ -11,7 +11,7 @@ if(isset($_COOKIE["userId"])) {
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AssuaranceScriptEditor</title>
+<title>AssuranceScriptEditor</title>
 <link rel="stylesheet" type="text/css" href="lib/jquery.svg.css"/>
 <link rel="stylesheet" type="text/css" href="lib/jquery.ui.autocomplete.css"/>
 <link rel="stylesheet" type="text/css" href="lib/jquery.colorPicker.css"/>
