@@ -318,7 +318,7 @@ var ASE = function(body) {
 			}
 		}
 		$form.submit();
-		//$form.empty().remove();
+		$form.empty().remove();
 	}
 	
 	this.exportViaSVG = function(type) {

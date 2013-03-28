@@ -393,7 +393,7 @@ var DNodeView = function(viewer, node, parentView) {
 			this.line = document.createElementNS(SVG_NS, "line");
 			$(this.line).attr({
 				fill: "none",
-				stroke: "#404040",
+				stroke: "gray",
 				x1: 0, y1: 0, x2: 0, y2: 0,
 				"marker-end": "url(#Triangle-white)",
 			}).appendTo(this.$rootsvg);
@@ -403,7 +403,7 @@ var DNodeView = function(viewer, node, parentView) {
 			this.line = document.createElementNS(SVG_NS, "path");
 			$(this.line).attr({
 				fill: "none",
-				stroke: "#404040",
+				stroke: "gray",
 				d: "M0,0 C0,0 0,0 0,0",
 				"marker-end": "url(#Triangle-black)",
 			}).appendTo(this.$rootsvg);
