@@ -22,11 +22,10 @@ DCaseViewer.prototype.setDragHandler = function() {
 		};
 		self.repaintAll(0);
 	}
-	this.drag = function(x, y, scale) {
-		if(typeof scale == "undefined") scale = 1.0;
+	this.drag = function(x, y) {
 		if(flag) {
-			var dx = (x - x0) * scale;
-			var dy = (y - y0) * scale;
+			var dx = (x - x0);
+			var dy = (y - y0);
 			if(dx != 0 || dy != 0) {
 				self.dragX = Math.max(bounds.l, Math.min(bounds.r, dx));
 				self.dragY = Math.max(bounds.t, Math.min(bounds.b, dy));
@@ -60,21 +59,150 @@ DCaseViewer.prototype.setDragHandler = function() {
 	}
 }
 
-DCaseViewer.prototype.setMouseDragHandler = function() {
+DCaseViewer.prototype.setPointerHandler = function() {
 	var self = this;
 	var root = this.$root;
-	$(root).mousedown(function(e) {
-		if(e.originalEvent.detail == 2) return ;
-		if(self.moving || !self.drag_flag) return ;
-		self.dragStart(e.pageX, e.pageY);
-	});
-	$(root).mousemove(function(e) {
-		self.drag(e.pageX, e.pageY);
-		e.stopPropagation();
-	});
-	$(root).mouseup(function(e) {
+	var touchCount = 0;
+	var d = 0;
+	var scale0 = 0;
+	var sx = 0;
+	var sx = 0;
+	var x0, y0;
+	var r = null;
+	function dist(p1, p2) {
+		return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+	}
+
+	if(window.navigator.msPointerEnabled) {
+		var downEvent = "MSPointerDown";
+		var moveEvent = "MSPointerMove";
+		var upEvent   = "MSPointerUp";
+		$(root)[0].style.msTouchAction = 'none';
+		var msTouch   = true;
+		document.addEventListener("MSPointerCancel", function(e){ removeTouchPoint(e); }, false);
+		document.addEventListener("MSGestureInit", function(e){ e.preventManipulation(); }, false);
+		document.addEventListener("MSGestureHold", function(e){ e.preventDefault(); }, false);
+	}else {
+		var downEvent = "mousedown";
+		var moveEvent = "mousemove";
+		var upEvent   = "mouseup";
+		var msTouch   = false;
+	}
+	
+	var pointers = {};
+	var pids = [];
+
+	var pointerDown = function(){
+		if(self.moving || !self.drag_flag) return;
+		if(pids.length == 1) {
+			touchCount = 1;
+			var p0 = pointers[pids[0]];
+			self.dragStart(p0.x, p0.y);
+		} else if(pids.length == 2) {
+			touchCount = 2;
+			r = root[0].getBoundingClientRect();
+			scale0 = self.scale;
+			var p0 = pointers[pids[0]];
+			var p1 = pointers[pids[1]];
+			d = dist(p0, p1);
+			x0 = (p0.x + p1.x) / 2;
+			y0 = (p0.y + p1.y) / 2;
+			self.dragStart(x0, y0);
+		}
+	}
+	
+	var pointerMove = function() {
+		if(touchCount == 1) {
+			var p0 = pointers[pids[0]];
+			self.drag(p0.x, p0.y);
+		} else if(touchCount == 2) {
+			var p0 = pointers[pids[0]];
+			var p1 = pointers[pids[1]];
+			var a = dist(p0, p1);
+			scale = Math.min(Math.max(scale0 * (a / d), SCALE_MIN), SCALE_MAX);
+			var r = root[0].getBoundingClientRect();
+			var x1 = (p0.x + p1.x) / 2 - r.left;
+			var y1 = (p0.y + p1.y) / 2 - r.top;
+			var x = x1 - (x1 - self.shiftX) * scale;
+			var y = y1 - (y1 - self.shiftY) * scale;
+			self.setLocation(x, y, scale);
+		}
+	}
+	var pointerUp = function() {
 		self.dragEnd();
+		touchCount = 0;
+	}
+	
+	$(root).on(downEvent, function(e) {
+		e = e.originalEvent;
+		var id = msTouch ? e.pointerId : 1;
+		pointers[id] = {x: e.pageX, y: e.pageY, index: pids.length};
+		pids.push(id);
+		pointerDown(); 
 	});
+	$(root).on(moveEvent, function(e) {
+		e.stopPropagation();
+		e = e.originalEvent;
+		var id = msTouch ? e.pointerId : 1;
+		if(pointers[id]) {
+			pointers[id].x = e.pageX;
+			pointers[id].y = e.pageY;
+		}
+		pointerMove();
+	});
+	$(root).on(upEvent, function(e) {
+		e = e.originalEvent;
+		var id = msTouch ? e.pointerId : 1;
+		pids.splice(pointers[id].index, 1);
+		delete pointers[id];
+		for(var i = 0; i < pids.length; ++i){
+			pointers[pids[i]].index = i;
+		}
+		pointerUp();
+	});
+	
+	$(root).on("touchstart", function(e) {
+		e.preventDefault();
+		var touches = e.originalEvent.touches;
+		for(var i = 0; i < touches.length; ++i) {
+			var t = touches[i];
+			var id = t.identifier;
+			if(!pointers[id]) {
+				pointers[id] = {x: t.pageX, y: t.pageY, index: pids.length};
+				pids.push(id);
+			}
+		}
+		pointerDown();
+	});
+	$(root).on("touchmove", function(e) {
+		e.preventDefault();
+		var touches = e.originalEvent.touches;
+		for(var i = 0; i < touches.length; ++i) {
+			var t = touches[i];
+			var id = t.identifier;
+			if(pointers[id]) {
+				pointers[id].x = t.pageX;
+				pointers[id].y = t.pageY;
+			}
+		}
+		pointerMove();
+	});
+	$(root).on("touchend", function(e) {
+		e.preventDefault();
+		for(var i = 0; i < touches.length; ++i) {
+			var t = touches[i];
+			var id = t.identifier;
+			if(pointers[id]) {
+				pids.splice(pointers[id].index, 1);
+				delete pointers[id];
+			}
+		}
+		for(var i = 0; i < pids.length; ++i){
+			pointers[pids[i]].index = i;
+		}
+		pointerUp();
+	});
+
 	$(root).mousewheel(function(e, delta) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -92,71 +220,8 @@ DCaseViewer.prototype.setMouseDragHandler = function() {
 	});
 }
 
-DCaseViewer.prototype.setTouchHandler = function() {
-	var self = this;
-	var root = this.$root;
-	var touchCount = 0;
-	var d = 0;
-	var scale0 = 0;
-	var sx = 0;
-	var sx = 0;
-	var r = null;
-	function dist(x, y) { return Math.sqrt(x*x + y*y); }
-	$(root).bind("touchstart", function(e) {
-		if(self.moving || !self.drag_flag) return;
-		var touches = e.originalEvent.touches;
-		e.preventDefault();
-		r = root[0].getBoundingClientRect();
-		if(touches.length == 1) {
-			touchCount = 1;
-			var x = touches[0].pageX;
-			var y = touches[0].pageY;
-			self.dragStart(x, y);
-		} else
-		if(touches.length == 2) {
-			touchCount = 2;
-			scale0 = self.scale;
-			d = dist(touches[0].pageX - touches[1].pageX, 
-					touches[0].pageY - touches[1].pageY);
-			sx = self.shiftX;
-			sy = self.shiftY;
-			var x = (touches[0].pageX + touches[1].pageX) / 2 - r.left;
-			var y = (touches[0].pageY + touches[1].pageY) / 2 - r.top;
-			self.dragStart(x, y);
-		}
-	});
-	$(root).bind("touchmove", function(e) {
-		e.preventDefault();
-		var touches = e.originalEvent.touches;
-		if(touchCount == 1) {
-			var x = touches[0].pageX;
-			var y = touches[0].pageY;
-			self.drag(x, y);
-		} else
-		if(touchCount == 2) {
-			var a = dist(touches[0].pageX - touches[1].pageX, 
-					touches[0].pageY - touches[1].pageY);
-			self.scale = Math.min(Math.max(scale0 * (a / d), SCALE_MIN), SCALE_MAX);
-			self.location_updated = true;
-			if(self.scale != SCALE_MIN && self.scale != SCALE_MAX) {
-				var x1 = (touches[0].pageX + touches[1].pageX) / 2 - r.left;
-				var y1 = (touches[0].pageY + touches[1].pageY) / 2 - r.top;
-				self.shiftX = x1 - (x1 - sx) * (a / d);
-				self.shiftY = y1 - (y1 - sy) * (a / d);
-				self.drag(x1, y1, a / d);
-			}
-		}
-	});
-	$(root).bind("touchend", function(e) {
-		e.preventDefault();
-		self.dragEnd();
-		touchCount = 0;
-	});
-}
-
 DCaseViewer.prototype.addEventHandler = function() {
 	this.setDragHandler();
-	this.setMouseDragHandler();
-	this.setTouchHandler();
+	this.setPointerHandler();
 }
 

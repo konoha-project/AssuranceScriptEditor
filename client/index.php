@@ -275,11 +275,11 @@ EOT;
 <defs>
 	<marker id="Triangle-black" viewBox="0 0 10 10" refX="10" refY="5"
 		markerUnits="strokeWidth" markerWidth="15" markerHeight="9" orient="auto">
-		<path d="M 0 0 L 10 5 L 0 10 z" fill="gray" stroke="gray"/>
+		<path d="M 0 0 L 10 5 L 0 10 z" fill="gray" stroke="gray"></path>
 	</marker>
 	<marker id="Triangle-white" viewBox="0 0 10 10" refX="10" refY="5"
 		markerUnits="strokeWidth" markerWidth="15" markerHeight="9" orient="auto">
-		<path d="M 0 0 L 10 5 L 0 10 z" fill="white" stroke="gray"/>
+		<path d="M 0 0 L 10 5 L 0 10 z" fill="white" stroke="gray"></path>
 	</marker>
 </defs>
 </svg>
