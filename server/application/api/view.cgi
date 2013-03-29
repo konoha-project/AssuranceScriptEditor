@@ -448,7 +448,7 @@ void main () {
     String[] a = file.split(".");
     String ext = a[1];
     int id = a[0] to int;
-    Json fetchDCaseJSON(id);
+    Json ret = fetchDCaseJSON(id);
     Exporter export = null;
 
     if (ext == "png") {
