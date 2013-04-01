@@ -389,7 +389,6 @@ var DNodeView = function(viewer, node, parentView) {
 
 	this.visible = true;
 	this.childVisible = true;
-	this.divNodesText = null;
 
 	this.selected = false;
 	this.hovered = false;
@@ -469,9 +468,8 @@ DNodeView.prototype.nodeChanged = function() {
 	this.$divText.html(node.getHtmlDescription());
 	var count = node.getNodeCount();
 	if(count != 0) {
-		this.divNodesText = count + " nodes...";
+		this.$divNodes.html(count + " nodes...");
 	} else {
-		this.divNodesText = null;
 		this.$divNodes.html("");
 	}
 };
@@ -664,20 +662,6 @@ DNodeView.prototype.animeStart = function(a, x, y) {
 		height: (b.h - offset.y*2),
 	});
 
-	//if(self.viewer.scale < MIN_DISP_SCALE) {
-	//	a.show(this.$divText, false);
-	//	a.show(this.$divName, false);
-	//	if(this.divNodesText != null) {
-	//		this.$divNodes.html("<p></p>");
-	//	}
-	//} else {
-	//	a.show(this.$divText, true);
-	//	a.show(this.$divName, true);
-	//	if(this.divNodesText != null) {
-	//		this.$divNodes.html(this.divNodesText);
-	//	}
-	//}
-	
 	if(this.line != null) {
 		var l = this.line;
 		var pb = parent.bounds;//FIXME
