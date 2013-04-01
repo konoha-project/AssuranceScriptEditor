@@ -263,12 +263,12 @@ var ASE = function(body) {
 
 		var rootview = nodeViewMap[root.id];
 		var shiftX = -rootview.bounds.x - rootview.subtreeBounds.x;
-		var shiftY = -rootview.bounds.y - rootview.subtreeBounds.y;
+		var shiftY = -rootview.bounds.y - rootview.subtreeBounds.y + rootview.nodeOffset;
 		var $svg = $('<svg width="100%" height="100%" version="1.1" xmlns="'+SVG_NS+'">');
+		$svg.append($("svg defs").clone(false));
 		var $target = $(document.createElementNS(SVG_NS, "g"))
 			.attr("transform", "translate(" + shiftX + ", " + shiftY + ")")
 			.appendTo($svg);
-		$svg.append($("svg defs").clone(false));
 
 		var foreachLine = this.foreachLine;
 		root.traverse(function(node) {
