@@ -66,7 +66,7 @@ DCaseViewer.prototype.setPointerHandler = function() {
 	var d = 0;
 	var scale0 = 0;
 	var sx = 0;
-	var sx = 0;
+	var sy = 0;
 	var x0, y0;
 	var r = null;
 	function dist(p1, p2) {
@@ -107,7 +107,9 @@ DCaseViewer.prototype.setPointerHandler = function() {
 			d = dist(p0, p1);
 			x0 = (p0.x + p1.x) / 2;
 			y0 = (p0.y + p1.y) / 2;
-			self.dragStart(x0, y0);
+			sx = self.shiftX;
+			sy = self.shiftY;
+			console.log(JSON.stringify([[sx, sy],[r.left, r.top],[x0, y0]]));
 		}
 	}
 	
@@ -120,11 +122,10 @@ DCaseViewer.prototype.setPointerHandler = function() {
 			var p1 = pointers[pids[1]];
 			var a = dist(p0, p1);
 			scale = Math.min(Math.max(scale0 * (a / d), SCALE_MIN), SCALE_MAX);
-			var r = root[0].getBoundingClientRect();
-			var x1 = (p0.x + p1.x) / 2 - r.left;
-			var y1 = (p0.y + p1.y) / 2 - r.top;
-			var x = x1 - (x1 - self.shiftX) * scale;
-			var y = y1 - (y1 - self.shiftY) * scale;
+			var x1 = (p0.x + p1.x) / 2;
+			var y1 = (p0.y + p1.y) / 2;
+			var x = sx + (1 - scale / scale0) * (x0 - r.left - sx) + (x1 - x0);
+			var y = sy + (1 - scale / scale0) * (y0 - r.top  - sy) + (y1 - y0);
 			self.setLocation(x, y, scale);
 		}
 	}
@@ -132,6 +133,22 @@ DCaseViewer.prototype.setPointerHandler = function() {
 		self.dragEnd();
 		touchCount = 0;
 	}
+
+	$(root).mousewheel(function(e, delta) {
+		e.preventDefault();
+		e.stopPropagation();
+		if(self.moving) return;
+		var b = 1.0 + delta * 0.04;
+		var scale = Math.min(Math.max(self.scale * b, SCALE_MIN), SCALE_MAX);
+		if(scale != SCALE_MIN && scale != SCALE_MAX) {
+			var r = root[0].getBoundingClientRect();
+			var x1 = self.drag_flag ? e.pageX - r.left : $(root).width()/2;
+			var y1 = self.drag_flag ? e.pageY - r.top  : $(root).height()/2;
+			var x = x1 - (x1 - self.shiftX) * b;
+			var y = y1 - (y1 - self.shiftY) * b;
+			self.setLocation(x, y, scale);
+		}
+	});
 	
 	$(root).on(downEvent, function(e) {
 		e = e.originalEvent;
@@ -201,22 +218,6 @@ DCaseViewer.prototype.setPointerHandler = function() {
 			pointers[pids[i]].index = i;
 		}
 		pointerUp();
-	});
-
-	$(root).mousewheel(function(e, delta) {
-		e.preventDefault();
-		e.stopPropagation();
-		if(self.moving) return;
-		var b = 1.0 + delta * 0.04;
-		var scale = Math.min(Math.max(self.scale * b, SCALE_MIN), SCALE_MAX);
-		if(scale != SCALE_MIN && scale != SCALE_MAX) {
-			var r = root[0].getBoundingClientRect();
-			var x1 = self.drag_flag ? e.pageX - r.left : $(root).width()/2;
-			var y1 = self.drag_flag ? e.pageY - r.top  : $(root).height()/2;
-			var x = x1 - (x1 - self.shiftX) * b;
-			var y = y1 - (y1 - self.shiftY) * b;
-			self.setLocation(x, y, scale);
-		}
 	});
 }
 
