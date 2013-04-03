@@ -91,6 +91,8 @@ DCaseViewer.prototype.setPointerHandler = function() {
 	
 	var pointers = {};
 	var pids = [];
+	
+	var getRect = function(){ return root[0].getBoundingClientRect; };
 
 	var pointerDown = function(){
 		if(self.moving || !self.drag_flag) return;
@@ -109,7 +111,6 @@ DCaseViewer.prototype.setPointerHandler = function() {
 			y0 = (p0.y + p1.y) / 2;
 			sx = self.shiftX;
 			sy = self.shiftY;
-			console.log(JSON.stringify([[sx, sy],[r.left, r.top],[x0, y0]]));
 		}
 	}
 	
@@ -129,6 +130,7 @@ DCaseViewer.prototype.setPointerHandler = function() {
 			self.setLocation(x, y, scale);
 		}
 	}
+
 	var pointerUp = function() {
 		self.dragEnd();
 		touchCount = 0;
@@ -177,48 +179,37 @@ DCaseViewer.prototype.setPointerHandler = function() {
 		}
 		pointerUp();
 	});
-	
-	$(root).on("touchstart", function(e) {
+
+	var touchHandler = function(e) {
 		e.preventDefault();
-		var touches = e.originalEvent.touches;
+		var touches = e.originalEvent.changedTouches;
 		for(var i = 0; i < touches.length; ++i) {
 			var t = touches[i];
 			var id = t.identifier;
-			if(!pointers[id]) {
+			if(e.type == "touchstart") {
 				pointers[id] = {x: t.pageX, y: t.pageY, index: pids.length};
 				pids.push(id);
+				pointerDown();
 			}
-		}
-		pointerDown();
-	});
-	$(root).on("touchmove", function(e) {
-		e.preventDefault();
-		var touches = e.originalEvent.touches;
-		for(var i = 0; i < touches.length; ++i) {
-			var t = touches[i];
-			var id = t.identifier;
-			if(pointers[id]) {
+			else if(e.type == "touchmove") {
 				pointers[id].x = t.pageX;
 				pointers[id].y = t.pageY;
+				pointerMove();
 			}
-		}
-		pointerMove();
-	});
-	$(root).on("touchend", function(e) {
-		e.preventDefault();
-		for(var i = 0; i < touches.length; ++i) {
-			var t = touches[i];
-			var id = t.identifier;
-			if(pointers[id]) {
+			else if(e.type == "touchend") {
 				pids.splice(pointers[id].index, 1);
 				delete pointers[id];
+				for(var i = 0; i < pids.length; ++i){
+					pointers[pids[i]].index = i;
+				}
+				pointerUp();
 			}
 		}
-		for(var i = 0; i < pids.length; ++i){
-			pointers[pids[i]].index = i;
-		}
-		pointerUp();
-	});
+	};
+
+	$(root).on("touchstart", touchHandler);
+	$(root).on("touchmove", touchHandler);
+	$(root).on("touchend", touchHandler);
 }
 
 DCaseViewer.prototype.addEventHandler = function() {
