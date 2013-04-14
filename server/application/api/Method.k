@@ -4,10 +4,10 @@ Import("Syntax.StringInterpolation");
 Import("Syntax.GlobalVariable");
 Import("Syntax.JavaStyleClass");
 Import("Syntax.CStyleWhile");
-Import("MiniKonoha.NameSpace");
+Import("Konoha.NameSpace");
 Import("Type.File");
 Import("Type.Json");
-Import("MiniKonoha.Map");
+Import("Konoha.Map");
 Import("Deos.DCaseCloud");
 
 DCaseModel model = new DCaseModel("dcasedb", "dcasedb");

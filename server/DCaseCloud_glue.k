@@ -5,9 +5,9 @@ Import("Syntax.Null");
 Import("Syntax.GlobalVariable");
 Import("Syntax.StringInterpolation");
 Import("Java.Class");
-Import("MiniKonoha.NameSpace");
-Import("MiniKonoha.Map");
-Import("MiniKonoha.Sql");
+Import("Konoha.NameSpace");
+Import("Konoha.Map");
+Import("Konoha.Sql");
 Import("JavaStyle.Object");
 Import("JavaScript.Array");
 Import("JavaScript.String");
@@ -46,13 +46,13 @@ class PreparedStatement {
 
 	void setSHA2(String param, String value) {
 		value = this.EscapeSQL(value);
-		this.con.query("SET ${param} = SHA2('${value}',256)"); //FIXME
+		this.con.query("SET ${param} = SHA2('${value}',256)");
 		this.queue.add(param);
 	}
 
 	void setString(String param, String value) {
 		value = this.EscapeSQL(value);
-		this.con.query("SET ${param} = '${value}'"); //FIXME
+		this.con.query("SET ${param} = '${value}'");
 		this.queue.add(param);
 	}
 
