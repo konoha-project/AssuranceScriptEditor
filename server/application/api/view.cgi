@@ -10,7 +10,7 @@ Import("Type.Float");
 Import("Type.Json");
 Import("Type.Bytes");
 Import("Java.String");
-Import("MiniKonoha.Map");
+Import("Konoha.Map");
 Import("JavaScript.Array");
 Import("JavaScript.String");
 Import("posix.process");
@@ -18,9 +18,7 @@ Import("Lib.Curl");
 Import("dscript.subproc");
 
 // you should rewrite to correct URI
-String uri_to_api_cgi(){
-    return "http://localhost/dview/client/cgi/api.cgi";
-}
+Load("config.k");
 
 class HttpClient {
     String url = "";

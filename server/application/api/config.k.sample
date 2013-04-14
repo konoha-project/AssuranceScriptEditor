@@ -1,0 +1,4 @@
+
+String uri_to_api_cgi(){
+    return "http://path/to/dcase"+"/cgi/api.cgi";
+}

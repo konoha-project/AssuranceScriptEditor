@@ -375,7 +375,7 @@ var ASE = function(body) {
 		self.exportTree("pdf");
 	});
 
-	$("#menu-export-script").click(function() {
+	$("#menu-export-dscript").click(function() {
 		self.exportTree("dscript");
 	});
 
