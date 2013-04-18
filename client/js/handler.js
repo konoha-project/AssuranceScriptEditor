@@ -121,6 +121,13 @@ DCaseViewer.prototype.setPointerHandler = function() {
 		} else if(touchCount == 2) {
 			var p0 = pointers[pids[0]];
 			var p1 = pointers[pids[1]];
+			if(!p0 || !p1){
+				// FIXME p0 and p0 become undefined in some invalid way.
+				touchCount = 0;
+				pids = [];
+				pointers = {};
+				return;
+			}
 			var a = dist(p0, p1);
 			scale = Math.min(Math.max(scale0 * (a / d), SCALE_MIN), SCALE_MAX);
 			var x1 = (p0.x + p1.x) / 2;
