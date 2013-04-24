@@ -218,7 +218,7 @@ var ASE = function(body) {
 
 	//--------------------------------------------------------
 
-	var URL_EXPORT = "cgi/view.cgi";
+	var URL_EXPORT = "cgi/view2.cgi";
 	var URL_EXPORT_SVG = "cgi/svg.cgi";
 
 	this.foreachLine = function(str, max, callback){
