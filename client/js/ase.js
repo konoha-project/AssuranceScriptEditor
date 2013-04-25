@@ -445,6 +445,7 @@ var ASE = function(body) {
 		timeline.repaint(dcase);
 		dcase_latest = dcase;
 		document.title = r.dcaseName + TITLE_SUFFIX;
+		$("#dcaseName").text(r.dcaseName);
 
 		// change color theme
 		var name = document.cookie.match(/colorTheme=(\w+);?/);
