@@ -1,9 +1,14 @@
 <?php
 require_once("config.php");
 require_once("utils.php");
+require_once("locale.php");
 session_start();
 if(isset($_COOKIE["userId"])) {
 	session_regenerate_id(TRUE);
+}
+$locales = getLocale("ja");
+if(isset($_COOKIE["lang"])) {
+    $locales = getLocale($_COOKIE["lang"]);
 }
 ?>
 <!DOCTYPE html>
@@ -107,19 +112,19 @@ $(function() {
 				<ul class="nav">
 <?php
 	if(isset($_GET["dcaseId"])){
-		echo '<li><a href="./?dcaseId=' . $_GET["dcaseId"] . '" id="dcaseName">hogehoge</a></li>';
+		echo '<li><a href="./?dcaseId=' . h($_GET["dcaseId"]) . '" id="dcaseName">hogehoge</a></li>';
 	}
 ?>
-					<li><a href="./">ホーム</a></li>
+	<li><a href="./"><?php echo $locales["home"]?></a></li>
 					<li class="dropdown ase-edit-menu">
-						<a class="dropdown-toggle" data-toggle="dropdown" href="#">編集<b class="caret"></b></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#"><?php echo h($locales["edit"])?><b class="caret"></b></a>
 						<ul class="dropdown-menu">
-							<li><a id="menu-undo" href="#">元に戻す</a></li>
-							<li><a id="menu-redo" href="#">やり直し</a></li>
+							<li><a id="menu-undo" href="#"><?php echo h($locales["undo"])?></a></li>
+							<li><a id="menu-redo" href="#"><?php echo h($locales["redo"])?></a></li>
 						</ul>
 					</li>
 					<li class="dropdown ase-edit-menu ase-view-menu">
-						<a class="dropdown-toggle" data-toggle="dropdown" href="#">エクスポート<b class="caret"></b></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#"><?php echo h($locales["export"])?><b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li><a id="menu-export-json" href="#">JSON</a></li>
 							<li><a id="menu-export-png" href="#">PNG</a></li>
@@ -127,16 +132,23 @@ $(function() {
 							<li><a id="menu-export-dscript" href="#">D-Script</a></li>
 						</ul>
 					</li>
-					<li class="ase-edit-menu"><a id="menu-commit" href="#">コミット</a></li>
+					<li class="ase-edit-menu"><a id="menu-commit" href="#"><?php echo h($locales["commit"])?></a></li>
 					<li class="dropdown ase-edit-menu ase-view-menu">
-						<a class="dropdown-toggle" id="menu-history-toggle" href="#">コミット履歴<b class="caret"></b></a>
+						<a class="dropdown-toggle" id="menu-history-toggle" href="#"><?php echo h($locales["commitlog"])?><b class="caret"></b></a>
 					</li>
 					<li class="dropdown ase-edit-menu ase-view-menu">
-						<a class="dropdown-toggle" data-toggle="dropdown" href="#">設定<b class="caret"></b></a>
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#"><?php echo h($locales["config"])?><b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li class="dropdown-submenu">
-								<a href="#">カラーテーマを変更</a>
+								<a href="#"><?php echo h($locales["color_theme"])?></a>
 								<ul id="menu-change-theme" class="dropdown-menu">
+								</ul>
+							</li>
+							<li class="dropdown-submenu">
+								<a href="#"><?php echo h($locales["locale"])?></a>
+								<ul id="lang-theme" class="dropdown-menu">
+									<li><a id="lang-select-english" href="#">English</a></li>
+									<li><a id="lang-select-japanese" href="#">Japanese</a></li>
 								</ul>
 							</li>
 						</ul>
@@ -203,23 +215,23 @@ EOT;
 	<div id="dcase-manager" class="container-fluid" style="display: none;">
 		<div class="row-fluid">
 			<div class="span6">
-				<h2>新しいDCaseを作成</h2>
+				<h2><?php echo h($locales["new_DCase"])?></h2>
 				<form class="form-horizontal">
 					<div class="control-group" id="newdcase-name">
-						<label class="control-label" for="inputDCaseName">DCase名</label>
+						<label class="control-label" for="inputDCaseName"><?php echo h($locales["DCase_name"])?></label>
 						<div class="controls">
 							<input type="text" id="inputDCaseName">
 						</div>
 					</div>
 					<div class="control-group" id="newdcase-desc">
-						<label class="control-label" for="inputDesc">TopGoalの説明</label>
+						<label class="control-label" for="inputDesc"><?php echo h($locales["topgoal"])?></label>
 						<div class="controls">
 							<textarea id="inputDesc" rows=5></textarea>
 						</div>
 					</div>
 					<div class="control-group">
 						<div class="controls">
-							<button type="button" class="btn" id="dcase-create">作成</button>
+							<button type="button" class="btn" id="dcase-create"><?php echo h($locales["create"])?></button>
 						</div>
 					</div>
 				</form>
@@ -229,10 +241,10 @@ EOT;
 				<table class="table table-striped table-hover">
 					<thead>
 						<tr>
-							<th>DCase名</th>
-							<th>作成者</th>
-							<th>最終コミット日時</th>
-							<th>最終コミット者</th>
+							<th><?php echo h($locales["DCase_name"])?></th>
+							<th><?php echo h($locales["creater"])?></th>
+							<th><?php echo h($locales["last_commit"])?></th>
+							<th><?php echo h($locales["last_commiter"])?></th>
 						</tr>
 					</thead>
 					<tbody id="dcase-select-table">
@@ -245,17 +257,17 @@ EOT;
 	<div class="dropdown" id="edit-menulist" style="display: none;">
 		<a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-list"></i></a>
 		<ul class="dropdown-menu">
-			<li><a id="ml-cut" href="#">切り取り</a></li>
-			<li><a id="ml-copy" href="#">コピー</a></li>
-			<li><a id="ml-paste" href="#">貼り付け</a></li>
-			<li><a id="ml-delete" href="#">削除</a></li>
+			<li><a id="ml-cut" href="#"><?php echo h($locales["cut"])?></a></li>
+			<li><a id="ml-copy" href="#"><?php echo h($locales["copy"])?></a></li>
+			<li><a id="ml-paste" href="#"><?php echo h($locales["paste"])?></a></li>
+			<li><a id="ml-delete" href="#"><?php echo h($locales["delete"])?></a></li>
 			<li class="divider"></li>
-			<li><a id="ml-openall" href="#">全て開く</a></li>
-			<li><a id="ml-closeall" href="#">全て折り畳む</a></li>
+			<li><a id="ml-openall" href="#"><?php echo h($locales["openall"])?></a></li>
+			<li><a id="ml-closeall" href="#"><?php echo h($locales["closeall"])?></a></li>
 			<li class="divider"></li>
 
 			<li class="dropdown-submenu">
-				<a tabindex="-1" href="#">エクスポート</a>
+				<a tabindex="-1" href="#"><?php echo h($locales["export"])?></a>
 				<ul class="dropdown-menu">
 					<li><a id="ml-export-json" href="#">JSON</a></li>
 					<li><a id="ml-export-png" href="#">PNG</a></li>

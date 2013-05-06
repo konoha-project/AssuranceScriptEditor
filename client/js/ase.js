@@ -379,6 +379,16 @@ var ASE = function(body) {
 		self.exportTree("dscript");
 	});
 
+	$("#lang-select-english").click(function() {
+		document.cookie = "lang=en";
+		location.reload(true);
+	});
+
+	$("#lang-select-japanese").click(function() {
+		document.cookie = "lang=ja";
+		location.reload(true);
+	});
+
 	//--------------------------------------------------------
 
 	var colorThemes = {
