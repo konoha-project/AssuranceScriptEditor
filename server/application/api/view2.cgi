@@ -34,6 +34,8 @@ class XMLExporter(Exporter): #TODO
 
 class DScriptExporter(Exporter):
     string = ""
+    solutionIndex = 0
+
     def __init__(self):
         print "Content-Type: text/plain; charset=utf-8\n\n",
 
@@ -44,34 +46,46 @@ class DScriptExporter(Exporter):
         root = FindById(nodeList, nodeId)
         children = root["Children"]
         indent = self.EmitIndent(level)
-        description = root["Description"].replace("\n", "").replace("\r", "");
-        if root["NodeType"] == "Evidence":
-            print "{0}{1}".format(indent, description)
+        #description = root["Description"].replace("\n", "").replace("\r", "");
+        if root["NodeType"] == "Solution":
+            print "boolean Solution_{0}() {{".format(self.solutionIndex)
+            print "    {0}".format(root["Description"])
+            print "}\n"
+            self.solutionIndex += 1
             return
-        elif root["NodeType"] == "Goal":
-            print "{0}assure {1} {{".format(indent, description)
-        elif root["NodeType"] == "Strategy":
-            print "{0}strategy {1} {{".format(indent, description)
-        elif root["NodeType"] == "Context":
-            return
+#        if root["NodeType"] == "Evidence" or root["NodeType"] == "Solution":
+#            print "{0}{1}".format(indent, description)
+#            return
+#        elif root["NodeType"] == "Goal":
+#            print "{0}assure {1} {{".format(indent, description)
+#        elif root["NodeType"] == "Strategy":
+#            print "{0}strategy {1} {{".format(indent, description)
+#        elif root["NodeType"] == "Context":
+#            return
         for i in children:
-            self.GenerateGoalCode(nodeList, i, level + 1)
-        print indent + "}"
+            self.GenerateGoalCode(nodeList, i, 0)
+        #print indent + "}"
 
     def export(self, m):
         tree     = m["result"]["tree"]
         rootId   = int(tree["TopGoalId"])
         nodeList = tree["NodeList"]
-        print "digraph AssuranceScript {"
-        indent = self.EmitIndent(1)
+        #print "digraph AssuranceScript {"
+        indent = self.EmitIndent(0)
         rootNode = FindById(nodeList, rootId)
-#        print "{0}argue {1} {{".format(indent,rootNode["Description"].replace("\n", "").replace("\r", "")) FIXME
-        print rootNode
+        #print "{0}argue {1} {{".format(indent,rootNode["Description"].replace("\n", "").replace("\r", "")) #FIXME
+        print "//D-Script Generator v0.1"
+        print "//{0}".format(rootNode["Description"].replace("\n", "").replace("\r", "")) #FIXME
         #print indent + "argue " + str(rootNode[u"Description"]) + "{"
 
         for i in rootNode["Children"]:
-            self.GenerateGoalCode(nodeList, i, 2);
-        print "    }"
+            self.GenerateGoalCode(nodeList, i, 0);
+        run = ""
+        for i in range(self.solutionIndex):
+            run += "Solution_{0}() && ".format(i)
+        run = run[:-4]
+        print "if ({0}) {{".format(run)
+        print '    print "Succeed"'
         print "}"
 
 def fetchDCaseJSON(id):
@@ -87,6 +101,7 @@ def fetchDCaseJSON(id):
     return json.loads(b);
 
 def main():
+    #query = ["2218","dscript"]
     query = {}
     if 'QUERY_STRING' in os.environ:
         query = os.environ['QUERY_STRING'].split('.')
