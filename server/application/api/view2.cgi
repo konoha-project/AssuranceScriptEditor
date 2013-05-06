@@ -49,7 +49,8 @@ class DScriptExporter(Exporter):
         #description = root["Description"].replace("\n", "").replace("\r", "");
         if root["NodeType"] == "Solution":
             print "boolean Solution_{0}() {{".format(self.solutionIndex)
-            print "    {0}".format(root["Description"])
+            for s in root["Description"].split("\n"):
+                print "    {0}".format(s)
             print "}\n"
             self.solutionIndex += 1
             return
