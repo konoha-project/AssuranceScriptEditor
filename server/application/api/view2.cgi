@@ -76,7 +76,7 @@ class DScriptExporter(Exporter):
         rootNode = FindById(nodeList, rootId)
         #print "{0}argue {1} {{".format(indent,rootNode["Description"].replace("\n", "").replace("\r", "")) #FIXME
         print "//D-Script Generator v0.1"
-        print "//{0}".format(rootNode["Description"].replace("\n", "").replace("\r", "")) #FIXME
+        print "//{0}".format(rootNode["Description"].replace("\n", "").replace("\r", "").encode('utf-8')) #FIXME
         #print indent + "argue " + str(rootNode[u"Description"]) + "{"
 
         for i in rootNode["Children"]:
