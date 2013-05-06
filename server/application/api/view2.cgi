@@ -50,7 +50,7 @@ class DScriptExporter(Exporter):
         if root["NodeType"] == "Solution":
             print "boolean Solution_{0}() {{".format(self.solutionIndex)
             for s in root["Description"].split("\n"):
-                print "    {0}".format(s)
+                print "    " + s.encode('utf-8')
             print "}\n"
             self.solutionIndex += 1
             return
