@@ -48,9 +48,13 @@ class DScriptExporter(Exporter):
         indent = self.EmitIndent(level)
         #description = root["Description"].replace("\n", "").replace("\r", "");
         if root["NodeType"] == "Solution":
-            print "void Solution_{0}() {{".format(self.solutionIndex)
+            print "boolean Solution_{0}() {{".format(self.solutionIndex)
+            print "    try {"
             for s in root["Description"].split("\n"):
-                print "    " + s.encode('utf-8')
+                print "        " + s.encode('utf-8')
+            print "    catch(Exception e) {"
+            print "        return false;"
+            print "    }"
             print "}\n"
             self.solutionIndex += 1
             return
