@@ -48,7 +48,7 @@ class DScriptExporter(Exporter):
         indent = self.EmitIndent(level)
         #description = root["Description"].replace("\n", "").replace("\r", "");
         if root["NodeType"] == "Solution":
-            print "boolean Solution_{0}() {{".format(self.solutionIndex)
+            print "void Solution_{0}() {{".format(self.solutionIndex)
             for s in root["Description"].split("\n"):
                 print "    " + s.encode('utf-8')
             print "}\n"
@@ -83,11 +83,7 @@ class DScriptExporter(Exporter):
             self.GenerateGoalCode(nodeList, i, 0);
         run = ""
         for i in range(self.solutionIndex):
-            run += "Solution_{0}() && ".format(i)
-        run = run[:-4]
-        print "if ({0}) {{".format(run)
-        print '    print "Succeed"'
-        print "}"
+            print "Solution_{0}();".format(i)
 
 def fetchDCaseJSON(id):
     m = { "jsonrpc" : "2.0",
