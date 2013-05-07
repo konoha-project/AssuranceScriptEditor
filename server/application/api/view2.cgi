@@ -55,6 +55,7 @@ class DScriptExporter(Exporter):
             print "    catch(Exception e) {"
             print "        return false;"
             print "    }"
+            print "    return true;"
             print "}\n"
             self.solutionIndex += 1
             return
