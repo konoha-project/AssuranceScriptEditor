@@ -35,6 +35,7 @@ class XMLExporter(Exporter): #TODO
 class DScriptExporter(Exporter):
     string = ""
     solutionIndex = 0
+    goalContent = ""
 
     def __init__(self):
         print "Content-Type: text/plain; charset=utf-8\n\n",
@@ -49,6 +50,7 @@ class DScriptExporter(Exporter):
         #description = root["Description"].replace("\n", "").replace("\r", "");
         if root["NodeType"] == "Solution":
             print "boolean Solution_{0}() {{".format(self.solutionIndex)
+            print "    //" + self.goalContent
             print "    try {"
             for s in root["Description"].split("\n"):
                 print "        " + s.encode('utf-8')
@@ -59,12 +61,13 @@ class DScriptExporter(Exporter):
             print "    return true;"
             print "}\n"
             self.solutionIndex += 1
+            self.goalContent = ""
             return
 #        if root["NodeType"] == "Evidence" or root["NodeType"] == "Solution":
 #            print "{0}{1}".format(indent, description)
 #            return
-#        elif root["NodeType"] == "Goal":
-#            print "{0}assure {1} {{".format(indent, description)
+        elif root["NodeType"] == "Goal":
+            self.goalContent = root["Description"].encode('utf-8')
 #        elif root["NodeType"] == "Strategy":
 #            print "{0}strategy {1} {{".format(indent, description)
 #        elif root["NodeType"] == "Context":
@@ -83,7 +86,7 @@ class DScriptExporter(Exporter):
         #print "{0}argue {1} {{".format(indent,rootNode["Description"].replace("\n", "").replace("\r", "")) #FIXME
         print "//D-Script Generator v0.1"
         print "//{0}".format(rootNode["Description"].replace("\n", "").replace("\r", "").encode('utf-8')) #FIXME
-        print 'Import("Lib.Syslog")'
+        print ''
         #print indent + "argue " + str(rootNode[u"Description"]) + "{"
 
         for i in rootNode["Children"]:
