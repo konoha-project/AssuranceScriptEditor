@@ -53,6 +53,7 @@ class DScriptExporter(Exporter):
             for s in root["Description"].split("\n"):
                 print "        " + s.encode('utf-8')
             print "    catch(Exception e) {"
+            print "    Syslog.write(e.printStackTrace);"
             print "        return false;"
             print "    }"
             print "    return true;"
@@ -82,13 +83,16 @@ class DScriptExporter(Exporter):
         #print "{0}argue {1} {{".format(indent,rootNode["Description"].replace("\n", "").replace("\r", "")) #FIXME
         print "//D-Script Generator v0.1"
         print "//{0}".format(rootNode["Description"].replace("\n", "").replace("\r", "").encode('utf-8')) #FIXME
+        print 'Import("Lib.Syslog")'
         #print indent + "argue " + str(rootNode[u"Description"]) + "{"
 
         for i in rootNode["Children"]:
             self.GenerateGoalCode(nodeList, i, 0);
         run = ""
         for i in range(self.solutionIndex):
-            print "Solution_{0}();".format(i)
+            run += "Solution_{0}() && ".format(i)
+        run = run[:-4] + ";"
+        print run
 
 def fetchDCaseJSON(id):
     m = { "jsonrpc" : "2.0",
