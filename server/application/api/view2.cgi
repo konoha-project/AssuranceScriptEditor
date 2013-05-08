@@ -55,7 +55,7 @@ class DScriptExporter(Exporter):
             for s in root["Description"].split("\n"):
                 print "        " + s.encode('utf-8')
             print "    catch(Exception e) {"
-            print "    Syslog.write(e.printStackTrace);"
+            print "        Syslog.write(e.printStackTrace);"
             print "        return false;"
             print "    }"
             print "    return true;"

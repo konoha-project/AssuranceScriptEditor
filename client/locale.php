@@ -47,10 +47,10 @@ function getLocale($lang) {
 		"PDF"         => "PDF",
 		"DScript"     => "D-Script",
 		"commit"      => "Commit",
-		"commitlog"   => "Commit Log",
-		"config"      => "Config",
-		"color_theme" => "change the color theme",
-		"locale"      => "change the locale",
+		"commitlog"   => "History",
+		"config"      => "Configuration",
+		"color_theme" => "Theme",
+		"locale"      => "Language",
 		"new_DCase"   => "create new D-Case",
 		"DCase_name"  => "D-Case Name",
 		"topgoal"     => "Description of the Top Goal",
@@ -64,7 +64,7 @@ function getLocale($lang) {
 		"delete"      => "delete",
 		"openall"     => "open all",
 		"closeall"    => "close all",
-		"locale"      => "change the locale setting",
+		"locale"      => "Language",
 	);
 	return $locales;
 }
