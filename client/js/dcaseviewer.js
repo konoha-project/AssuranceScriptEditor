@@ -466,6 +466,12 @@ DNodeView.prototype.nodeChanged = function() {
 	// node name and description
 	this.$divName.html(node.name);
 	this.$divText.html(node.getHtmlDescription());
+	if(this.svg){
+		for(var i = 0; i < 5; ++i){
+			if(this.svg[i]) this.svg[i].remove();
+		}
+	}
+	this.svg = new GsnShape[node.type](this.$rootsvg);
 	var count = node.getNodeCount();
 	if(count != 0) {
 		this.$divNodes.html(count + " nodes...");

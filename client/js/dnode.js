@@ -317,6 +317,56 @@ DCase.prototype.setDescription = function(node, desc) {
 	});
 };
 
+DCase.prototype.updateTypeFlag = function(node) {
+	node.isDScript = (node.type === "Solution");
+	node.isContext = (node.type === "Context" || node.type === "Subject" || node.type === "Rebuttal");
+}
+
+DCase.prototype.setType = function(node, type) {
+	var self = this;
+	var oldType = node.type;
+	this.applyOperation({
+		redo: function() {
+			node.type = type;
+			self.updateTypeFlag(node);
+			self.nodeChanged(node);
+		},
+		undo: function() {
+			node.type = oldType;
+			self.updateTypeFlag(node);
+			self.nodeChanged(node);
+		},
+	});
+};
+
+DCase.prototype.setParam = function(node, type, name, desc) {
+	var self = this;
+	var oldType = node.type;
+	var oldName = node.name;
+	var oldDesc = node.desc;
+	if(node.type != type){
+		var typeChanged = true;
+	}
+	this.applyOperation({
+		redo: function() {
+			node.type = type;
+			node.name = name;
+			node.desc = desc;
+			self.updateTypeFlag(node);
+			self.nodeChanged(node);
+		},
+		undo: function() {
+			node.type = oldType;
+			node.name = oldName;
+			node.desc = oldDesc;
+			self.updateTypeFlag(node);
+			self.nodeChanged(node);
+		},
+	});
+};
+
+
+
 DCase.prototype.undo = function() {
 	var n = this.opQueue.length;
 	if(n > this.undoCount) {

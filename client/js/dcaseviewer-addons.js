@@ -24,6 +24,13 @@ var DNodeView_ExpandBranch = function(self) {
 			time = null;
 		}
 	});
+
+	$(document.body).on("keydown", function(e){
+		if(e.keyCode == 37 /* LEFT  */){ /* focus on prev node */ };
+		if(e.keyCode == 38 /* UP    */){ /* self.viewer.setSelectNode(self.parentView); */ };
+		if(e.keyCode == 39 /* RIGHT */){ /* focus on next node */ };
+		if(e.keyCode == 40 /* DOWN  */){ /* focus on first child */ };
+	});
 };
 
 //-----------------------------------------------------------------------------
@@ -32,6 +39,32 @@ var DNodeView_InplaceEdit = function(self) {
 	var $edit = null;
 
 	self.$divText.addClass("node-text-editable");
+
+	function generateMarkdownText(node) {
+		var markdown = ("# " + node.type + " " + node.name + " " + node.id + "\n" + node.desc + "\n\n");
+		node.eachNode(function(n){
+			markdown = markdown + ("# " + n.type + " " + n.name + " " + n.id + "\n" + n.desc + "\n\n");
+		});
+		return markdown;
+	};
+
+	function parseMarkdownText(src) {
+		var nodesrc = src.split(/#+/).slice(1);
+		var nodes = [];
+		for(var i = 0; i < nodesrc.length; ++i){
+			var lines = nodesrc[i].split(/\r\n|\r|\n/);
+			var heads = lines[0].trim().split(/\s+/);
+			var node = {
+				type: heads[0],
+				name: heads[1],
+				id  : heads[2],
+				description: lines.slice(1).join("\n").trim(),
+				children: [],
+			};
+			nodes.push(node);
+		};
+		return nodes;
+	};
 
 	function showInplace() {
 		if($edit == null) {
@@ -42,7 +75,7 @@ var DNodeView_InplaceEdit = function(self) {
 			$edit = $("<textarea></textarea>")
 				.addClass("node-inplace")
 				.css("top", self.$divText.offset().y)
-				.attr("value", self.node.desc)
+				.attr("value", generateMarkdownText(self.node))
 				.appendTo(self.$div)
 				.focus()
 				.mousedown(function(e) { e.stopPropagation(); })
@@ -52,16 +85,48 @@ var DNodeView_InplaceEdit = function(self) {
 					cc = 0;
 				})
 				.click(function(e) { cc++; e.stopPropagation(); })
-				.blur(function() {
-					var newDesc = $edit.attr("value");
-					var node = self.node;
-					if(node.desc != newDesc) {
-						self.viewer.getDCase().setDescription(node, newDesc);
-					}
-					closeInplace();
+				.blur(closingInplace)
+				.on("keydown", function(e){
+					if(e.keyCode == 27 /* ESC */){ closingInplace(); };
 				});
 		}
 	}
+
+	function updateNode(node, nodejson) {
+		var newDesc = nodejson.description;
+		var newType = nodejson.type;
+		var newName = nodejson.name || newType[0] + "_" + node.id;
+		var DCase = self.viewer.getDCase();
+		DCase.setParam(node, newType, newName, newDesc);
+	}
+
+	function closingInplace() {
+		var markdown = $edit.attr("value");
+		var nodes = parseMarkdownText(markdown);
+		var node = self.node;
+		var DCase = self.viewer.getDCase();
+
+		updateNode(node, nodes[0]);
+		
+		var idNodeTable = {};
+		node.eachNode(function(n){
+			idNodeTable[n.id] = n;
+		});
+		for(var i = 1; i < nodes.length; ++i){
+			if(idNodeTable[nodes[i].id]){
+				updateNode(idNodeTable[nodes[i].id], nodes[i]);
+				delete idNodeTable[nodes[i].id];
+			}else{
+				// create new node
+				DCase.insertNode(node, nodes[i].type, nodes[i].description);
+			}
+		}
+		// if a node is left in Table, it means that the node is removed from markdown text.
+		jQuery.each(idNodeTable, function(i,v){
+			DCase.removeNode(v);
+		});
+		closeInplace();
+	};
 
 	function closeInplace() {
 		if($edit != null) {
@@ -75,7 +140,7 @@ var DNodeView_InplaceEdit = function(self) {
 	self.$divText.click(function() {
 		showInplace();
 	});
-
+	
 	self.$div.dblclick(function(e) {
 		closeInplace();
 	});
@@ -119,13 +184,13 @@ var DNodeView_ToolBox = function(self) {
 			}
 		}
 		if(visible) {
-		var types = self.node.appendableTypes();
-		if(self.node.contexts.length > 0) {
-			types = types.slice(0);//clone
-			for(var i=0; i<self.node.contexts.length; i++) {
-				types.splice(types.indexOf(self.node.contexts[i].type), 1);
+			var types = self.node.appendableTypes();
+			if(self.node.contexts.length > 0) {
+				types = types.slice(0);//clone
+				for(var i=0; i<self.node.contexts.length; i++) {
+					types.splice(types.indexOf(self.node.contexts[i].type), 1);
+				}
 			}
-		}
 			if($edit == null && types.length > 0) {
 				// create
 				$edit = $("#edit-newnode").clone()

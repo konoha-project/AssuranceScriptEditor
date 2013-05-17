@@ -139,8 +139,10 @@ DCaseViewer.prototype.setPointerHandler = function() {
 	}
 
 	var pointerUp = function() {
-		self.dragEnd();
-		touchCount = 0;
+		if(touchCount > 0){
+			self.dragEnd();
+			touchCount = 0;
+		}
 	}
 
 	$(root).mousewheel(function(e, delta) {
@@ -162,9 +164,11 @@ DCaseViewer.prototype.setPointerHandler = function() {
 	$(root).on(downEvent, function(e) {
 		e = e.originalEvent;
 		var id = msTouch ? e.pointerId : 1;
-		pointers[id] = {x: e.pageX, y: e.pageY, index: pids.length};
-		pids.push(id);
-		pointerDown(); 
+		if(pids.indexOf(id) == -1){
+			pids.push(id);
+			pointers[id] = {x: e.pageX, y: e.pageY, index: pids.length};
+			pointerDown(); 
+		}
 	});
 	$(root).on(moveEvent, function(e) {
 		e.stopPropagation();
@@ -173,18 +177,42 @@ DCaseViewer.prototype.setPointerHandler = function() {
 		if(pointers[id]) {
 			pointers[id].x = e.pageX;
 			pointers[id].y = e.pageY;
+			pointerMove();
 		}
-		pointerMove();
 	});
 	$(root).on(upEvent, function(e) {
 		e = e.originalEvent;
 		var id = msTouch ? e.pointerId : 1;
-		pids.splice(pointers[id].index, 1);
-		delete pointers[id];
-		for(var i = 0; i < pids.length; ++i){
-			pointers[pids[i]].index = i;
+		if(pointers[id]){
+			if(id == 1){
+				touchCount = 0;
+				pids = [];
+				pointers = {};
+				pointerUp();
+			}else{
+				pids.splice(pointers[id].index, 1);
+				delete pointers[id];
+				for(var i = 0; i < pids.length; ++i){
+					if(pointers[pids[i]]){	
+						pointers[pids[i]].index = i;
+					}else{
+						pids.splice(i, 1);
+						--i;
+					}
+				}
+			}
+			pointerUp();
 		}
-		pointerUp();
+	});
+	$(root).on("mouseout", function(e) {
+		e = e.originalEvent;
+		var id = msTouch ? e.pointerId : 1;
+		if(pointers[id]){
+			touchCount = 0;
+			pids = [];
+			pointers = {};
+			pointerUp();
+		}
 	});
 
 	var touchHandler = function(e) {
