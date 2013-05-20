@@ -233,8 +233,12 @@ var DNodeView_InplaceEdit = function(self) {
 			updateNode(node, nodes[0]);
 			
 			var idNodeTable = {};
+			var idIndexTable = {};
+
+			var i = 0;
 			node.eachNode(function(n){
 				idNodeTable[n.id] = n;
+				idIndexTable[n.id] = i++;
 			});
 
 			var newChildren = [];
@@ -243,6 +247,10 @@ var DNodeView_InplaceEdit = function(self) {
 			for(var i = 1; i < nodes.length; ++i){
 				if(idNodeTable[nodes[i].id]){
 					newChildren.push(updateNode(idNodeTable[nodes[i].id], nodes[i]));
+					// check subnode swapping
+					if(idIndexTable[nodes[i].id] !== newChildren.length){
+						treeChanged = true;
+					}
 					delete idNodeTable[nodes[i].id];
 				}else{
 					// create new node
@@ -255,12 +263,12 @@ var DNodeView_InplaceEdit = function(self) {
 				DCase.removeNode(v);
 				treeChanged = true;
 			});
-			// FIXME
-			//node.children = newChildren;
+			node.children = newChildren;
 			if(DCase.getTopGoal() === node){
-				//viewer.structureUpdated();
+				viewer.structureUpdated();
 			}else{
-				//self.nodeChanged();
+				// FIXME: find more efficient way.
+				viewer.structureUpdated();
 			}
 			if(treeChanged){
 				viewer.centerize(node, 0);
