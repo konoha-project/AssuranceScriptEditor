@@ -142,7 +142,7 @@ var DNodeView_InplaceEdit = function(self) {
 	function generateMarkdownText(node) {
 		var markdown = ("# " + node.type + " " + node.name + " " + node.id + "\n" + node.desc + "\n\n");
 		node.eachNode(function(n){
-			markdown = markdown + ("# " + n.type + " " + n.name + " " + n.id + "\n" + n.desc + "\n\n");
+			markdown = markdown + ("# " + n.type + " " + n.name + " " + n.id + (n.desc.length > 0 ? ("\n" + n.desc) : "") + "\n\n");
 		});
 		return markdown.trim();
 	};
@@ -214,8 +214,8 @@ var DNodeView_InplaceEdit = function(self) {
 			// plain-text is given.
 			if(markdown.length === 0){
 				// if an empty text is given, remove the node. (except top goal)
+				DCase.removeNode(node);
 				if(DCase.getTopGoal() !== node){
-					DCase.removeNode(node);
 					viewer.centerize(parent, 0);
 					closeInplace();
 				}else{
@@ -235,28 +235,34 @@ var DNodeView_InplaceEdit = function(self) {
 			var idNodeTable = {};
 			var idIndexTable = {};
 
-			var i = 0;
+			var ch = 0; co = 0;
 			node.eachNode(function(n){
 				idNodeTable[n.id] = n;
-				idIndexTable[n.id] = i++;
+				if(n.isContext){
+					idIndexTable[n.id] = co++;
+				}else{
+					idIndexTable[n.id] = ch++;
+				}
 			});
 
 			var newChildren = [];
+			var newContexts = [];
 
 			var treeChanged = false;
 			for(var i = 1; i < nodes.length; ++i){
-				if(idNodeTable[nodes[i].id]){
-					newChildren.push(updateNode(idNodeTable[nodes[i].id], nodes[i]));
+				var nd = nodes[i];
+				var id = nd.id;
+				if(idNodeTable[id]){
+					var newNode = updateNode(idNodeTable[id], nd);
 					// check subnode swapping
-					if(idIndexTable[nodes[i].id] !== newChildren.length){
-						treeChanged = true;
-					}
-					delete idNodeTable[nodes[i].id];
+					treeChanged = idIndexTable[id] !== (newNode.isContext ? newContexts : newChildren).length;
+					delete idNodeTable[id];
 				}else{
 					// create new node
-					newChildren.push(DCase.insertNode(node, nodes[i].type, nodes[i].description));
+					var newNode = DCase.insertNode(node, nd.type, nd.description);
 					treeChanged = true;
 				}
+				(newNode.isContext ? newContexts : newChildren).push(newNode);
 			}
 			// if a node is left in Table, it means that the node is removed from markdown text.
 			jQuery.each(idNodeTable, function(i,v){
@@ -264,6 +270,7 @@ var DNodeView_InplaceEdit = function(self) {
 				treeChanged = true;
 			});
 			node.children = newChildren;
+			node.contexts = newContexts;
 			if(DCase.getTopGoal() === node){
 				viewer.structureUpdated();
 			}else{
