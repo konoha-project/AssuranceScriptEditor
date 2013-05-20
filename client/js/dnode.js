@@ -265,6 +265,7 @@ DCase.prototype.insertNode = function(parent, type, desc, index) {
 			self.nodeRemoved(parent, node, index);
 		},
 	});
+	return node;
 };
 
 DCase.prototype.pasteNode = function(parent, old_node, index) {

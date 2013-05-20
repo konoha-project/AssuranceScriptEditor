@@ -199,21 +199,24 @@ var DNodeView_InplaceEdit = function(self) {
 		var newName = nodejson.name || newType[0] + "_" + node.id;
 		var DCase = self.viewer.getDCase();
 		DCase.setParam(node, newType, newName, newDesc);
+		return node;
 	}
 
 	function closingInplace() {
 		var markdown = $edit.attr("value").trim();
 		var nodes = parseMarkdownText(markdown);
 		var node = self.node;
-		var DCase = self.viewer.getDCase();
-
+		var viewer = self.viewer;
+		var DCase = viewer.getDCase();
+		var parent = node.parents[0];
+		
 		if(nodes.length === 0){
 			// plain-text is given.
 			if(markdown.length === 0){
 				// if an empty text is given, remove the node. (except top goal)
 				if(DCase.getTopGoal() !== node){
 					DCase.removeNode(node);
-					self.viewer.centerize(node.parentView, 0);
+					viewer.centerize(parent, 0);
 					closeInplace();
 				}else{
 					DCase.setDescription(node, "");
@@ -233,21 +236,36 @@ var DNodeView_InplaceEdit = function(self) {
 			node.eachNode(function(n){
 				idNodeTable[n.id] = n;
 			});
+
+			var newChildren = [];
+
+			var treeChanged = false;
 			for(var i = 1; i < nodes.length; ++i){
 				if(idNodeTable[nodes[i].id]){
-					updateNode(idNodeTable[nodes[i].id], nodes[i]);
+					newChildren.push(updateNode(idNodeTable[nodes[i].id], nodes[i]));
 					delete idNodeTable[nodes[i].id];
 				}else{
 					// create new node
-					DCase.insertNode(node, nodes[i].type, nodes[i].description);
+					newChildren.push(DCase.insertNode(node, nodes[i].type, nodes[i].description));
+					treeChanged = true;
 				}
 			}
 			// if a node is left in Table, it means that the node is removed from markdown text.
 			jQuery.each(idNodeTable, function(i,v){
 				DCase.removeNode(v);
+				treeChanged = true;
 			});
+			// FIXME
+			//node.children = newChildren;
+			if(DCase.getTopGoal() === node){
+				//viewer.structureUpdated();
+			}else{
+				//self.nodeChanged();
+			}
+			if(treeChanged){
+				viewer.centerize(node, 0);
+			}
 		};
-		self.viewer.centerize(node, 0);
 		closeInplace();
 	};
 
