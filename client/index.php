@@ -54,6 +54,7 @@ body {
 <script type="text/javascript" src="lib/jquery.svganim.min.js"></script>
 <script type="text/javascript" src="lib/jquery.ui.autocomplete.js"></script>
 <script type="text/javascript" src="lib/jquery.colorPicker.min.js"></script>
+<script type="text/javascript" src="lib/jquery.autosize-min.js"></script>
 <script type="text/javascript" src="lib/bootstrap.min.js"></script>
 <script type="text/javascript" src="lib/spin.min.js"></script>
 <script type="text/javascript" src="lib/codemirror.js"></script>

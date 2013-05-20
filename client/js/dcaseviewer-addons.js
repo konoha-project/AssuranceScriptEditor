@@ -1,3 +1,102 @@
+function levenshtein (s1, s2) {
+	// http://kevin.vanzonneveld.net
+	// +            original by: Carlos R. L. Rodrigues (http://www.jsfromhell.com)
+	// +            bugfixed by: Onno Marsman
+	// +             revised by: Andrea Giammarchi (http://webreflection.blogspot.com)
+	// + reimplemented by: Brett Zamir (http://brett-zamir.me)
+	// + reimplemented by: Alexander M Beedie
+	// *                example 1: levenshtein('Kevin van Zonneveld', 'Kevin van Sommeveld');
+	// *                returns 1: 3
+
+	if (s1 == s2) {
+		return 0;
+	}
+
+	var s1_len = s1.length;
+	var s2_len = s2.length;
+	if (s1_len === 0) {
+		return s2_len;
+	}
+	if (s2_len === 0) {
+		return s1_len;
+	}
+
+	// BEGIN STATIC
+	var split = false;
+	try{
+		split=!('0')[0];
+	} catch (e){
+		split=true; // Earlier IE may not support access by string index
+	}
+	// END STATIC
+	if (split){
+		s1 = s1.split('');
+		s2 = s2.split('');
+	}
+
+	var v0 = new Array(s1_len+1);
+	var v1 = new Array(s1_len+1);
+
+	var s1_idx=0, s2_idx=0, cost=0;
+	for (s1_idx=0; s1_idx<s1_len+1; s1_idx++) {
+		v0[s1_idx] = s1_idx;
+	}
+	var char_s1='', char_s2='';
+	for (s2_idx=1; s2_idx<=s2_len; s2_idx++) {
+		v1[0] = s2_idx;
+		char_s2 = s2[s2_idx - 1];
+
+		for (s1_idx=0; s1_idx<s1_len;s1_idx++) {
+			char_s1 = s1[s1_idx];
+			cost = (char_s1 == char_s2) ? 0 : 1;
+			var m_min = v0[s1_idx+1] + 1;
+			var b = v1[s1_idx] + 1;
+			var c = v0[s1_idx] + cost;
+			if (b < m_min) {
+				m_min = b; }
+			if (c < m_min) {
+				m_min = c; }
+			v1[s1_idx+1] = m_min;
+		}
+		var v_tmp = v0;
+		v0 = v1;
+		v1 = v_tmp;
+	}
+	return v0[s1_len];
+}
+
+function findMostSimilarNodeType(query){
+	var NodeTypes = ["Goal", "Context", "Subject", "Strategy", "Evidence", "Rebuttal", "Solution"];
+
+	query = query.toLowerCase();
+	if(query.charAt(0) === "s"){
+		if(query.charAt(1) === "u"){
+			return "Subject";
+		}else if(query.charAt(1) === "t"){
+			return "Strategy";
+		}else if(query.charAt(1) === "o"){
+			return "Solution";
+		}
+	}else if(query.charAt(0) === "g"){
+		return "Goal";
+	}else if(query.charAt(0) === "r"){
+		return "Rebuttal";
+	}else if(query.charAt(0) === "c"){
+		return "Context";
+	}else if(query.charAt(0) === "e"){
+		return "Evidence";
+	}
+	var min = levenshtein(NodeTypes[0], query);
+	minidx = 0;
+	for(var i = 1; i < NodeTypes.length; i++){
+		var d = levenshtein(NodeTypes[i], query);
+		if(min >= d){
+			minidx = i;
+		}
+	}
+	return NodeTypes[minidx];
+};
+
 var DNodeView_ExpandBranch = function(self) {
 	var DBLTOUCH_THRESHOLD = 300;
 	var count = 0;
@@ -45,17 +144,17 @@ var DNodeView_InplaceEdit = function(self) {
 		node.eachNode(function(n){
 			markdown = markdown + ("# " + n.type + " " + n.name + " " + n.id + "\n" + n.desc + "\n\n");
 		});
-		return markdown;
+		return markdown.trim();
 	};
 
 	function parseMarkdownText(src) {
-		var nodesrc = src.split(/#+/).slice(1);
+		var nodesrc = src.split(/^#+/m).slice(1);
 		var nodes = [];
 		for(var i = 0; i < nodesrc.length; ++i){
 			var lines = nodesrc[i].split(/\r\n|\r|\n/);
 			var heads = lines[0].trim().split(/\s+/);
 			var node = {
-				type: heads[0],
+				type: findMostSimilarNodeType(heads[0]),
 				name: heads[1],
 				id  : heads[2],
 				description: lines.slice(1).join("\n").trim(),
@@ -74,6 +173,7 @@ var DNodeView_InplaceEdit = function(self) {
 
 			$edit = $("<textarea></textarea>")
 				.addClass("node-inplace")
+				.autosize()
 				.css("top", self.$divText.offset().y)
 				.attr("value", generateMarkdownText(self.node))
 				.appendTo(self.$div)
@@ -86,6 +186,7 @@ var DNodeView_InplaceEdit = function(self) {
 				})
 				.click(function(e) { cc++; e.stopPropagation(); })
 				.blur(closingInplace)
+				.trigger("autosize")
 				.on("keydown", function(e){
 					if(e.keyCode == 27 /* ESC */){ closingInplace(); };
 				});
@@ -101,30 +202,52 @@ var DNodeView_InplaceEdit = function(self) {
 	}
 
 	function closingInplace() {
-		var markdown = $edit.attr("value");
+		var markdown = $edit.attr("value").trim();
 		var nodes = parseMarkdownText(markdown);
 		var node = self.node;
 		var DCase = self.viewer.getDCase();
 
-		updateNode(node, nodes[0]);
-		
-		var idNodeTable = {};
-		node.eachNode(function(n){
-			idNodeTable[n.id] = n;
-		});
-		for(var i = 1; i < nodes.length; ++i){
-			if(idNodeTable[nodes[i].id]){
-				updateNode(idNodeTable[nodes[i].id], nodes[i]);
-				delete idNodeTable[nodes[i].id];
+		if(nodes.length === 0){
+			// plain-text is given.
+			if(markdown.length === 0){
+				// if an empty text is given, remove the node. (except top goal)
+				if(DCase.getTopGoal() !== node){
+					DCase.removeNode(node);
+					self.viewer.centerize(node.parentView, 0);
+					closeInplace();
+				}else{
+					DCase.setDescription(node, "");
+					node.eachNode(function(n){
+						DCase.removeNode(n);
+					});
+				}
 			}else{
-				// create new node
-				DCase.insertNode(node, nodes[i].type, nodes[i].description);
+				// if a plain-text is given, just set to the description.
+				DCase.setDescription(node, markdown);
 			}
-		}
-		// if a node is left in Table, it means that the node is removed from markdown text.
-		jQuery.each(idNodeTable, function(i,v){
-			DCase.removeNode(v);
-		});
+		}else{
+			// markdown-text is given.
+			updateNode(node, nodes[0]);
+			
+			var idNodeTable = {};
+			node.eachNode(function(n){
+				idNodeTable[n.id] = n;
+			});
+			for(var i = 1; i < nodes.length; ++i){
+				if(idNodeTable[nodes[i].id]){
+					updateNode(idNodeTable[nodes[i].id], nodes[i]);
+					delete idNodeTable[nodes[i].id];
+				}else{
+					// create new node
+					DCase.insertNode(node, nodes[i].type, nodes[i].description);
+				}
+			}
+			// if a node is left in Table, it means that the node is removed from markdown text.
+			jQuery.each(idNodeTable, function(i,v){
+				DCase.removeNode(v);
+			});
+		};
+		self.viewer.centerize(node, 0);
 		closeInplace();
 	};
 
