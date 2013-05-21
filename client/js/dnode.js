@@ -124,7 +124,7 @@ DCaseNode.SELECTABLE_TYPES = {
 	"Goal": [ "Goal", "Context", "Subject", "Strategy", "Evidence", "Solution" ],
 	"Context": [],
 	"Subject": [],
-	"Strategy": [ "Context", "Goal" ],
+	"Strategy": [ "Goal", "Context" ],
 	"Evidence": [ "Rebuttal" ],
 	"Solution": [ "Context", "Rebuttal" ],
 	"Rebuttal": [],
