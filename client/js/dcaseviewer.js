@@ -338,6 +338,40 @@ DCaseViewer.prototype.expandBranch = function(view, b, isAll) {
 
 //-----------------------------------------------------------------------------
 
+
+function createContextLineElement(){
+	return $(document.createElementNS(SVG_NS, "line")).attr({
+		fill: "none",
+		stroke: "gray",
+		x1: 0, y1: 0, x2: 0, y2: 0,
+		"marker-end": "url(#Triangle-white)",
+	});
+}
+
+function createChildLineElement(){
+	return $(document.createElementNS(SVG_NS, "path")).attr({
+		fill: "none",
+		stroke: "gray",
+		d: "M0,0 C0,0 0,0 0,0",
+		"marker-end": "url(#Triangle-black)",
+	});
+}
+
+function createUndevelopMarkElement(){
+	return $(document.createElementNS(SVG_NS, "polygon")).attr({
+		fill: "none", stroke: "gray",
+		points: "0,0 0,0 0,0 0,0"
+	});
+}
+
+function createArgumentBorderElement(){
+	return $(document.createElementNS(SVG_NS, "rect")).attr({
+		stroke: "#8080D0",
+		fill: "none",
+		"stroke-dasharray": 3,
+	});
+}
+
 var DNodeView = function(viewer, node, parentView) {
 	var self = this;
 
@@ -395,23 +429,11 @@ var DNodeView = function(viewer, node, parentView) {
 
 	if(parentView != null) {
 		if(node.isContext) {
-			this.line = document.createElementNS(SVG_NS, "line");
-			$(this.line).attr({
-				fill: "none",
-				stroke: "gray",
-				x1: 0, y1: 0, x2: 0, y2: 0,
-				"marker-end": "url(#Triangle-white)",
-			}).appendTo(this.$rootsvg);
+			this.line = createContextLineElement()[0];
 			if(this.node.type == "Subject") parentView.subject = this;
 			else parentView.context = this;
 		} else {
-			this.line = document.createElementNS(SVG_NS, "path");
-			$(this.line).attr({
-				fill: "none",
-				stroke: "gray",
-				d: "M0,0 C0,0 0,0 0,0",
-				"marker-end": "url(#Triangle-black)",
-			}).appendTo(this.$rootsvg);
+			this.line = createChildLineElement()[0];
 			parentView.children.push(this);
 		}
 		this.$rootsvg.append(this.line);
@@ -441,11 +463,9 @@ DNodeView.prototype.nodeChanged = function() {
 	var viewer = this.viewer;
 
 	// undeveloped
+	node.isUndeveloped = (node.type === "Goal" && node.children.length == 0);
 	if(node.isUndeveloped && this.svgUndevel == null) {
-		this.svgUndevel = $(document.createElementNS(SVG_NS, "polygon")).attr({
-			fill: "none", stroke: "gray",
-			points: "0,0 0,0 0,0 0,0"
-		}).appendTo(this.$rootsvg);
+		this.svgUndevel = createUndevelopMarkElement().appendTo(this.$rootsvg);
 	} else if(!node.isUndeveloped && this.svgUndevel != null){
 		this.svgUndevel.remove();
 		this.svgUndevel = null;
@@ -453,11 +473,7 @@ DNodeView.prototype.nodeChanged = function() {
 
 	// argument
 	if(node.isArgument && this.argumentBorder == null) {
-		this.argumentBorder = $(document.createElementNS(SVG_NS, "rect")).attr({
-			stroke: "#8080D0",
-			fill: "none",
-			"stroke-dasharray": 3,
-		}).appendTo(this.$rootsvg);
+		this.argumentBorder = createArgumentBorderElement().appendTo(this.$rootsvg);
 	} else if(!node.isArgument && this.argumentBorder != null) {
 		this.argumentBorder.remove();
 		this.argumentBorder = null;
@@ -467,8 +483,10 @@ DNodeView.prototype.nodeChanged = function() {
 	this.$divName.html(node.name);
 	this.$divText.html(node.getHtmlDescription());
 	if(this.svg){
-		for(var i = 0; i < 5; ++i){
-			if(this.svg[i]) this.svg[i].remove();
+		for(var i = 0; i < this.svg.length; ++i){
+			if(this.svg[i]){
+				$(this.svg[i]).remove();
+			}
 		}
 	}
 	this.svg = new GsnShape[node.type](this.$rootsvg);

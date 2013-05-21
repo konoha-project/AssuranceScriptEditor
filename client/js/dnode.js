@@ -345,14 +345,13 @@ DCase.prototype.setParam = function(node, type, name, desc) {
 	var oldType = node.type;
 	var oldName = node.name;
 	var oldDesc = node.desc;
-	if(node.type != type){
-		var typeChanged = true;
-	}
+	node.isUndeveloped = (node.type === "Goal" && node.children.length == 0);
 	this.applyOperation({
 		redo: function() {
 			node.type = type;
 			node.name = name;
 			node.desc = desc;
+			node.isUndeveloped = (node.type === "Goal" && node.children.length == 0);
 			self.updateTypeFlag(node);
 			self.nodeChanged(node);
 		},
@@ -360,6 +359,7 @@ DCase.prototype.setParam = function(node, type, name, desc) {
 			node.type = oldType;
 			node.name = oldName;
 			node.desc = oldDesc;
+			node.isUndeveloped = (node.type === "Goal" && node.children.length == 0);
 			self.updateTypeFlag(node);
 			self.nodeChanged(node);
 		},
