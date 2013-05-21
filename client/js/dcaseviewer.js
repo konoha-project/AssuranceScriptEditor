@@ -54,59 +54,69 @@ var DCaseViewer = function(root, dcase, editable) {
 		self.addEventHandler();
 	}());
 
+	self.canMoveByKeyboard = true;
+
 	$(document.body).on("keydown", function(e){
 		if(e.keyCode == 39 /* RIGHT */ || e.keyCode == 37 /* LEFT */){
+			if(!self.canMoveByKeyboard) return;
 			var isRight = (e.keyCode == 39);
 			var selected = self.getSelectedNode();
+			if(!selected) return;
 			var children = selected.children;
 			var isContext = selected.node.isContext;
 			var isSubject = selected.node.isSubject;
 			
-			if(selected.context && isRight){
-				self.setSelectedNode(selected.context);
-				return;
+			var neighbor = [];
+			var keynode = (isContext || isSubject ? selected.parentView : selected);
+			if(keynode.parentView){
+				var sibilings = keynode.parentView.children;
+				for(var i = 0; i < sibilings.length; i++){
+					if(sibilings[i].subject) neighbor.push(sibilings[i].subject);
+					neighbor.push(sibilings[i]);
+					if(sibilings[i].context) neighbor.push(sibilings[i].context);
+				}
 			}
 
-			if(selected.subject && !isRight){
-				self.setSelectedNode(selected.subject);
-				return;
-			}
-
-			if(isContext && !isRight || isSubject && isRight){
-				self.setSelectedNode(selected.parentView);
-				return;
-			}
-
-			if(selected.parentView){
-				var sibilings = selected.parentView.children;
-				var oldIndex = sibilings.indexOf(selected);
+			if(neighbor.length > 0){
+				var oldIndex = neighbor.indexOf(selected);
 				var newIndex = oldIndex + (isRight ? 1 : -1);
-				if(newIndex >= sibilings.length) newIndex = 0;
-				if(newIndex < 0) newIndex = sibilings.length - 1;
+				if(newIndex >= neighbor.length) newIndex = neighbor.length - 1;
+				if(newIndex < 0) newIndex = 0;
 				if(oldIndex != newIndex){
-					self.setSelectedNode(sibilings[newIndex]);
+					self.setSelectedNode(neighbor[newIndex]);
 					return;
 				}
 			}
 
-			if(selected && children && children.length > 1){
+			if(children && children.length > 1){
 				var newIndex = (isRight ? children.length - 1 : 0);
 				self.setSelectedNode(children[newIndex]);
 				return;
 			}
 		};
 		if(e.keyCode == 38 /* UP */){
+			if(!self.canMoveByKeyboard) return;
 			var selected = self.getSelectedNode();
 			if(selected && selected.parentView){
 				self.setSelectedNode(selected.parentView);
 			}
 		};
 		if(e.keyCode == 40 /* DOWN */){
+			if(!self.canMoveByKeyboard) return;
 			var selected = self.getSelectedNode();
 			if(selected && selected.children && selected.children[0]){
 				self.setSelectedNode(selected.children[0]);
 			}
 		};
+		if(e.keyCode == 13 /* ENTER */){
+			if(!self.canMoveByKeyboard) return;
+			var selected = self.getSelectedNode();
+			if(selected && selected.startInplaceEdit){
+				e.preventDefault(); 
+				selected.startInplaceEdit();
+			}
+		};
+
 	});
 };
 

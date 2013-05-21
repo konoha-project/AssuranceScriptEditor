@@ -136,11 +136,15 @@ var DNodeView_InplaceEdit = function(self) {
 	self.$divText.addClass("node-text-editable");
 
 	function generateMarkdownText(node) {
-		var markdown = ("# " + node.type + " " + node.name + " " + node.id + "\n" + node.desc + "\n\n");
-		node.eachNode(function(n){
-			markdown = markdown + ("# " + n.type + " " + n.name + " " + n.id + (n.desc.length > 0 ? ("\n" + n.desc) : "") + "\n\n");
+		var convert = (function(n){
+			return ("# " + n.type + " " + n.name + " " + n.id + (n.desc.length > 0 ? ("\n" + n.desc) : "") + "\n\n");
 		});
-		return markdown.trim();
+
+		var markdown = convert(node);  
+		node.eachNode(function(n){
+			markdown = markdown + convert(n);
+		});
+		return markdown;
 	};
 
 	function parseMarkdownText(src) {
@@ -166,6 +170,7 @@ var DNodeView_InplaceEdit = function(self) {
 			var cc = 0;
 			self.$divText.css("display", "none");
 			self.viewer.$root.css("-moz-user-select", "text");
+			self.viewer.canMoveByKeyboard = false;
 
 			$edit = $("<textarea></textarea>")
 				.addClass("node-inplace")
@@ -206,6 +211,8 @@ var DNodeView_InplaceEdit = function(self) {
 		var DCase = viewer.getDCase();
 		var parent = node.parents[0];
 		
+		viewer.canMoveByKeyboard = true;
+				
 		if(nodes.length === 0){
 			// plain-text is given.
 			if(markdown.length === 0){
@@ -282,6 +289,8 @@ var DNodeView_InplaceEdit = function(self) {
 			}
 			if(treeChanged){
 				viewer.centerize(node, 0);
+			}else{
+				viewer.setSelectedNode(viewer.getNodeView(node));
 			}
 		};
 		closeInplace();
@@ -302,7 +311,12 @@ var DNodeView_InplaceEdit = function(self) {
 	
 	self.$div.dblclick(function(e) {
 		closeInplace();
-	});
+	})
+	
+	self.startInplaceEdit = function() {
+		showInplace();
+	};
+
 };
 
 //-----------------------------------------------------------------------------
