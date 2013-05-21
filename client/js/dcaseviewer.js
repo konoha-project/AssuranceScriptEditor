@@ -121,8 +121,52 @@ var DCaseViewer = function(root, dcase, editable) {
 			if(selected && selected.startInplaceEdit){
 				e.preventDefault(); 
 				selected.startInplaceEdit();
+			}else{
+				self.setSelectedNode(self.rootview);
 			}
 		};
+		if(e.keyCode == 27 /* ESC */){
+			if(!self.canMoveByKeyboard) return;
+			self.setSelectedNode(null);
+		}
+		if(e.keyCode == 67 && e.ctrlKey /* Ctrl+C */){
+			if(!self.canMoveByKeyboard) return;
+			var selected = self.getSelectedNode();
+			if(selected){
+				self.clipboard = selected.node.deepCopy();
+				console.log("copied");
+			}
+		}
+		if(e.keyCode == 88 && e.ctrlKey /* Ctrl+X */){
+			if(!self.canMoveByKeyboard) return;
+			var selected = self.getSelectedNode();
+			if(selected && selected !== self.rootview){
+				self.clipboard = selected.node.deepCopy();
+				self.setSelectedNode(selected.parentView || self.rootview);
+				self.getDCase().removeNode(selected.node);
+				console.log("cut");
+			}
+		}
+		if(e.keyCode == 86 && e.ctrlKey /* Ctrl+V */){
+			if(!self.canMoveByKeyboard) return;
+			var selected = self.getSelectedNode();
+			if(selected){
+				var node = self.clipboard;
+				if(node && selected.node.isTypeApendable(node.type)) {
+					self.getDCase().pasteNode(selected.node, node);
+					console.log("pasted");
+				}
+			}
+		}
+		if(e.keyCode == 46 /* Delete */){
+			if(!self.canMoveByKeyboard) return;
+			var selected = self.getSelectedNode();
+			if(selected && selected !== self.rootview){
+				self.setSelectedNode(selected.parentView || self.rootview);
+				self.getDCase().removeNode(selected.node);
+			}
+		}
+
 	});
 };
 
@@ -239,6 +283,9 @@ DCaseViewer.prototype.getNodeView = function(node) {
 
 DCaseViewer.prototype.setSelectedNode = function(view) {
 	if(view != null) {
+		if(this.selectedNode === view){
+			return;
+		}
 		view.selected = true;
 		view.updateColor();
 	}

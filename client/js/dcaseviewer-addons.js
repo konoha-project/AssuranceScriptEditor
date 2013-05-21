@@ -189,7 +189,7 @@ var DNodeView_InplaceEdit = function(self) {
 				.blur(closingInplace)
 				.trigger("autosize")
 				.on("keydown", function(e){
-					if(e.keyCode == 27 /* ESC */){ closingInplace(); };
+					if(e.keyCode == 27 /* ESC */){ e.stopPropagation(); closingInplace(); };
 				});
 		}
 	}
@@ -462,7 +462,7 @@ var DNodeView_ToolBox = function(self) {
 			$menu.find("#ml-paste").click(function() {
 				var node = self.viewer.clipboard;
 				if(node != null) {
-					if(self.node.appendableTypes().indexOf(node.type) != -1) {
+					if(self.node.isTypeApendable(node.type)) {
 						self.viewer.getDCase().pasteNode(self.node, node);
 						console.log("pasted");
 					} else {
