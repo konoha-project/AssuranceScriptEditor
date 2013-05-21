@@ -126,6 +126,30 @@ var GsnShape = {
 		};
 		return Solution;
 	}()),
+	"Monitor": (function() {
+		var N = 20;
+		var Monitor = function($svg) {
+			this[0] = document.createElementNS(SVG_NS, "g");
+			this[1] = document.createElementNS(SVG_NS, "ellipse");
+			this[2] = document.createElementNS(SVG_NS, "text");
+			$svg.append(this[0]);
+			$(this[2]).attr("fill", "gray").attr("font-size", "50").text("M");
+			this[0].appendChild(this[1]);
+			this[0].appendChild(this[2]);
+		};
+		Monitor.prototype.animate = function(a, x, y, w, h) {
+			a.moves(this[1], {
+				cx: x + w/2, cy: y + h/2,
+				rx: w/2, ry: h/2,
+			});
+			a.moves(this[2], { x: x+w*5/8, y:y + N });
+			return { x: w/6, y: h/6 };
+		};
+		Monitor.prototype.outer = function(w, h) {
+			return { w: w*8/6, h: h*8/6 };
+		};
+		return Monitor;
+	}()),
 };
 
 GsnShape["Rebuttal"] = GsnShape["Evidence"];

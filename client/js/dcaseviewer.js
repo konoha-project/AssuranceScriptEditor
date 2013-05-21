@@ -68,6 +68,7 @@ DCaseViewer.prototype.default_colorTheme = {
 		"Evidence": "none",
 		"Solution": "none",
 		"Rebuttal": "none",
+		"Monitor" : "none",
 	},
 	fill: {
 		"Goal"    : "#E0E0E0",
@@ -77,6 +78,7 @@ DCaseViewer.prototype.default_colorTheme = {
 		"Evidence": "#D0D0D0",
 		"Solution": "#D0D0D0",
 		"Rebuttal": "#EEAAAA",
+		"Monitor" : "#D0D0D0",
 	},
 	selected: "#F08080",
 	hovered : "#8080F0",
@@ -391,7 +393,7 @@ var DNodeView = function(viewer, node, parentView) {
 
 	this.viewer = viewer;
 	this.node = node;
-	this.svg = new GsnShape[node.type]($rootsvg);
+	//this.svg = new GsnShape[node.type]($rootsvg);
 	this.$div = $("<div></div>")
 			.addClass("node-container")
 			.width(DEF_WIDTH)
@@ -483,11 +485,7 @@ DNodeView.prototype.nodeChanged = function() {
 	this.$divName.html(node.name);
 	this.$divText.html(node.getHtmlDescription());
 	if(this.svg){
-		for(var i = 0; i < this.svg.length; ++i){
-			if(this.svg[i]){
-				$(this.svg[i]).remove();
-			}
-		}
+		$(this.svg[0]).remove();
 	}
 	this.svg = new GsnShape[node.type](this.$rootsvg);
 	var count = node.getNodeCount();

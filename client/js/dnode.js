@@ -99,6 +99,10 @@ DCaseNode.prototype.appendableTypes = function() {
 	return DCaseNode.SELECTABLE_TYPES[this.type];
 };
 
+DCaseNode.prototype.isTypeApendable = function(type) {
+	return (DCaseNode.SELECTABLE_TYPES[this.type].indexOf(type) != -1);
+};
+
 DCaseNode.prototype.toJson = function() {
 	var children = [];
 	this.eachNode(function(node) {
@@ -117,17 +121,18 @@ DCaseNode.prototype.toJson = function() {
 
 DCaseNode.TYPES = [
 	"Goal", "Context", "Subject",
-	"Strategy", "Evidence", "Solution", "Rebuttal"
+	"Strategy", "Evidence", "Solution", "Rebuttal", "Monitor"
 ];
 
 DCaseNode.SELECTABLE_TYPES = {
-	"Goal": [ "Goal", "Context", "Subject", "Strategy", "Evidence", "Solution" ],
+	"Goal": [ "Goal", "Context", "Subject", "Strategy", "Evidence", "Solution" , "Monitor" ],
 	"Context": [],
 	"Subject": [],
 	"Strategy": [ "Goal", "Context" ],
 	"Evidence": [ "Rebuttal" ],
 	"Solution": [ "Context", "Rebuttal" ],
 	"Rebuttal": [],
+	"Monitor": [ "Context", "Rebuttal" ],
 };
 
 DCaseNode.NAME_PREFIX = {
@@ -138,6 +143,7 @@ DCaseNode.NAME_PREFIX = {
 	"Evidence": "E_",
 	"Solution": "Sol_",
 	"Rebuttal": "R_",
+	"Monitor": "M_",
 };
 
 //-----------------------------------------------------------------------------

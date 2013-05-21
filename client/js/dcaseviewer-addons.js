@@ -66,7 +66,7 @@ function levenshtein (s1, s2) {
 }
 
 function findMostSimilarNodeType(query){
-	var NodeTypes = ["Goal", "Context", "Subject", "Strategy", "Evidence", "Rebuttal", "Solution"];
+	var NodeTypes = ["Goal", "Context", "Subject", "Strategy", "Evidence", "Rebuttal", "Solution", "Monitor"];
 
 	query = query.toLowerCase();
 	if(query.charAt(0) === "s"){
@@ -85,7 +85,10 @@ function findMostSimilarNodeType(query){
 		return "Context";
 	}else if(query.charAt(0) === "e"){
 		return "Evidence";
+	}else if(query.charAt(0) === "m"){
+		return "Monitor";
 	}
+
 	var min = levenshtein(NodeTypes[0], query);
 	minidx = 0;
 	for(var i = 1; i < NodeTypes.length; i++){
@@ -253,16 +256,20 @@ var DNodeView_InplaceEdit = function(self) {
 				var nd = nodes[i];
 				var id = nd.id;
 				if(idNodeTable[id]){
+					if(!node.isTypeApendable(nd.type)){
+						nd.type = idNodeTable[id].type;
+					}
 					var newNode = updateNode(idNodeTable[id], nd);
 					// check subnode swapping
 					treeChanged = idIndexTable[id] !== (newNode.isContext ? newContexts : newChildren).length;
 					delete idNodeTable[id];
-				}else{
+					(newNode.isContext ? newContexts : newChildren).push(newNode);
+				}else if(node.isTypeApendable(nd.type)){
 					// create new node
 					var newNode = DCase.insertNode(node, nd.type, nd.description);
 					treeChanged = true;
+					(newNode.isContext ? newContexts : newChildren).push(newNode);
 				}
-				(newNode.isContext ? newContexts : newChildren).push(newNode);
 			}
 			// if a node is left in Table, it means that the node is removed from markdown text.
 			jQuery.each(idNodeTable, function(i,v){
