@@ -68,13 +68,20 @@ var DCaseViewer = function(root, dcase, editable) {
 			
 			var neighbor = [];
 			var keynode = (isContext || isSubject ? selected.parentView : selected);
+			
+			function push(n){
+				if(n.subject) neighbor.push(n.subject);
+				neighbor.push(n);
+				if(n.context) neighbor.push(n.context);
+			}
+
 			if(keynode.parentView){
 				var sibilings = keynode.parentView.children;
 				for(var i = 0; i < sibilings.length; i++){
-					if(sibilings[i].subject) neighbor.push(sibilings[i].subject);
-					neighbor.push(sibilings[i]);
-					if(sibilings[i].context) neighbor.push(sibilings[i].context);
+					push(sibilings[i]);
 				}
+			}else{
+				push(keynode);
 			}
 
 			if(neighbor.length > 0){
@@ -116,7 +123,6 @@ var DCaseViewer = function(root, dcase, editable) {
 				selected.startInplaceEdit();
 			}
 		};
-
 	});
 };
 
