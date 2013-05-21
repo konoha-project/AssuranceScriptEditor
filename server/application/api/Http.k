@@ -1,5 +1,6 @@
 Import("Lib.Curl");
-Import("MiniKonoha.Map");
+Import("Konoha.Map");
+Import("Syntax.Null");
 Import("JavaScript.Array");
 Import("Syntax.JavaStyleClass");
 Import("Syntax.CStyleWhile");
@@ -45,10 +46,12 @@ class CurlHttpClient extends HttpClient {
 	}
 
 	String get(Map[String] fields) {
-		curl.setOpt(CURLOPT_GET, true);
-		if (fields.getSize() > 0) {
+		if (fields.keys().getSize() > 0) {
 			String param = CreateParam(fields);
 			curl.setOpt(CURLOPT_URL, url+"?"+param);
 		}
+		return perform();
 	}
 }
+
+//System.p(new CurlHttpClient("http://google.com/").get(null));
