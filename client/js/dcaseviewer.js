@@ -53,6 +53,61 @@ var DCaseViewer = function(root, dcase, editable) {
 		self.setDCase(dcase);
 		self.addEventHandler();
 	}());
+
+	$(document.body).on("keydown", function(e){
+		if(e.keyCode == 39 /* RIGHT */ || e.keyCode == 37 /* LEFT */){
+			var isRight = (e.keyCode == 39);
+			var selected = self.getSelectedNode();
+			var children = selected.children;
+			var isContext = selected.node.isContext;
+			var isSubject = selected.node.isSubject;
+			
+			if(selected.context && isRight){
+				self.setSelectedNode(selected.context);
+				return;
+			}
+
+			if(selected.subject && !isRight){
+				self.setSelectedNode(selected.subject);
+				return;
+			}
+
+			if(isContext && !isRight || isSubject && isRight){
+				self.setSelectedNode(selected.parentView);
+				return;
+			}
+
+			if(selected.parentView){
+				var sibilings = selected.parentView.children;
+				var oldIndex = sibilings.indexOf(selected);
+				var newIndex = oldIndex + (isRight ? 1 : -1);
+				if(newIndex >= sibilings.length) newIndex = 0;
+				if(newIndex < 0) newIndex = sibilings.length - 1;
+				if(oldIndex != newIndex){
+					self.setSelectedNode(sibilings[newIndex]);
+					return;
+				}
+			}
+
+			if(selected && children && children.length > 1){
+				var newIndex = (isRight ? children.length - 1 : 0);
+				self.setSelectedNode(children[newIndex]);
+				return;
+			}
+		};
+		if(e.keyCode == 38 /* UP */){
+			var selected = self.getSelectedNode();
+			if(selected && selected.parentView){
+				self.setSelectedNode(selected.parentView);
+			}
+		};
+		if(e.keyCode == 40 /* DOWN */){
+			var selected = self.getSelectedNode();
+			if(selected && selected.children && selected.children[0]){
+				self.setSelectedNode(selected.children[0]);
+			}
+		};
+	});
 };
 
 DCaseViewer.prototype.exportSubtree = function(view, type) {

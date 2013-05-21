@@ -126,13 +126,6 @@ var DNodeView_ExpandBranch = function(self) {
 			time = null;
 		}
 	});
-
-	$(document.body).on("keydown", function(e){
-		if(e.keyCode == 37 /* LEFT  */){ /* focus on prev node */ };
-		if(e.keyCode == 38 /* UP    */){ /* self.viewer.setSelectNode(self.parentView); */ };
-		if(e.keyCode == 39 /* RIGHT */){ /* focus on next node */ };
-		if(e.keyCode == 40 /* DOWN  */){ /* focus on first child */ };
-	});
 };
 
 //-----------------------------------------------------------------------------
@@ -233,6 +226,9 @@ var DNodeView_InplaceEdit = function(self) {
 			}
 		}else{
 			// markdown-text is given.
+			if(DCase.getTopGoal() === node){
+				nodes[0].type = "Goal";
+			}
 			updateNode(node, nodes[0]);
 			
 			var idNodeTable = {};
