@@ -38,10 +38,10 @@ class CurlHttpClient extends HttpClient {
 		}
 		return param;
 	}
-	String post(String params) {
+	String post(Map[String] fields) {
 		curl.setOpt(CURLOPT_POST, true);
-		//String param = CreateParam(fields);
-		curl.setOpt(CURLOPT_POSTFIELDS, params);
+		String param = CreateParam(fields);
+		curl.setOpt(CURLOPT_POSTFIELDS, param);
 		return perform();
 	}
 

@@ -2,3 +2,11 @@
 String uri_to_api_cgi(){
     return "http://path/to/dcase"+"/cgi/api.cgi";
 }
+
+//DB
+String user() { return "dcasedb"; }
+String pass() { return "dcasedb"; }
+
+//Redmine
+String RedmineURL() { return "http://path/to/redmine/"; }
+String RedmineKey() { return "Your API Auth Key"; }

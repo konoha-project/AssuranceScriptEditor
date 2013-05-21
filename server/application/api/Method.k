@@ -1,4 +1,6 @@
+Import("Lib.Curl");
 Import("JavaScript.Array");
+Import("JavaScript.Regexp");
 Import("JavaStyle.Object");
 Import("Syntax.StringInterpolation");
 Import("Syntax.GlobalVariable");
@@ -10,7 +12,12 @@ Import("Type.Json");
 Import("Konoha.Map");
 Import("Deos.DCaseCloud");
 
-DCaseModel model = new DCaseModel("dcasedb", "dcasedb");
+Load("config.k");
+Load("Http.k");
+Load("redmine.k");
+
+DCaseModel model = new DCaseModel(user(), pass());
+IssueAPI   api   = new RedmineAPI(RedmineURL(), RedmineKey());
 
 const IntList=Array[int];
 @Public IntList ConvertToIntList(Json json) {
@@ -54,6 +61,7 @@ void createDCase (Json request, int id) {
 	String dcaseName = request.getString("dcaseName");
 	int    userId    = request.getInt("userId");
 	Json res = global.model.createDCase(tree, dcaseName, userId);
+	global.api.createProject(dcaseName, "id" + res.getInt("dcaseId"));
 	Json response = createMessage(res, id);
 	stdout.print(response);
 }
@@ -67,14 +75,42 @@ void getCommitList (Json request, int id) {
 	stdout.print(response);
 }
 
+boolean isExistIssue(int dcaseId, int nodeId) {
+	Json json = global.api.getChicketsByDcaseId(dcaseId);
+	String id = nodeId.toString();
+	int i = 0;
+	while(i < json.getSize()) {
+		String s = json[i].getString("subject");
+		if(s.search(id) >= 0) {
+			return true;
+		}
+		i = i + 1;
+	}
+	return false;
+}
+
+void createMonitorIssue(Json nodeList, int dcaseId) {
+	int i = 0;
+	int len = nodeList.getSize();
+	while(i < len) {
+		if(nodeList[i].getString("NodeType") == "Monitor") {
+			int nodeId = nodeList[i].getInt("ThisNodeId");
+			if(isExistIssue(dcaseId,nodeId) == false) {
+				String description = nodeList[i].getString("Description");
+				global.api.createChicket(dcaseId, nodeId, description);
+			}
+		}
+		i = i + 1;
+	}
+}
+
 void commit (Json request, int id) {
 	Json tree = request.get("tree");
 	int prev_id = request.getInt("commitId");
 	int userId = request.getInt("userId");
 	String message = request.getString("commitMessage");
-	int commitId = global.model.Commit(tree,prev_id,userId,message,0);
-	Json res = new Json();
-	res.setInt("commitId",commitId);
+	Json res = global.model.Commit(tree,prev_id,userId,message,0);
+	createMonitorIssue(tree.get("NodeList"),res.getInt("dcaseId"));
 	Json response = createMessage(res, id);
 	stdout.print(response);
 }

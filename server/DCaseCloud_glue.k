@@ -135,7 +135,7 @@ class DCaseModel {
 		}
 	}
 
-	@Public int Commit(Json tree, int prev_id, int user_id, String message, int dcase_id) {
+	@Public Json Commit(Json tree, int prev_id, int user_id, String message, int dcase_id) {
 		if(dcase_id == 0) {
 			dcase_id = this.getDCaseId(prev_id);
 		}
@@ -152,7 +152,10 @@ class DCaseModel {
 		}
 		int id = p.getInsertId();
 		insertNodeList(tree,id);
-		return id;
+		Json ret = new Json();
+		ret.setInt("commitId", id);
+		ret.setInt("dcaseId", dcase_id);
+		return ret;
 	}
 
 	int _createDcase(int user_id,String dcaseName) {
@@ -173,7 +176,7 @@ class DCaseModel {
 
 	@Public Json createDCase(Json tree, String dcaseName, int user_id) {
 		int dcase_id = this._createDcase(user_id, dcaseName);
-		int commit_id = this.Commit(tree,0,user_id,"Initial Commit",dcase_id);
+		int commit_id = this.Commit(tree,0,user_id,"Initial Commit",dcase_id).getInt("commitId");
 		Json ret = new Json();
 		ret.setInt("dcaseId",dcase_id);
 		ret.setInt("commitId",commit_id);
