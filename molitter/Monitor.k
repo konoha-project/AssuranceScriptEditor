@@ -11,9 +11,13 @@ import("Syntax.Null");
 import("Syntax.CStyleWhile");
 import("Syntax.JavaStyleClass");
 
+load("../server/application/api/redmine.k");
+
 //const SERVER_URL  = "127.0.0.1";
 const SERVER_PORT = 19999;
 const DEBUG_LIBEVENT = true;
+const REDMINE_URL = "http://www.ubicg.ynu.ac.jp/redmine";
+const REDMINE_KEY = "";
 
 class MonitorSlave {
     String monitorName;
@@ -21,7 +25,7 @@ class MonitorSlave {
     @Virtual boolean check(Json data) { return false; }
 }
 
-class CPULimit {
+class CPULimit extends MonitorSlave {
     int limit;
     CPULimit(int limit) {
         this.limit = limit;
@@ -35,17 +39,18 @@ class Monitor {
     int port;
     Map[String] templates;
     Map[MonitorSlave] monitorSlaves;
+    RedmineAPI ticketClient;
     Monitor(int port) {
         this.port = port;
         this.templates = new Map[String]();
-        this.ticketClient = new RedmineClient();
+        this.ticketClient = new RedmineAPI(REDMINE_URL, REDMINE_KEY);
         this.monitorSlaves = new Map[MonitorSlave];
     }
 
     void start() {
         event_base base = new event_base();
         evhttp http = new evhttp(base);
-        int ret = http.set_cb("/receive", recive_data_cb, this);
+        int ret = http.set_cb("/receive", receive_data_cb, this);
         ret = http.set_cb("/monitor", add_monitor_request_cb, this);
         http.set_gencb(default_cb, this);
 
@@ -58,12 +63,11 @@ Json parse(String data) {
     return Json.parse(data);
 }
 
-String String.getPreset() {
-    //FIXME
-    //input:  "abcdaaaa\n\n   \t @CPULimit  \t"
-    //output: "CPULimit"
-    return "";
-}
+//String String.getPreset() {
+//    //input:  "abcdaaaa\n\n   \t @CPULimit  \t"
+//    //output: "CPULimit"
+//    return this.split("@")[1].split(" ")[0];
+//}
 
 String apply(String template, Json map) {
     //FIXME
@@ -73,38 +77,62 @@ String apply(String template, Json map) {
 }
 
 String add_monitor(Monitor mon, String post) {
-    Json map = parse(post);
-    String description = map.getString("Monitor");
-    String preset = description.getPreset();
-    String template = mon.templates.getString(preset);
-    if (template != null) {
-        template = apply(template, map);
-        //FIXME
-        //mon.MonitorSlave.add(new CPULimit(Context.limit));
-    } else {
-        template = map.toString();
+    Json json = parse(post);
+    Json description = json.get("Monitors");
+    Json elem = null;
+    Json params = null;
+    String preset;
+    String monitorid;
+    String dcaseid = json.getString("DCaseId");
+    int i = 0;
+    while(i < description.getSize()) {
+        elem = description.get(i);
+        preset = elem.getString("Preset");
+        monitorid = elem.getString("MonitorId");
+        params = elem.get("Params");
+        // TODO
+        //String template = mon.templates.getString(preset);
+        //if (template != null) {
+        //    template = apply(template, json);
+        //    //FIXME
+        //    //mon.MonitorSlave.add(new CPULimit(Context.limit));
+        //} else {
+        //    //FIXME
+        //    //template = json.get(1).toString();
+        //}
+        if(preset == "CPULimit") {
+            mon.monitorSlaves.set(monitorid, new CPULimit(params.getInt("limit")));
+        }
+        else {
+            // add other monitor case
+        }
+        mon.ticketClient.createChicket(dcaseid.toint(), monitorid.toint(), elem.toString());
+        i = i + 1;
     }
-
-    mon.ticketClient.open(template);
     return "";
 }
 
-String recive_data(Monitor mon, String post) {
-    Json map = parse(post);
-    String hashCode = map.getString("Monitor");
-    MonitorSlave slave = mon.monitorSlaves[hashCode];
+String receive_data(Monitor mon, String post) {
+    Json json = parse(post);
+    Json res = new Json();
+    String monitorid = json.getString("MonitorId");
+    MonitorSlave slave = mon.monitorSlaves[monitorid];
     if (slave == null) {
         //FIXME??
         //mon.MonitorSlave.add(new CPULimit(Context.limit));
         //or
         //emit error
     }
-    if (slave.check(map) == true) {
+    else if (slave.check(json.get("Data")) == true) {
+        // TODO
         // something was wrong at monitored system.
         // create new ticket
-        mon.ticketClient.open(slave.monitorName);
+        // mon.ticketClient.createChicket();
+        res.setBoolean("Result", true);
+        return res.toString();
     }
-    return "";
+    res.setBoolean("Result", false);
+    return res.toString();
 }
 
 void debug_cb(String method, evhttp_request req, Object arg) {
@@ -125,12 +153,12 @@ String post(evhttp_request req) {
     return post;
 }
 
-void recive_data_cb(evhttp_request req, Object arg) {
-    debug_cb("recive_data_cb", req, arg);
+void receive_data_cb(evhttp_request req, Object arg) {
+    debug_cb("receive_data_cb", req, arg);
 
     if(req.get_command() & EVHTTP_REQ_POST != 0) {
         String data = post(req);
-        String res = recive_data(arg as Monitor, post);
+        String res = receive_data(arg as Monitor, data);
         evbuffer buf = new evbuffer();
         buf.add(res.toBytes());
         req.send_reply(200, "OK", buf);
