@@ -26,15 +26,15 @@ class IssueAPI {
 	}
 
 	@Public void createProject(String name, String identifier) { }
-	@Public String createChicket(int dcaseId, int nodeId, String description/*,int assignee FIXME*/) {
+	@Public String createTicket(int dcaseId, int nodeId, String description/*,int assignee FIXME*/) {
 		return "";
 	}
-	@Public Json getChicketsByDcaseId(int dcaseId) {
+	@Public Json getTicketsByDcaseId(int dcaseId) {
 		return new Json([]);
 	}
-	//@Public int createChildChicket(int dcaseId, int nodeId, int parentChicketId, description, assigned) => chikectId
-	//updateChicket(chicketId, UpdateContents) => boolean
-	@Public boolean closeChicket(int dcaseId, String description) {
+	//@Public int createChildTicket(int dcaseId, int nodeId, int parentTicketId, description, assigned) => chikectId
+	//updateTicket(TicketId, UpdateContents) => boolean
+	@Public boolean closeTicket(int dcaseId, int nodeId, String description) {
 		return false;
 	}
 }
@@ -52,8 +52,8 @@ class RedmineAPI extends IssueAPI {
 		this.http.post(m);
 	}
 
-	//chicketId
-	@Public String createChicket(int dcaseId, int nodeId, String description/*,int assignee FIXME*/) {
+	//ticketId
+	@Public String createTicket(int dcaseId, int nodeId, String description/*,int assignee FIXME*/) {
 		this.http = new CurlHttpClient(url + "issues.json");
 		Map[String] m = new Map[String];
 		m.set("key",key);
@@ -65,10 +65,10 @@ class RedmineAPI extends IssueAPI {
 		return this.http.post(m);
 	}
 
-	//@Public int createChildChicket(int dcaseId, int nodeId, int parentChicketId, description, assigned) => chikectId
+	//@Public int createChildTicket(int dcaseId, int nodeId, int parentTicketId, description, assigned) => chikectId
 
-	//Array[Chicket]
-	@Public Json getChicketsByDcaseId(int dcaseId) {
+	//Array[Ticket]
+	@Public Json getTicketsByDcaseId(int dcaseId) {
 		this.http = new CurlHttpClient(url + "issues.json");
 		Map[String] m = new Map[String];
 		//m.set("key",key);
@@ -76,8 +76,8 @@ class RedmineAPI extends IssueAPI {
 
 		return Json.parse(this.http.get(m)).get("issues");
 	}
-	//getChicketsByNodeId(nodeId) => Array[Chicket]
-	//getChicketByChicketId(chicketId) => Chicket
+	//getTicketsByNodeId(nodeId) => Array[Ticket]
+	//getTicketByTicketId(ticketId) => Ticket
 
 
 }

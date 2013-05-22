@@ -16,7 +16,7 @@ load("../server/application/api/redmine.k");
 //const SERVER_URL  = "127.0.0.1";
 const SERVER_PORT = 19999;
 const DEBUG_LIBEVENT = true;
-const REDMINE_URL = "http://www.ubicg.ynu.ac.jp/redmine";
+const REDMINE_URL = "http://localhost/redmine/";
 const REDMINE_KEY = "";
 
 class MonitorSlave {
@@ -106,7 +106,7 @@ String add_monitor(Monitor mon, String post) {
         else {
             // add other monitor case
         }
-        mon.ticketClient.createChicket(dcaseid.toint(), monitorid.toint(), elem.toString());
+        mon.ticketClient.createTicket(dcaseid.toint(), monitorid.toint(), elem.toString());
         i = i + 1;
     }
     return "";
@@ -127,7 +127,7 @@ String receive_data(Monitor mon, String post) {
         // TODO
         // something was wrong at monitored system.
         // create new ticket
-        // mon.ticketClient.createChicket();
+        // mon.ticketClient.createTicket();
         res.setBoolean("Result", true);
         return res.toString();
     }

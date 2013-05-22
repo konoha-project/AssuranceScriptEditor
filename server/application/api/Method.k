@@ -145,7 +145,7 @@ void getCommitList (Json request, int id) {
 }
 
 boolean isExistIssue(int dcaseId, int nodeId) {
-	Json json = global.api.getChicketsByDcaseId(dcaseId);
+	Json json = global.api.getTicketsByDcaseId(dcaseId);
 	String id = nodeId.toString();
 	int i = 0;
 	while(i < json.getSize()) {
@@ -166,7 +166,7 @@ void createMonitorIssue(Json nodeList, int dcaseId) {
 			int nodeId = nodeList[i].getInt("ThisNodeId");
 			if(isExistIssue(dcaseId,nodeId) == false) {
 				String description = nodeList[i].getString("Description");
-				global.api.createChicket(dcaseId, nodeId, description);
+				global.api.createTicket(dcaseId, nodeId, description);
 			}
 		}
 		i = i + 1;
