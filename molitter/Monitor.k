@@ -2,6 +2,7 @@ import("Konoha.NameSpace");
 import("Konoha.Map");
 import("Type.Bytes");
 import("Type.Json");
+import("Lib.Curl");
 import("Lib.Libevent");
 import("JavaStyle.Object");
 import("Java.String");
@@ -16,6 +17,7 @@ load("../server/application/api/redmine.k");
 //const SERVER_URL  = "127.0.0.1";
 const SERVER_PORT = 19999;
 const DEBUG_LIBEVENT = true;
+const ADS_CGI_URL = "http://localhost/dcase_viewer/cgi/api.cgi"
 const REDMINE_URL = "http://localhost/redmine/";
 const REDMINE_KEY = "";
 
@@ -112,10 +114,29 @@ String add_monitor(Monitor mon, String post) {
     return "";
 }
 
+void post(String url, String req) {
+    Curl c = new Curl();
+    c.setOpt(CURLOPT_URL, url);
+    c.setOpt(CURLOPT_POSTFIELDS, req);
+    c.setOpt(CURLOPT_TIMEOUT, 10);
+    c.perform();
+}
+
+void invokeJsonRpc(String url, String method, String id, Json params) {
+    Json req = new Json();
+    req.setString("jsonrpc", "2.0");
+    req.setString("id", id);
+    req.setString("method", method);
+    req.set("params", params);
+    post(url, req.toString());
+}
+
 String receive_data(Monitor mon, String post) {
     Json json = parse(post);
     Json res = new Json();
+    Json params = new Json();
     String monitorid = json.getString("MonitorId");
+    String dcaseid = json.getString("DCaseId");
     MonitorSlave slave = mon.monitorSlaves[monitorid];
     if (slave == null) {
         //FIXME??
@@ -124,10 +145,13 @@ String receive_data(Monitor mon, String post) {
         //emit error
     }
     else if (slave.check(json.get("Data")) == true) {
-        // TODO
         // something was wrong at monitored system.
         // create new ticket
-        // mon.ticketClient.createTicket();
+        mon.ticketClient.createTicket(dcaseid.toint(), monitorid.toint(), json.toString());
+        // add rebuttal to monitor node.
+        params.setString("DCaseId", dcaseid);
+        params.setString("MonitorId", monitorid);
+        invokeJsonRpc(ADS_CGI_URL, "AddRebuttal", "1", params);
         res.setBoolean("Result", true);
         return res.toString();
     }
@@ -143,7 +167,7 @@ void debug_cb(String method, evhttp_request req, Object arg) {
     }
 }
 
-String post(evhttp_request req) {
+String getDataFromRequest(evhttp_request req) {
     String uri = req.get_uri();
     evbuffer input = req.get_input_buffer();
     int length = input.get_length();
@@ -157,7 +181,7 @@ void receive_data_cb(evhttp_request req, Object arg) {
     debug_cb("receive_data_cb", req, arg);
 
     if(req.get_command() & EVHTTP_REQ_POST != 0) {
-        String data = post(req);
+        String data = getDataFromRequest(req);
         String res = receive_data(arg as Monitor, data);
         evbuffer buf = new evbuffer();
         buf.add(res.toBytes());
@@ -172,7 +196,7 @@ void add_monitor_request_cb(evhttp_request req, Object arg) {
     debug_cb("add_monitor_request_cb", req, arg);
     int cmd = req.get_command();
     if(cmd & EVHTTP_REQ_GET != 0) {
-        String data = post(req);
+        String data = getDataFromRequest(req);
         String res = add_monitor(arg as Monitor, data);
         evbuffer buf = new evbuffer();
         buf.add(res.toBytes());
