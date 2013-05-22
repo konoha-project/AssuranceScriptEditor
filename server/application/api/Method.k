@@ -300,6 +300,14 @@ void login(Json request, int id) {
 	stdout.print(response);
 }
 
+void AddRebuttal(Json request, int id) {
+	int dcaseId = request.getInt("dcaseId");
+	int monitorId = request.getInt("monitorId");
+	Json res = global.model.AddRebuttal(dcaseId, monitorId);
+	Json response = createMessage(res, id);
+	stdout.print(response);
+}
+
 class JsonRPCServer {
 	Map[Func[void, Json, int]] functions;
 
@@ -322,5 +330,6 @@ class JsonRPCServer {
 		this.functions.set("getCommitList", getCommitList);
 		this.functions.set("login"        , login);
 		this.functions.set("register"     , register);
+		this.functions.set("AddRebuttal"  , AddRebuttal);
 	}
 }

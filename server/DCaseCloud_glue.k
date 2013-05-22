@@ -298,4 +298,34 @@ class DCaseModel {
 		r.next();
 		return r.getInt("id");
 	}
+
+	Json _addRebuttal(Json nodeList, int monitorId, int rebuttalId) {
+		Json ret = new Json([]);
+		int i = 0;
+		while(i < nodeList.getSize()) {
+			if(nodeList[i].getInt("ThisNodeId") == monitorId) {
+				nodeList[i].get("Children").add(rebuttalId);
+				Json reb = new Json();
+				reb.setInt("ThisNodeId",rebuttalId);
+				reb.setString("Description","Rebuttal");
+				reb.set("Children",new Json([]));
+				reb.setString("NodeType","Rebuttal");
+				ret.add(reb);
+			}
+			ret.add(nodeList[i]);
+			i = i + 1;
+		}
+		return ret;
+	}
+
+	@Public Json AddRebuttal(int dcaseId, int monitorId) {
+		Json json = this.getDCase(dcaseId);
+		Json tree = json.get("tree");
+		int prev_id = json.getInt("commitId");
+		int user_id = 4; //FIXME
+		String message = "Add Rebuttal";
+
+		tree.set("NodeList", this._addRebuttal(tree.get("NodeList"), monitorId, tree.getInt("NodeCount") + 1/*FIXME*/));
+		return this.Commit(tree, prev_id, user_id, message, dcaseId);
+	}
 }
