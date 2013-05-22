@@ -1,5 +1,6 @@
 Import("Lib.Curl");
 Import("JavaScript.Array");
+Import("JavaScript.String");
 Import("JavaScript.Regexp");
 Import("JavaStyle.Object");
 Import("Syntax.StringInterpolation");
@@ -12,12 +13,80 @@ Import("Type.Json");
 Import("Konoha.Map");
 Import("Deos.DCaseCloud");
 
-Load("config.k");
-Load("Http.k");
 Load("redmine.k");
+//Load("monitor.k");
 
-DCaseModel model = new DCaseModel(user(), pass());
-IssueAPI   api   = new RedmineAPI(RedmineURL(), RedmineKey());
+Json Map2Json(Map[String] map) {
+	int i = 0;
+	String[] keys = map.keys();
+	Json json = new Json();
+	while(i < keys.getSize()) {
+		json.setString(keys[i],map[keys[i]]);
+		i = i + 1;
+	}
+	return json;
+}
+
+class MonitorData {
+	String preset;
+	int monitorId;
+	Map[String] params;
+
+	MonitorData(String preset, int monitorId, Map[String] params) {
+		this.preset    = preset;
+		this.monitorId = monitorId;
+		this.params    = params;
+	}
+
+	Json toJson() {
+		Json json =  new Json();
+		json.setString("Preset",this.preset);
+		json.setString("MonitorId",this.monitorId.toString());
+		json.set("Params",Map2Json(this.params));
+		return json;
+	}
+}
+
+class AbstractMonitor {
+	String url;
+	CurlHttpClient http;
+
+	AbstractMonitor(String url) {
+		this.url  = url;
+	}
+
+	@Public Json Send_Receive() {
+		return new Json();
+	}
+
+	@Public void Send_AddMonitor(int dcaseId, MonitorData[] dataList) {}
+}
+
+class MonitorClient extends AbstractMonitor {
+
+	@Public Json Send_Receive() {
+		this.http = new CurlHttpClient(url + "receive");
+	}
+
+	@Public void Send_AddMonitor(int dcaseId, MonitorData[] dataList) {
+		this.http = new CurlHttpClient(url + "monitor");
+		int i = 0;
+		Json json = new Json([]);
+		while(i < dataList.getSize()) {
+			json.add(dataList[i].toJson());
+			i = i + 1;
+		}
+		Json j = new Json();
+		j.setString("DCaseId", dcaseId.toString());
+		j.set("Monitors", json);
+		this.http.postJson(j);
+	}
+
+}
+
+DCaseModel    model     = new DCaseModel(user(), pass());
+IssueAPI      api       = new RedmineAPI(RedmineURL(), RedmineKey());
+AbstractMonitor monitor   = new MonitorClient(MonitorURL());
 
 const IntList=Array[int];
 @Public IntList ConvertToIntList(Json json) {
@@ -104,13 +173,84 @@ void createMonitorIssue(Json nodeList, int dcaseId) {
 	}
 }
 
+Json getMonitorContext(Json nodeList, int[] childIds) {
+	int i = 0;
+	int j = 0;
+	int len = nodeList.getSize();
+	while(i < childIds.getSize()) {
+		while(j < len) {
+			if(childIds[i] == nodeList[j].getInt("ThisNodeId")) {
+				if(nodeList[j].getString("NodeType") == "Context") {
+					return nodeList[j];
+				}
+			}
+			j = j + 1;
+		}
+		i = i + 1;
+	}
+	return new Json();
+}
+
+String[] getAnnotation(String[] lines) {
+	String[] ret = [];
+	int j = 0;
+	while(j < lines.getSize()) {
+		if(lines[j][0] == "@") {
+			ret.add(lines[j].slice(1));
+		}
+		j = j + 1;
+	}
+	return ret;
+}
+
+MonitorData createMonitorData(Json monitor, Json context) {
+	String[] params_line = context.getString("Description").split("\n");
+	String[] preset_line = monitor.getString("Description").split("\n");
+
+	String[] params = getAnnotation(params_line);
+//	String[] preset = preset_raw.match(/^@(.*)$/);
+	String[] preset = getAnnotation(preset_line);
+
+	Map[String] map = new Map[String];
+	int i = 0;
+	while(i < params.getSize()) {
+		String[] kv = params[i].split(" ");
+		map.set(kv[0], kv[1]);
+		i = i + 1;
+	}
+
+	return new MonitorData(preset[0], monitor.getInt("ThisNodeId"), map);
+}
+
+MonitorData[] createMonitorList(Json nodeList) {
+	int i = 0;
+	int len = nodeList.getSize();
+	MonitorData[] data = [];
+
+	while(i < len) {
+		if(nodeList[i].getString("NodeType") == "Monitor") {
+			int nodeId     = nodeList[i].getInt("ThisNodeId");
+			int[] childIds = ConvertToIntList(nodeList[i].get("Children"));
+			Json context = getMonitorContext(nodeList, childIds);
+			data.add(createMonitorData(nodeList[i],context));
+		}
+		i = i + 1;
+	}
+
+	return data;
+}
+
 void commit (Json request, int id) {
 	Json tree = request.get("tree");
 	int prev_id = request.getInt("commitId");
 	int userId = request.getInt("userId");
 	String message = request.getString("commitMessage");
 	Json res = global.model.Commit(tree,prev_id,userId,message,0);
-	createMonitorIssue(tree.get("NodeList"),res.getInt("dcaseId"));
+	MonitorData[] data = createMonitorList(tree.get("NodeList"));
+	if(data.getSize() > 0) {
+		global.monitor.Send_AddMonitor(res.getInt("dcaseId"), data);
+		//createMonitorIssue(tree.get("NodeList"),res.getInt("dcaseId"));
+	}
 	Json response = createMessage(res, id);
 	stdout.print(response);
 }

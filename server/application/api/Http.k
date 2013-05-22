@@ -45,6 +45,12 @@ class CurlHttpClient extends HttpClient {
 		return perform();
 	}
 
+	String postJson(Json fields) {
+		curl.setOpt(CURLOPT_POST, true);
+		curl.setOpt(CURLOPT_POSTFIELDS, fields.toString());
+		return perform();
+	}
+
 	String get(Map[String] fields) {
 		if (fields.keys().getSize() > 0) {
 			String param = CreateParam(fields);
