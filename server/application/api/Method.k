@@ -301,8 +301,8 @@ void login(Json request, int id) {
 }
 
 void AddRebuttal(Json request, int id) {
-	int dcaseId = request.getInt("dcaseId");
-	int monitorId = request.getInt("monitorId");
+	int dcaseId = request.getString("DCaseId").toint();
+	int monitorId = request.getString("MonitorId").toint();
 	Json res = global.model.AddRebuttal(dcaseId, monitorId);
 	Json response = createMessage(res, id);
 	stdout.print(response);

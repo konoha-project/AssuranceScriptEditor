@@ -17,7 +17,7 @@ load("../server/application/api/redmine.k");
 //const SERVER_URL  = "127.0.0.1";
 const SERVER_PORT = 19999;
 const DEBUG_LIBEVENT = true;
-const ADS_CGI_URL = "http://localhost/dcase_viewer/cgi/api.cgi"
+const ADS_CGI_URL = "http://localhost/dcase/cgi/api.cgi"
 const REDMINE_URL = "http://localhost/redmine/";
 const REDMINE_KEY = "";
 
@@ -103,7 +103,7 @@ String add_monitor(Monitor mon, String post) {
         //    //template = json.get(1).toString();
         //}
         if(preset == "CPULimit") {
-            mon.monitorSlaves.set(monitorid, new CPULimit(params.getInt("limit")));
+            mon.monitorSlaves.set(monitorid, new CPULimit(params.getString("limit").toint()));
         }
         else {
             // add other monitor case
@@ -119,6 +119,7 @@ void post(String url, String req) {
     c.setOpt(CURLOPT_URL, url);
     c.setOpt(CURLOPT_POSTFIELDS, req);
     c.setOpt(CURLOPT_TIMEOUT, 10);
+    c.appendHeader("Content-Type: application/json; charset=utf-8");
     c.perform();
 }
 
