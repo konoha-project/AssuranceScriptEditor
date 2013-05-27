@@ -96,6 +96,11 @@ class DataBase {
 
 }
 
+@Public String EscapeBS(String str) {
+	RegExp p = new RegExp("\\","g");
+	return str.replace(p, "\\\\");
+}
+
 @Public String EscapeDq(String str) {
 	return str.replace(/\"/g,"\\\\\\\"");
 }
@@ -140,7 +145,7 @@ class DCaseModel {
 			dcase_id = this.getDCaseId(prev_id);
 		}
 		PreparedStatement p = this.db.newPreparedStatement("INSERT INTO `commit`(`data`,`date_time`,`prev_commit_id`,`latest_flag`, `dcase_id`, `user_id`, `message`) VALUES(?,?,?,TRUE,?,?,?)");
-		p.setString("@a",tree.toString());
+		p.setString("@a",EscapeBS(tree.toString()));
 		p.setInt("@b"   , new Date().getTime());
 		p.setInt("@c"   , prev_id);
 		p.setInt("@d"   , dcase_id);
