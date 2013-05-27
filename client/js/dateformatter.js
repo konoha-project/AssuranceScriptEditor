@@ -24,7 +24,7 @@ var DateFormatter = function(time){
 		}else if(deltaTime >= month && deltaTime < 2 * month) {
 			return "a month ago";
 		}else if(deltaTime >= 2*month && deltaTime < year) {
-			return "" + Math.floor(deltaTime / day) + " months ago";
+			return "" + Math.floor(deltaTime / month) + " months ago";
 		}else if(deltaTime >= year && deltaTime < 2 * year) {
 			return "an year ago";
 		}else if(deltaTime >= 2*year) {
