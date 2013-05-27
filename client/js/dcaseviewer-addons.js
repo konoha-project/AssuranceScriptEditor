@@ -333,10 +333,12 @@ var DNodeView_ToolBox = function(self) {
 		function edit_close() {
 			$edit.remove();
 			$edit = null;
+			self.viewer.canMoveByKeyboard = true;
 			self.viewer.$root.css("-moz-user-select", "text");
 		}
 		function edit_activate() {
 			if(!edit_active) {
+				self.viewer.canMoveByKeyboard = false;
 				edit_active = true;
 				edit_lock = true;
 				$edit.css("opacity", 0.95);
@@ -382,7 +384,7 @@ var DNodeView_ToolBox = function(self) {
 				.one("click", function() { edit_activate(); })
 				.click(function(e) { e.stopPropagation(); })
 				.appendTo(self.$div);
-	
+
 				var $ul = $edit.find("ul");
 				$.each(types, function(i, type) {
 					var $li = $("<li></li>")
