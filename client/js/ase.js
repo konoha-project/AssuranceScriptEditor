@@ -84,6 +84,11 @@ var ASE = function(body) {
 			if(userId != null) {
 				html += "<td><a id=\"e"+ id +"\" href=\"#\">Edit</a></td>"
 					+ "<td><a id=\"d"+ id +"\" href=\"#\">Delete</a></td>";
+			}
+			$("<tr></tr>")
+				.html(html)
+				.appendTo($tbody);
+			if(userId != null) {
 				$("a#e"+id).click(function(){
 					var msg = prompt("dcase名を入力して下さい");
 					if(msg != null) {
@@ -102,9 +107,6 @@ var ASE = function(body) {
 					}
 				});
 			}
-			$("<tr></tr>")
-				.html(html)
-				.appendTo($tbody);
 		});
 		return;
 	}
