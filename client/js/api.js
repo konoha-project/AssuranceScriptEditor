@@ -72,12 +72,12 @@ DCaseAPI.getDCase = function(dcaseId, callback, error) {
 DCaseAPI.renameDCase = function(dcaseId, name, callback, error) {
 	return this.call("renameDCase", {
 		dcaseId: dcaseId,
-		newDCaseName: name
+		name: name
 	}, callback, error);
 };
 
-DCaseAPI.removeDCase = function(dcaseId, callback, error) {
-	return this.call("removeDCase", { dcaseId: dcaseId }, callback, error);
+DCaseAPI.deleteDCase = function(dcaseId, callback, error) {
+	return this.call("deleteDCase", { dcaseId: dcaseId }, callback, error);
 };
 
 DCaseAPI.getNodeTree = function(commitId, callback, error) {

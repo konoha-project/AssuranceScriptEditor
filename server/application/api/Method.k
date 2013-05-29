@@ -308,6 +308,20 @@ void AddRebuttal(Json request, int id) {
 	stdout.print(response);
 }
 
+void renameDCase(Json request, int id) {
+	int dcaseId = request.getInt("dcaseId");
+	String name = request.getString("name");
+	String res = global.model.RenameDCase(dcaseId, name);
+	Json response = createMessage(res.toJson(), id);
+	stdout.print(response);
+}
+void deleteDCase(Json request, int id) {
+	int dcaseId = request.getInt("dcaseId");
+	String res = global.model.DeleteDCase(dcaseId);
+	Json response = createMessage(res.toJson(), id);
+	stdout.print(response);
+}
+
 class JsonRPCServer {
 	Map[Func[void, Json, int]] functions;
 
@@ -331,5 +345,7 @@ class JsonRPCServer {
 		this.functions.set("login"        , login);
 		this.functions.set("register"     , register);
 		this.functions.set("AddRebuttal"  , AddRebuttal);
+		this.functions.set("renameDCase"  , renameDCase);
+		this.functions.set("deleteDCase"  , deleteDCase);
 	}
 }

@@ -189,7 +189,7 @@ class DCaseModel {
 	}
 
 	@Public Json getDCase(int dcaseId) {
-		PreparedStatement p = this.db.newPreparedStatement("SELECT name,commit.id as commitId,data FROM dcase INNER JOIN commit ON dcase.id=commit.dcase_id WHERE dcase.id=? AND latest_flag=TRUE");
+		PreparedStatement p = this.db.newPreparedStatement("SELECT name,commit.id as commitId,data FROM dcase INNER JOIN commit ON dcase.id=commit.dcase_id WHERE dcase.id=? AND latest_flag=TRUE AND delete_flag=FALSE");
 		p.setInt("@a",dcaseId);
 		ResultSet r = p.execute();
 		r.next();
@@ -332,5 +332,20 @@ class DCaseModel {
 
 		tree.set("NodeList", this._addRebuttal(tree.get("NodeList"), monitorId, tree.getInt("NodeCount") + 1/*FIXME*/));
 		return this.Commit(tree, prev_id, user_id, message, dcaseId);
+	}
+
+	@Public String RenameDCase(int dcaseId, String name) {
+		PreparedStatement p = this.db.newPreparedStatement("UPDATE dcase SET name=? WHERE id=?");
+		p.setString("@a",name);
+		p.setInt("@b",dcaseId);
+		p.execute();
+		return "OK";
+	}
+
+	@Public String DeleteDCase(int dcaseId) {
+		PreparedStatement p = this.db.newPreparedStatement("UPDATE dcase SET delete_flag=TRUE WHERE id=?");
+		p.setInt("@a",dcaseId);
+		p.execute();
+		return "OK";
 	}
 }
