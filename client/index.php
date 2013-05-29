@@ -205,8 +205,11 @@ if(!isset($_COOKIE["userId"])&& $_COOKIE["userId"]!==0) {
 							<th><?php echo h($locales["creater"])?></th>
 							<th><?php echo h($locales["last_commit"])?></th>
 							<th><?php echo h($locales["last_commiter"])?></th>
-							<th>Edit</th>
-							<th>Delete</th>
+<?php 
+if(isset($_COOKIE["userId"])) {
+	echo "<th>Edit</th><th>Delete</th>";
+}
+?>
 						</tr>
 					</thead>
 					<tbody id="dcase-select-table">

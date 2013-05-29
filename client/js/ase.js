@@ -80,28 +80,31 @@ var ASE = function(body) {
 			var lastUser = dcase.latestCommit.userName;
 			var html = "<td><a href=\"./?dcaseId=" + id + "\">" + name + 
 					"</a></td><td>" + user + "</td><td>" + lastDate + "</td><td>" +
-					lastUser + "</td><td><a id=\"e"+ id +"\" href=\"#\">Edit</a></td>"
+					lastUser + "</td>";
+			if(userId != null) {
+				html += "<td><a id=\"e"+ id +"\" href=\"#\">Edit</a></td>"
 					+ "<td><a id=\"d"+ id +"\" href=\"#\">Delete</a></td>";
+				$("a#e"+id).click(function(){
+					var msg = prompt("dcase名を入力して下さい");
+					if(msg != null) {
+						if(DCaseAPI.renameDCase(id, msg) != null) {
+							alert("変更しました");
+							location.reload();
+						}
+					}
+				});
+				$("a#d"+id).click(function(){
+					if(window.confirm('dcaseを削除しますか?')) {
+						if(DCaseAPI.deleteDCase(id) != null) {
+							alert("削除しました");
+							location.reload();
+						}
+					}
+				});
+			}
 			$("<tr></tr>")
 				.html(html)
 				.appendTo($tbody);
-			$("a#e"+id).click(function(){
-				var msg = prompt("dcase名を入力して下さい");
-				if(msg != null) {
-					if(DCaseAPI.renameDCase(id, msg) != null) {
-						alert("変更しました");
-						location.reload();
-					}
-				}
-			});
-			$("a#d"+id).click(function(){
-				if(window.confirm('dcaseを削除しますか?')) {
-					if(DCaseAPI.deleteDCase(id) != null) {
-						alert("削除しました");
-						location.reload();
-					}
-				}
-			});
 		});
 		return;
 	}
