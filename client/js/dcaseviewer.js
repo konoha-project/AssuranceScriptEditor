@@ -90,14 +90,14 @@ var DCaseViewer = function(root, dcase, editable) {
 				if(newIndex >= neighbor.length) newIndex = neighbor.length - 1;
 				if(newIndex < 0) newIndex = 0;
 				if(oldIndex != newIndex){
-					self.setSelectedNode(neighbor[newIndex]);
+					self.centerizeNodeView(neighbor[newIndex]);
 					return;
 				}
 			}
 
 			if(children && children.length > 1){
 				var newIndex = (isRight ? children.length - 1 : 0);
-				self.setSelectedNode(children[newIndex]);
+				self.centerizeNodeView(children[newIndex]);
 				return;
 			}
 		};
@@ -105,14 +105,14 @@ var DCaseViewer = function(root, dcase, editable) {
 			if(!self.canMoveByKeyboard) return;
 			var selected = self.getSelectedNode();
 			if(selected && selected.parentView){
-				self.setSelectedNode(selected.parentView);
+				self.centerizeNodeView(selected.parentView);
 			}
 		};
 		if(e.keyCode == 40 /* DOWN */){
 			if(!self.canMoveByKeyboard) return;
 			var selected = self.getSelectedNode();
 			if(selected && selected.children && selected.children[0]){
-				self.setSelectedNode(selected.children[0]);
+				self.centerizeNodeView(selected.children[0]);
 			}
 		};
 		if(e.keyCode == 13 /* ENTER */){
@@ -383,6 +383,15 @@ DCaseViewer.prototype.nodeChanged = function(node) {
 DCaseViewer.prototype.centerize = function(node, ms) {
 	if(this.rootview == null) return;
 	var view = this.getNodeView(node);
+	this.setSelectedNode(view);
+	var b = view.getLocation();
+	var x = -b.x * this.scale + (this.$root.width() - view.nodeSize.w * this.scale) / 2;
+	var y = -b.y * this.scale + this.$root.height() / 5 * this.scale;
+	this.setLocation(x, y, null, ms);
+};
+
+DCaseViewer.prototype.centerizeNodeView = function(view, ms) {
+	if(this.rootview == null) return;
 	this.setSelectedNode(view);
 	var b = view.getLocation();
 	var x = -b.x * this.scale + (this.$root.width() - view.nodeSize.w * this.scale) / 2;
