@@ -534,6 +534,7 @@ var DNodeView = function(viewer, node, parentView) {
 	this.children = [];
 	this.context = null;
 	this.subject = null;
+	this.rebuttal = null;
 	this.line = null;
 
 	this.offset = { x: 0, y: 0 };
@@ -551,6 +552,7 @@ var DNodeView = function(viewer, node, parentView) {
 		if(node.isContext) {
 			this.line = createContextLineElement()[0];
 			if(this.node.type == "Subject") parentView.subject = this;
+			else if(this.node.type == "Rebuttal") parentView.rebuttal = this;
 			else parentView.context = this;
 		} else {
 			this.line = createChildLineElement()[0];
@@ -639,6 +641,9 @@ DNodeView.prototype.remove = function(parentView) {
 	if(this.subject != null) {
 		this.subject.remove(this);
 	}
+	if(this.rebuttal != null) {
+		this.rebuttal.remove(this);
+	}
 	while(this.children.length != 0) {
 		this.children[0].remove(this);
 	}
@@ -650,6 +655,7 @@ DNodeView.prototype.remove = function(parentView) {
 
 	if(this.node.isContext) {
 		if(this.node.type == "Subject") parentView.subject = null;
+		else if(this.node.type == "Rebuttal") parentView.rebuttal = null;
 		else parentView.context = null;
 	} else {
 		parentView.children.splice(parentView.children.indexOf(this), 1);
@@ -659,6 +665,7 @@ DNodeView.prototype.remove = function(parentView) {
 DNodeView.prototype.forEachNode = function(f) {
 	if(this.context != null) f(this.context);
 	if(this.subject != null) f(this.subject);
+	if(this.rebuttal != null) f(this.rebuttal);
 	$.each(this.children, function(i, view) {
 		f(view);
 	});
@@ -716,6 +723,15 @@ DNodeView.prototype.updateLocation = function(visible) {
 			x1 = Math.max(this.nodeSize.w + Y_MARGIN + this.context.subtreeSize.w);
 			y1 = Math.max(y1, this.context.subtreeSize.h);
 		}
+		var ch = 0, rh = 0;
+		if(this.rebuttal != null) {
+			if(this.context != null) {
+				ch = this.context.subtreeSize.h + X_MARGIN;
+				rh = this.rebuttal.subtreeSize.h + X_MARGIN;
+			}
+			x1 = Math.max(this.nodeSize.w + Y_MARGIN + this.rebuttal.subtreeSize.w);
+			y1 = Math.max(y1, ch + this.rebuttal.subtreeSize.h);
+		}
 		if(this.subject != null) {
 			this.subject.offset = {
 				x: -(this.subject.subtreeSize.w + Y_MARGIN),
@@ -725,10 +741,15 @@ DNodeView.prototype.updateLocation = function(visible) {
 		if(this.context != null) {
 			this.context.offset = {
 				x: (this.context.subtreeSize.w + Y_MARGIN),
-				y: (y1 - this.context.subtreeSize.h) / 2
+				y: (y1 - this.context.subtreeSize.h - rh) / 2
 			};
 		}
-
+		if(this.rebuttal != null) {
+			this.rebuttal.offset = {
+				x: (this.rebuttal.subtreeSize.w + Y_MARGIN),
+				y: (y1 - this.rebuttal.subtreeSize.h + ch) / 2
+			};
+		}
 		// children offset
 		var w2 = 0;
 		$.each(this.children, function(i, view) {
