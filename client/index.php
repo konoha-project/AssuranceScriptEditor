@@ -61,7 +61,6 @@ body {
 <script type="text/javascript" src="js/dcaseviewer.js"></script>
 <script type="text/javascript" src="js/dcaseviewer-addons.js"></script>
 <script type="text/javascript" src="js/dnode.js"></script>
-<script type="text/javascript" src="js/dscript.js"></script>
 <script type="text/javascript" src="js/gsnshape.js"></script>
 <script type="text/javascript" src="js/handler.js"></script>
 <script type="text/javascript" src="js/timeline.js"></script>
