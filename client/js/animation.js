@@ -1,7 +1,9 @@
-var Animation = function() {
-	var moveList = [];
-	var fadeInList = [];
-	var fadeOutList = [];
+var Animation = (function() {
+	function Animation() {
+		this.moveList = [];
+		this.fadeInList = [];
+		this.fadeOutList = [];
+	}
 
 	function getAttrSetter(dom) {
 		if(dom.setAttribute != null) {//FIXME?
@@ -22,12 +24,12 @@ var Animation = function() {
 		}
 	}
 
-	this.move = function(dom, key, toValue) {
+	Animation.prototype.move = function(dom, key, toValue) {
 		var mtd = getAttrSetter(dom);
 		var fromValue = parseInt(mtd.get(key));
 		toValue = Math.floor(toValue);
 		if(fromValue != toValue) {
-			moveList.push({
+			this.moveList.push({
 				key: key,
 				from: fromValue,
 				to: toValue,
@@ -35,66 +37,67 @@ var Animation = function() {
 			});
 		}
 		return this;
-	}
+	};
 
-	this.moves = function(dom, json) {
+	Animation.prototype.moves = function(dom, json) {
 		for(var key in json) {
 			this.move(dom, key, json[key]);
 		}
 		return this;
-	}
+	};
 
-	this.movePolygon = function(dom, points) {
+	Animation.prototype.movePolygon = function(dom, points) {
 		var from = [];
 		for(var i=0; i<dom.points.numberOfItems; i++) {
 			var p = dom.points.getItem(i);
 			this.move(p, "x", points[i].x);
 			this.move(p, "y", points[i].y);
 		}
-	}
+	};
 
-	this.show = function(dom, visible) {
+	Animation.prototype.show = function(dom, visible) {
 		var mtd = getAttrSetter(dom);
 		var disp = mtd.get("display");
 		if(disp == null) {
 			mtd.set("display", visible ? "block" : "none");
 		} else if(disp == "none" && visible) {
 			// fade in
-			fadeInList.push(mtd.set);
+			this.fadeInList.push(mtd.set);
 			mtd.set("opacity", 0.0);
 			mtd.set("display", "block");
 		} else if(disp == "block" && !visible) {
 			// fade out
-			fadeOutList.push(mtd.set);
+			this.fadeOutList.push(mtd.set);
 			mtd.set("opacity", 1.0);
 			mtd.set("display", "block");
 		}
 		return this;
-	}
+	};
 
-	this.anime = function(r) {
-		$.each(moveList, function(i, e) {
+	Animation.prototype.anime = function(r) {
+		$.each(this.moveList, function(i, e) {
 			e.set(e.key, e.from + (e.to - e.from) * r);
 		});
-		$.each(fadeInList, function(i, e) {
+		$.each(this.fadeInList, function(i, e) {
 			e("opacity", r);
 		});
-		$.each(fadeOutList, function(i, e) {
+		$.each(this.fadeOutList, function(i, e) {
 			e("opacity", 1.0 - r);
 		});
-	}
+	};
 
-	this.animeFinish = function() {
-		$.each(moveList, function(i, e) {
+	Animation.prototype.animeFinish = function() {
+		$.each(this.moveList, function(i, e) {
 			e.set(e.key, e.to);
 		});
-		$.each(fadeInList, function(i, e) {
+		$.each(this.fadeInList, function(i, e) {
 			e("opacity", 1.0);
 		});
-		$.each(fadeOutList, function(i, e) {
+		$.each(this.fadeOutList, function(i, e) {
 			e("opacity", 1.0);
 			e("display", "none");
 		});
-	}
-}
+	};
+	return Animation;
+})();
 
