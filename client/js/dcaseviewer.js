@@ -20,7 +20,7 @@ var DCaseViewer = function(root, dcase, editable) {
 		.attr("transform", "translate(0, 0)")
 		.appendTo($svgroot);
 	this.$dummyDivForPointer = $("<div>")
-		.css({ width: "100%", height: "100%" , position: "absolute", top: "0px", left: "0px" })
+		.css({ width: "100%", height: "100%" , position: "absolute", top: "0px", left: "0px", "-ms-touch-action": "none" })
 		.appendTo(this.$root);
 	this.$dom = $("<div></div>")
 		.css("position", "absolute")
