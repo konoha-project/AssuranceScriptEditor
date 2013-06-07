@@ -47,6 +47,7 @@ body {
 	top: 40px;
 }
 </style>
+<script type="text/javascript" src="lib/pointer.min.js"></script>
 <script type="text/javascript" src="lib/jquery.min.js"></script>
 <script type="text/javascript" src="lib/jquery.mousewheel.min.js"></script>
 <script type="text/javascript" src="lib/jquery.draggable.min.js"></script>
