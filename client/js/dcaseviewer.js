@@ -19,6 +19,9 @@ var DCaseViewer = function(root, dcase, editable) {
 	this.$svg = $(document.createElementNS(SVG_NS, "g"))
 		.attr("transform", "translate(0, 0)")
 		.appendTo($svgroot);
+	this.$dummyDivForPointer = $("<div>")
+		.css({ width: "100%", height: "100%" , position: "absolute", top: "0px", left: "0px" })
+		.appendTo(this.$root);
 	this.$dom = $("<div></div>")
 		.css("position", "absolute")
 		.appendTo(this.$root);
