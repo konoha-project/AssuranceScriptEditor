@@ -10,3 +10,4 @@ String pass() { return "dcasedb"; }
 //Redmine
 String RedmineURL() { return "http://path/to/redmine/"; }
 String RedmineKey() { return "Your API Auth Key"; }
+String MonitorURL() { return "http://monitor"; }

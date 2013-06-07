@@ -85,7 +85,7 @@ class MonitorClient extends AbstractMonitor {
 }
 
 DCaseModel    model     = new DCaseModel(user(), pass());
-IssueAPI      api       = new RedmineAPI(RedmineURL(), RedmineKey());
+IssueAPI      api       = new IssueAPI(RedmineURL(), RedmineKey());//new RedmineAPI(RedmineURL(), RedmineKey());
 AbstractMonitor monitor   = new MonitorClient(MonitorURL());
 
 const IntList=Array[int];
