@@ -88,3 +88,15 @@ DCaseAPI.searchDCase = function(text, callback, error) {
 	return this.call("searchDCase", { text: text }, callback, error).searchResultList;
 };
 
+DCaseAPI.searchDCaseHistory = function(dcaseId, text, callback, error) {
+    return this.call("searchDCaseHistory", {dcaseId: dcaseId, text: text}, callback, error);
+};
+
+DCaseAPI.createTicket = function(nodeId, subject, description, userName, callback, error) {
+    return this.call("createTicket", {
+        nodeId: nodeId,
+        subject: subject,
+        description: description,
+        userName: userName
+    }, callback, error);
+};
